@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux / editors
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.vscode/
+.idea/
+
+# Local runtime / test artifacts
+__pycache__/
+*.py[cod]
+.playwright/
+shots/

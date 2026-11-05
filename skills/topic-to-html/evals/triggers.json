@@ -1,0 +1,10 @@
+{
+  "skill": "topic-to-html",
+  "test_cases": [
+    {"input": "create an informative HTML page", "should_trigger": true},
+    {"input": "make a visual report in HTML", "should_trigger": true},
+    {"input": "build a dashboard HTML for this data", "should_trigger": true},
+    {"input": "write a python script", "should_trigger": false},
+    {"input": "fix my CSS bug", "should_trigger": false}
+  ]
+}

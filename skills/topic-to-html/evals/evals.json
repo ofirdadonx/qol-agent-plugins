@@ -1,0 +1,11 @@
+{
+  "skill": "topic-to-html",
+  "test_cases": [
+    {"name": "decision_doc", "input": "Create an HTML page analyzing a business opportunity with financial scenarios (Hebrew)",
+     "assertions": ["Hero with claim H1 + bottom-line box", "Sticky chips + progress", "One interactive chart per section", "At least one L3 deep-dive panel with Esc + #link", "Takeaways + sandbox", "qa_check.py passes (no white, AA contrast, no story wording)", "Light grey + dark theme toggle", "RTL logical properties"]},
+    {"name": "concept_explainer", "input": "Explain how compound interest works as an interactive HTML page",
+     "assertions": ["Sandbox recomputes the result live", "Glossary tooltips for terms", "Claim headings", "Reduced-motion static page correct"]},
+    {"name": "comparison_report", "input": "Make a visual comparison of three options with charts and tables",
+     "assertions": ["Preferred vs less-preferred states", "Tables inside .table-wrap", "Charts use token colors and re-style in dark mode", "Mobile 390 no overflow"]}
+  ]
+}
