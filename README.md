@@ -16,11 +16,3 @@ plugins/   # Non-skill plugins, as they are added
 ## License
 
 [MIT](LICENSE)
-
----
-
-מונו־ריפו לסקילים ולתוספי QoL לסוכני AI.
-
-- `topic-to-html` — הופך נושא לדף HTML ויזואלי ואיכותי בעיצוב זכוכית.
-- `skills/` — תיקייה לכל סקיל; `plugins/` — תוספים שאינם סקילים.
-- רישיון: [MIT](LICENSE)
