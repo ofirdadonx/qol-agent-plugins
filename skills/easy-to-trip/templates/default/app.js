@@ -5,6 +5,7 @@ const T=window.TRIP||{};
 const UI=T.ui||{};
 const root=document.documentElement,qs=new URLSearchParams(location.search);
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(qs.has('static')){root.setAttribute('data-static','');}
 const STORE=T.storage_key||'easy-to-trip';
 let theme=qs.get('theme')||localStorage.getItem(STORE+'-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
 const css=v=>getComputedStyle(root).getPropertyValue(v).trim();
@@ -400,14 +401,19 @@ function syncNav(){
   const h=document.documentElement;
   const pr=$('#prog');
   if(pr)pr.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
-  const mid=Math.min(160, 80+(document.querySelector('header.top')?.offsetHeight||100));
+  const header=document.querySelector('header.top');
+  const headerH=header?header.getBoundingClientRect().height:100;
+  const raw=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
+  const threshold=(Number.isFinite(raw)&&raw>0?raw:headerH)+2;
   let current=null;
   for(const c of chips){
-    const id=(c.getAttribute('href')||'').slice(1);
+    const href=c.getAttribute('href')||'';
+    if(href[0]!=='#')continue;
+    const id=href.slice(1);
     const el=id&&document.getElementById(id);
     if(!el)continue;
     const r=el.getBoundingClientRect();
-    if(r.top<=mid && r.bottom>mid){current=id;break;}
+    if(r.top<=threshold && r.bottom>Math.min(threshold,headerH+8)){current=id;}
   }
   if(!current && window.scrollY<120){
     current=((chips[0]&&chips[0].getAttribute('href'))||'#overview').slice(1);

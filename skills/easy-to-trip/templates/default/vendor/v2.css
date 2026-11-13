@@ -324,8 +324,8 @@ figure.map, .spread .map{
 }
 .instruments .code-row:last-child{border-bottom:0}
 .instruments .code-meta{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-.instruments .code-row .who{font:650 13.5px var(--font);flex:none;overflow-wrap:anywhere}
-.instruments .code-row .code{font:650 14.5px 'Inter',var(--font);font-variant-numeric:tabular-nums;letter-spacing:.02em;text-align:start;overflow-wrap:anywhere}
+.instruments .code-row .who{font:650 13.5px var(--font);flex:none;min-width:0}
+.instruments .code-row .code{font:650 14.5px 'Inter',var(--font);font-variant-numeric:tabular-nums;letter-spacing:.02em;text-align:start;white-space:nowrap;overflow-wrap:normal;word-break:normal}
 .instruments .code-actions{
   display:flex;flex-direction:column;align-items:stretch;gap:4px;
   flex:none;width:7.2em;max-width:42%;min-width:0;
@@ -351,22 +351,35 @@ figure.map, .spread .map{
 /* ===== Itinerary ===== */
 .itinerary{padding-top:0;position:relative;z-index:2;margin-top:0}
 .itinerary > h2{font:700 13px var(--font);letter-spacing:.14em;color:var(--muted);margin:0 0 14px}
-.country-head{display:flex;align-items:baseline;gap:14px;margin:28px 0 14px;padding-inline-start:58px}
+.country-head{display:flex;align-items:baseline;gap:14px;margin:28px 0 14px;padding-inline-start:calc(var(--date-w,52px) + var(--rail-w,28px))}
 .country-head:first-of-type{margin-top:0}
 .country-head .nm{font:700 15px var(--font);letter-spacing:.04em;color:var(--block-color,var(--region-0))}
 .country-head .meta{font:500 13px var(--font);color:var(--muted)}
 .country-head .rule{flex:1;height:1px;background:var(--rule)}
 .country-head .flag{align-self:center}
 
-.tl, .tline{position:relative;display:flex;flex-direction:column;gap:2px}
+.tl, .tline{position:relative;display:flex;flex-direction:column;gap:2px;padding-inline-start:0}
 .tline::before, .tl::before{
-  content:"";position:absolute;inset-inline-start:49px;top:10px;bottom:10px;width:1px;
+  content:"";position:absolute;
+  inset-inline-start:calc(var(--date-w,52px) + var(--rail-w,28px)/2 - 1px);
+  inset-inline-end:auto;
+  top:10px;bottom:10px;width:2px;border-radius:1px;
   background:var(--block-color,var(--region-0));opacity:.55;
+  z-index:0;pointer-events:none;
 }
 
-.item{display:grid;grid-template-columns:46px 32px minmax(0,1fr);column-gap:8px;align-items:stretch}
-.item .col{padding-inline-start:8px;min-width:0}
-.item .date{padding-top:9px;text-align:center;width:54px}
+.tline > .item, .tl > .item, .item{
+  display:grid;
+  grid-template-columns:var(--date-w,52px) var(--rail-w,28px) minmax(0,1fr);
+  column-gap:0;
+  align-items:start;
+  background:transparent;border:0;border-radius:0;box-shadow:none;
+  padding:0;margin:0;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  position:relative;
+}
+.item .col{padding-inline-start:0;min-width:0;grid-column:3;position:relative}
+.item .date{padding-top:14px;text-align:center;width:auto;max-width:100%;grid-column:1;box-sizing:border-box}
 .item .date .d{font:650 15px 'Inter',var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;color:var(--ink)}
 .item .date .w{font:600 10.5px var(--font);color:var(--muted);margin-top:2px}
 .item .date .mon{font:700 9px var(--font);letter-spacing:.06em;color:var(--muted);margin-top:2px}
@@ -392,21 +405,37 @@ figure.map, .spread .map{
 article.stay, article.stop.stay{
   background:transparent;
   border:0;
-  border-bottom:1px solid var(--rule);
   border-radius:0;
   box-shadow:none;
-  padding:10px 14px 12px 4px;
+  padding:0;
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
   margin:0;
 }
 article.stay::after, article.stop.stay::after,
 article.stay::before, article.stop.stay::before{display:none;content:none}
+article.stay > .col, article.stop.stay > .col{
+  background:transparent;
+  border:0;
+  border-bottom:1px solid var(--rule);
+  border-radius:0;
+  box-shadow:none;
+  padding:10px 14px 12px 4px;
+  margin:0;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
 article.stay:hover, article.stay.is-hover{
+  background:transparent;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+article.stay:hover > .col, article.stay.is-hover > .col{
   background:var(--g-thin);
-  -webkit-backdrop-filter:blur(16px) saturate(160%);
-  backdrop-filter:blur(16px) saturate(160%);
   border-radius:2px;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
 }
 article.stay .stop-sum-top h3, article.stay .city{
   font:700 20px var(--font);line-height:1.15;letter-spacing:-.01em;
@@ -415,20 +444,40 @@ article.stay .pin{display:none}
 
 /* Tickets: nearly-sharp printed slips, 2px corners, light glass. */
 article.ticket, article.xfer.ticket{
+  background:transparent;
+  border:0;
+  border-radius:0;
+  padding:0;
+  margin:0;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+article.ticket::after, article.xfer.ticket::after{content:none;display:none}
+article.ticket > .col, article.xfer.ticket > .col{
   background:var(--g-thin);
   border:1px solid var(--rule-2);
   border-radius:2px;
   padding:11px 14px 12px;
-  margin:4px 0;
+  margin-block:4px;
+  margin-inline:0;
   box-shadow:inset 0 1px 0 var(--g-edge);
-  -webkit-backdrop-filter:blur(20px) saturate(170%);
-  backdrop-filter:blur(20px) saturate(170%);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
 }
-article.ticket::after{border-radius:2px}
-article.ticket.is-closed, article.xfer.ticket.is-closed{
+article.ticket > .col::after, article.xfer.ticket > .col::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(180deg,var(--g-edge) 0,transparent 1.6px);
+  z-index:1;
+}
+article.ticket.is-closed > .col, article.xfer.ticket.is-closed > .col{
   border-color:color-mix(in srgb,var(--pos) 45%,var(--rule-2));
 }
-article.ticket.is-optional, article.xfer.ticket.is-optional{
+article.ticket.is-optional > .col, article.xfer.ticket.is-optional > .col{
   border-style:dashed;
   border-color:color-mix(in srgb,var(--warn) 55%,var(--rule-2));
 }
@@ -570,9 +619,8 @@ article.ticket .xfer-route, article.ticket .kind{
   .spread .map-live, .spread #mapLive{height:280px}
 
   .country-head{padding-inline-start:0;flex-wrap:wrap;gap:8px}
-  .item{grid-template-columns:40px 28px minmax(0,1fr);column-gap:8px}
-  .item .date{width:40px}
-  .tline::before, .tl::before{inset-inline-start:62px}
+  /* Column tokens stay --date-w / --rail-w; only tighten under 360 (see appendix). */
+  .item .date{width:auto}
 
   .rest{padding:8px 16px 96px}
   .rest > .sec, .rest section.sec, .country-chunk,
@@ -617,7 +665,7 @@ h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.025em;line-height:1.12}
 
 .folio .status-legend{font:600 12.5px var(--font);color:var(--ink-2);display:flex;flex-wrap:wrap;gap:8px 14px}
 .folio .closed-line{max-width:46ch}
-.instruments .phone, .instruments .emer + .src{overflow-wrap:anywhere}
+.instruments .phone, .instruments .emer + .src{overflow-wrap:normal;word-break:normal;white-space:nowrap}
 #dockMap span{max-width:8em;text-align:center}
 
 
@@ -805,10 +853,10 @@ article.stay .stop-sum-top h3,
   gap:8px;
 }
 
-/* 2. scroll-padding clears the real sticky header at every breakpoint.
+/* 2 / 14. scroll-padding clears the real sticky header at every breakpoint.
    --header-h is at least the measured height (128px under 900, 104px from 900).
-   JS may raise it if the header is taller. Non-.sec jump targets need a
-   scroll-margin too. */
+   JS may raise it if the header is taller. Do not also set the same value as
+   scroll-margin-top on the targets — the two add, and the jump lands at 2×. */
 @media (min-width:900px){
   :root{--header-h:104px}
 }
@@ -818,7 +866,7 @@ html{scroll-padding-top:var(--header-h,128px)}
 .sec, .stop, .xfer, .itinerary, .folio, .country-block, .spread,
 [id^="stop-"], [id^="xfer-"], [id^="days-"], [id^="choose-"],
 [id$="-practical"], [id$="-docs"], [id$="-pack"]{
-  scroll-margin-top:var(--header-h,128px);
+  scroll-margin-top:0;
 }
 
 /* 3. A nowrap group so a middot cannot sit alone on a wrap line in a flex row. */
@@ -858,4 +906,179 @@ html{scroll-padding-top:var(--header-h,128px)}
     padding-bottom:calc(var(--dock-h,72px) + 80px + env(safe-area-inset-bottom, 0px));
     overflow:visible;
   }
+}
+
+
+/* ===== v11 review findings (generic) ===== */
+
+/* Column tokens. Same at every width except a slightly tighter 360. */
+:root, .itinerary, .tline, .tl{
+  --date-w:52px;
+  --rail-w:28px;
+}
+@media (max-width:360px){
+  :root, .itinerary, .tline, .tl{
+    --date-w:44px;
+    --rail-w:24px;
+  }
+}
+
+/* 1. The article is a transparent 3-column track. Only .col is a painted card.
+   Kill leftover article padding that would push nodes off the rail. */
+.tline > .item::before, .tline > .item::after,
+.tl > .item::before, .tl > .item::after,
+article.ticket::after, article.xfer.ticket::after{
+  content:none;
+  display:none;
+}
+.tline > .item > .node, .tl > .item > .node, .item > .node{
+  grid-column:2;
+  justify-self:center;
+  align-self:start;
+  position:relative;
+  z-index:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  padding:0;
+  margin-top:20px;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+
+/* 4 + 5. Stay and transfer dots: same size, centred on the rail. The ring
+   is --paper (the surface the rail sits on), not --bg, so there is no halo. */
+.tline > .item > .node i,
+.tline > .item > .node .dot,
+.tline > .item.ticket > .node i,
+.tline > .item.ticket > .node .dot,
+.tline > .item.transit > .node i,
+.item.ticket .node i, .item.ticket .node .dot, .item.transit .node i,
+.item .node i, .item .node .dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--block-color,var(--region-0));
+  border:0;
+  box-shadow:0 0 0 3px var(--paper);
+  display:block;
+  font-size:0;
+  line-height:0;
+  color:transparent;
+  margin:0;
+  padding:0;
+  place-items:unset;
+}
+.tline > .item.is-optional > .node i,
+.tline > .item.is-optional > .node .dot,
+.item.is-optional .node i, .item.is-optional .node .dot{
+  background:transparent;
+  border:1.5px dashed var(--warn);
+  box-shadow:0 0 0 3px var(--paper);
+}
+.tline > .item.is-today > .node i,
+.tline > .item.is-today > .node .dot,
+.item.is-today .node i, .item.is-today .node .dot,
+.item.stay.is-today .node .dot{
+  width:11px;
+  height:11px;
+  box-shadow:0 0 0 3px var(--paper),0 0 0 6px var(--region-0-tint);
+}
+
+/* 4. Mode chip: 32px rounded square, regular-weight glyph at 18px,
+   12px from the title, optically centred on the title's first line.
+   Not a duotone icon inside the narrow rail node. */
+.xfer-head{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  min-width:0;
+  font:700 14.5px var(--font);
+  line-height:1.25;
+  color:var(--ink);
+}
+.xfer-chip{
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  flex:none;
+  background:color-mix(in srgb,var(--block-color,var(--region,var(--region-0))) 12%,transparent);
+  color:var(--block-color,var(--region,var(--region-0)));
+  margin-block-start:calc((1.25em - 32px) / 2);
+  box-sizing:border-box;
+}
+.xfer-chip .xfer-ico,
+.xfer-chip svg{
+  width:18px;
+  height:18px;
+  display:block;
+  flex:none;
+  overflow:visible;
+}
+.xfer-head .xfer-route{
+  min-width:0;
+  padding-top:0;
+}
+
+@media (max-width:899px){
+  .country-head{padding-inline-start:0}
+}
+
+/* 2. Entrance animations must not run under ?static=1 (QA / reduced motion). */
+html[data-static] .rv,
+html[data-static] .rv.in{
+  opacity:1;
+  transform:none;
+  transition:none;
+}
+
+/* 8. Phones, booking codes, prices and times never wrap. A long emergency
+   number takes its own full-width row and clamp()s the font rather than wrap. */
+.tnum, bdi.tnum, .code, .phone, .time,
+a[href^="tel:"] .tnum, a[href^="tel:"] .n, a.call .tnum,
+.instruments .emer .n, .instruments .emer .n .tnum,
+.instruments .code, .instruments .code-row .code,
+.instruments .phone{
+  white-space:nowrap;
+  overflow-wrap:normal;
+  word-break:normal;
+  unicode-bidi:isolate;
+}
+.instruments .emer{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:8px 12px;
+  margin-top:4px;
+  align-items:start;
+}
+.instruments .emer a{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  min-width:0;
+  padding:8px 0;
+  text-align:start;
+}
+.instruments .emer a.emer-wide,
+.instruments .emer a:last-child:nth-child(odd){
+  grid-column:1 / -1;
+}
+.instruments .emer .n,
+.instruments .emer .n .tnum{
+  font:700 22px 'Inter',var(--font);
+  letter-spacing:-.02em;
+  color:var(--ink);
+  direction:ltr;
+  unicode-bidi:isolate;
+  line-height:1.15;
+  font-size:clamp(16px, 2.4vw + 10px, 22px);
+}
+.instruments .phone, .instruments .emer + .src,
+.instruments .code-row .code{
+  overflow-wrap:normal;
+  word-break:normal;
 }

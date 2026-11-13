@@ -72,4 +72,4 @@ Country colours and flags are not in the template. Put them on each country file
 
 ## Other flags
 
-`--exclude-not-ok` omits places whose `diet_fit` is `not_ok`. `--no-qa` skips the sibling `topic-to-html` `qa_check.py` and this skill's `qa_contrast.py` (muted and dark region contrast, 4.5:1). `--as-of`, `--stale-months`, and `--book-by-days` are passed through to validation.
+`--exclude-not-ok` omits places whose `diet_fit` is `not_ok`. `--no-qa` skips the sibling `topic-to-html` `qa_check.py` and this skill's `qa_contrast.py` (muted and dark region contrast, 4.5:1). After a build, `scripts/qa_layout.py URL` (optional Playwright) checks the timeline rail, mode chips, jump/scrollspy offset, overflow, folds and nowrap tokens at 390 and 1440, light and dark. It opens the page with `?static=1`. `--as-of`, `--stale-months`, and `--book-by-days` are passed through to validation.

@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.5
+
+- Folded the v11 page-review findings into the default template (see `references/template-pitfalls.md` items 21–28):
+  - The itinerary is a 3-column grid (`--date-w` | `--rail-w` | card). Only `.col` is painted; article padding that pushed nodes off the rail is gone. The rail inset is calculated from the tokens so it stays through the node centre.
+  - `?static=1` sets `data-static` and settles `.rv` entrance animations so QA rects are not skewed. `scripts/qa_layout.py` always uses it (Playwright is an optional dependency).
+  - `html` keeps `scroll-padding-top: var(--header-h)`; matching `scroll-margin-top` on the targets is 0 so the two do not add. Scrollspy threshold is `--header-h + 2`, last match wins.
+  - Transfer-mode icons are a 32px regular-weight inline SVG chip, 12px from the title, optically centred on the first line — not a duotone in the rail node (plain 9px dots).
+  - Rail-dot rings use `--paper`, not `--bg`.
+  - Layout QA skips `display: contents` parents and real scroll containers, reproduces `setFold` (class + inert) or clicks folds one at a time, and checks nowrap tokens.
+  - Phones, booking codes, prices and times are nowrap LTR isolates; a long number gets a full-width row and `clamp()` on the font size.
+
+
 ## v1.4
 
 - Folded the v10 page-review findings into the default template (see `references/template-pitfalls.md` items 13–20):

@@ -30,6 +30,11 @@
       "label": "Emergency",
       "number": "110 / 119",
       "tel": "110"
+    },
+    {
+      "label": "Tourist assistance (sample)",
+      "number": "03-1234-5678",
+      "tel": "0312345678"
     }
   ],
   "embassy": {

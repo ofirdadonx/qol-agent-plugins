@@ -13,7 +13,7 @@
       },
       "notes": "Round-trip paid together. Sample confirmation can be dropped into inbox/. Invented flight.",
       "destination_id": null,
-      "confirmation_code": null,
+      "confirmation_code": "SMP104",
       "confirmation_link": null,
       "carrier": "Sample Pacific",
       "number": "SP104"
@@ -27,7 +27,7 @@
       "price": null,
       "notes": "Return half of the same ticket. Invented flight.",
       "destination_id": null,
-      "confirmation_code": null,
+      "confirmation_code": "SMP105",
       "confirmation_link": null,
       "carrier": "Sample Pacific",
       "number": "SP105"
@@ -45,7 +45,7 @@
       },
       "notes": "Four nights, double room. Invented hotel.",
       "destination_id": "tokyo",
-      "confirmation_code": null,
+      "confirmation_code": "MPL88A",
       "confirmation_link": null
     },
     {
@@ -61,7 +61,7 @@
       },
       "notes": "Four nights, double room. Invented hotel.",
       "destination_id": "kyoto",
-      "confirmation_code": null,
+      "confirmation_code": "KMO21B",
       "confirmation_link": null
     },
     {
@@ -77,7 +77,7 @@
       },
       "notes": "Two reserved ordinary-car seats. Invented train number. Local transit uses an IC card, not this ticket.",
       "destination_id": null,
-      "confirmation_code": null,
+      "confirmation_code": "HKR469",
       "confirmation_link": null,
       "carrier": "Sample Tokaido Shinkansen",
       "number": "Hikari 469"

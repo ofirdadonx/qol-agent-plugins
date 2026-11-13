@@ -11,7 +11,18 @@
   "practical_headline": "",
   "practical_lede": "",
   "practical": [],
-  "emergency": [],
+  "emergency": [
+    {
+      "label": "Emergency",
+      "number": "112",
+      "tel": "112"
+    },
+    {
+      "label": "Tourist assistance (sample)",
+      "number": "01-40-00-00-00",
+      "tel": "0140000000"
+    }
+  ],
   "embassy": {
     "name": "",
     "url": "",

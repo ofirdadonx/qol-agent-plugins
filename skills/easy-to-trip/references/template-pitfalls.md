@@ -92,7 +92,7 @@ Phosphor's vendor stylesheet overlaps the two duotone layers with `:after { marg
 
 `scroll-padding-top` must be a `--header-h` token that is at least the real sticky header height at every breakpoint. Measure it. This template uses 128px under 900px and 104px from 900px, and `syncHeaderH()` in `app.js` raises the token if the measured header plus a 4px buffer is taller. A fixed 96px is shorter than the mobile header and hides the target under the nav.
 
-Targets that are not `.sec` also need `scroll-margin-top: var(--header-h)`. The dock jumps to `#itinerary` and `#map`; those elements are a section and a figure, not `.sec`. After a dock jump, test with `scroll-behavior: auto` (smooth scrolling makes the assertion flaky) and check that the target's top is not hidden under `header.top`.
+Do **not** also set `scroll-margin-top: var(--header-h)` on the targets — `scroll-padding` and `scroll-margin` add, the jump lands at twice the header height, and the scrollspy highlights the previous section. Use one offset (`html { scroll-padding-top: var(--header-h) }`) and set `scroll-margin-top: 0` on `#itinerary`, `#map`, `.sec` and the rest. The scrollspy threshold is `--header-h + 2`, and the last matching section wins (do not `break` on the first). After a dock or nav jump, test with `scroll-behavior: auto` and check that the target's top is just under `header.top`, not two header-heights down, and that the matching nav chip is `.on`.
 
 ## 15. No bare middot between flex children
 
@@ -123,3 +123,35 @@ On small screens an open stay or transfer can scroll its last line clear of the 
 - No global `.sheet-close { display: none !important }`. Scope a hide to fold close buttons (`.fold .sheet-close`) and keep the pocket close visible at 44px.
 - No `overflow-x: hidden` on `html` or `body` (see item 2). Fix the overflowing child at the source. Leaflet's own pane CSS may still use it; do not copy that onto the page root.
 - Do not add `.ph-duotone:after { margin-inline-start: -1em }` (see item 13), even with `!important` on a pin.
+
+## 21. Timeline is a 3-column grid; paint only the card cell
+
+The itinerary row is `display: grid` with columns `var(--date-w) var(--rail-w) minmax(0,1fr)` (52px / 28px, tighter 44/24 under 360). The rail is `inset-inline-start: calc(var(--date-w) + var(--rail-w)/2 - 1px)` so it runs through the node centre at every width. The **article is a transparent track** — `padding: 0`, no background, no border, no backdrop-filter. Only `.col` is the painted card (ticket tint and hairline, or the stay's bottom hairline and hover). A rule such as `article.ticket { padding: 11px 14px }` has enough specificity to beat `.tline > .item { padding: 0 }` and pushes the nodes off the rail. Verify in QA that each node's centre is within 1px of the rail and that the rail stays ≥8px outside every `.col`.
+
+## 22. Entrance animations skew measurements
+
+`.rv` starts at `opacity: 0; transform: translateY(18px) scale(.985)`. Until `.in` lands, `getBoundingClientRect` is wrong and rail/overflow QA will flake. Wait until the animation settles, or measure under `prefers-reduced-motion` / `?static=1`. `app.js` sets `data-static` on `<html>` when that query is present and immediately adds `.in` with no transform. QA (`scripts/qa_layout.py`) always opens pages with `?static=1` and reduced motion.
+
+## 23. One scroll offset, last-match scrollspy
+
+See the refinement to item 14. Threshold = `--header-h + 2`; last match wins.
+
+## 24. Transfer-mode icons are a 32px chip, not a duotone in the rail
+
+Put a plain 9px dot on the rail. The mode glyph is a 32px chip (`border-radius: 10px`, `display: grid; place-items: center`, `background: color-mix(… 12%, transparent)`, 12px gap from the title, `margin-block-start: calc((1.25em - 32px) / 2)` so it centres on the title's first line). Use a regular-weight inline SVG (Phosphor fill, MIT) so the page stays offline — not a duotone webfont glyph in the narrow node. Check the optical centre with `path.getBBox()` and `getScreenCTM()` against the chip centre (±1px).
+
+## 25. Rail-dot ring is `--paper`
+
+The ring around a rail dot (`box-shadow: 0 0 0 3px`) must be the colour of the surface the rail sits on (`--paper`), not `--bg`. On this template they often coincide, but a mismatched `--bg` draws a visible halo.
+
+## 26. Overflow QA allow-list
+
+A horizontal-overflow check that walks every element will false-positive on `display: contents` parents (their rect is zero-width) and on real scroll containers (the map, the nav chip strip, tables). Skip those. `scripts/qa_layout.py` does this.
+
+## 27. Accordion “open all” in QA
+
+Fold helpers live inside an IIFE, so a test cannot call `setFold`. An “open all” check either reproduces it (`classList.add('is-open')` plus clearing `inert` / `aria-hidden` on `.fold-inner`) or clicks the toggles one at a time. A bare `querySelectorAll('.fold').forEach(…)` is not enough.
+
+## 28. Nowrap LTR tokens
+
+Phone numbers, booking codes, prices and times are `<bdi class="tnum" dir="ltr">` with `white-space: nowrap`, `overflow-wrap: normal` and no `overflow-wrap: anywhere`. A long emergency number takes its own full-width row (`.emer-wide`, or the odd last cell in the two-column `.emer` grid) and uses `font-size: clamp(16px, 2.4vw + 10px, 22px)` so it shrinks rather than wraps. `qa_layout.py` has a nowrap-tokens check: each token must render on a single line, especially at 390px.

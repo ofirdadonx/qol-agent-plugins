@@ -193,7 +193,7 @@ body{padding-bottom:72px}
 
 
 /* Search: compact on a phone, clear of the top bar and of the pocket/TOC buttons */
-#recs-search{scroll-margin-top:var(--header-h,128px);padding-bottom:96px}
+#recs-search{scroll-margin-top:0;padding-bottom:96px}
 @media(max-width:700px){
   #recs-search .sec-head{margin-bottom:8px}
   #recs-search .sec-head h2{font-size:22px;line-height:1.28;max-width:22ch}
@@ -271,7 +271,7 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
 
 /* Transit rows on the destination timeline */
 .xfer{position:relative;padding:10px 14px;border-radius:16px;min-width:0}
-.xfer .pin{position:absolute;inset-inline-start:-32px;top:14px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;z-index:2;background:var(--g-thick);box-shadow:0 0 0 3px var(--bg);border:1.5px solid var(--region);color:var(--region);font-size:0}
+.xfer .pin{position:absolute;inset-inline-start:-32px;top:14px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;z-index:2;background:var(--g-thick);box-shadow:0 0 0 3px var(--paper);border:1.5px solid var(--region);color:var(--region);font-size:0}
 .xfer.xfer-boundary .pin{border-color:var(--accent);color:var(--accent-ink)}
 .xfer .pin .ph-duotone{font-size:13px;margin:0;line-height:1;direction:ltr;unicode-bidi:isolate}
 .xfer .pin .ph-duotone::before,.xfer .pin .ph-duotone::after{margin:0}
@@ -309,7 +309,7 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
   background:var(--bg);
   color:var(--region);
   border:1.5px solid var(--region);
-  box-shadow:0 0 0 3px var(--bg);
+  box-shadow:0 0 0 3px var(--paper);
   overflow:visible;
   font-size:14px;
 }
@@ -334,7 +334,7 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
 
 .taxi-card.is-empty[hidden],.taxi-card.is-empty{display:none!important}
 
-.stop,.xfer,.sec{scroll-margin-top:var(--header-h,128px)}
+.stop,.xfer,.sec{scroll-margin-top:0}
 
 .xfer.is-optional{border:1.5px dashed color-mix(in srgb,var(--region,var(--warn)) 55%,var(--g-border))}
 

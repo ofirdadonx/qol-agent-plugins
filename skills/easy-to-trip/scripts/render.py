@@ -311,6 +311,56 @@ MODE_ICON = {
     "car": "ph-car",
     "path": "ph-path",
 }
+
+# Official Phosphor fill paths (MIT, viewBox 0 0 256 256). Regular solid
+# weight, used as 18px glyphs inside the 32px transfer-mode chip so the
+# page stays self-contained offline. Not the duotone webfont.
+_CHIP_PATHS = {
+    "airplane-tilt": "M215.52,197.26a8,8,0,0,1-1.86,8.39l-24,24A8,8,0,0,1,184,232a7.09,7.09,0,0,1-.79,0,8,8,0,0,1-5.87-3.52l-44.07-66.12L112,183.59V208a8,8,0,0,1-2.34,5.65s-14,14.06-15.88,15.88A7.91,7.91,0,0,1,91,231.41a8,8,0,0,1-10.41-4.35l-.06-.15-14.7-36.76L29,175.42a8,8,0,0,1-2.69-13.08l16-16A8,8,0,0,1,48,144H72.4l21.27-21.27L27.56,78.65a8,8,0,0,1-1.22-12.32l24-24a8,8,0,0,1,8.39-1.86l85.94,31.25L176.2,40.19a28,28,0,0,1,39.6,39.6l-31.53,31.53Z",
+    "train": "M184,24H72A32,32,0,0,0,40,56V184a32,32,0,0,0,32,32h8L65.6,235.2a8,8,0,1,0,12.8,9.6L100,216h56l21.6,28.8a8,8,0,1,0,12.8-9.6L176,216h8a32,32,0,0,0,32-32V56A32,32,0,0,0,184,24ZM84,184a12,12,0,1,1,12-12A12,12,0,0,1,84,184Zm36-64H56V80h64Zm52,64a12,12,0,1,1,12-12A12,12,0,0,1,172,184Zm28-64H136V80h64Z",
+    "path": "M228,200a28,28,0,0,1-54.83,8H72a48,48,0,0,1,0-96h96a24,24,0,0,0,0-48H72a8,8,0,0,1,0-16h96a40,40,0,0,1,0,80H72a32,32,0,0,0,0,64H173.17A28,28,0,0,1,228,200Z",
+    "boat": "M221.06,110.59,208,106.23V56a16,16,0,0,0-16-16H136V24a8,8,0,0,0-16,0V40H64A16,16,0,0,0,48,56v50.23l-13.06,4.36A16,16,0,0,0,24,125.77V152c0,61.54,97.89,86.72,102.06,87.76a8,8,0,0,0,3.88,0C134.11,238.72,232,213.54,232,152V125.77A16,16,0,0,0,221.06,110.59ZM136,168a8,8,0,0,1-16,0V104.87a8,8,0,0,1,16,0Zm56-67.1L130.53,80.41a8,8,0,0,0-5.06,0L64,100.9V56H192Z",
+    "bus": "M248,80v24a8,8,0,0,1-16,0V80a8,8,0,0,1,16,0ZM16,72a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V80A8,8,0,0,0,16,72Zm200-8V208a16,16,0,0,1-16,16H184a16,16,0,0,1-16-16v-8H88v8a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V64A32,32,0,0,1,72,32H184A32,32,0,0,1,216,64ZM104,148a12,12,0,1,0-12,12A12,12,0,0,0,104,148Zm72,0a12,12,0,1,0-12,12A12,12,0,0,0,176,148Zm24-76H56v40H200Z",
+    "car": "M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16v-8h96v8a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM80,152H56a8,8,0,0,1,0-16H80a8,8,0,0,1,0,16Zm120,0H176a8,8,0,0,1,0-16h24a8,8,0,0,1,0,16ZM44.31,104,69.2,48H186.8l24.89,56Z",
+    "taxi": "M240,104H228.64L201.25,56.06A16,16,0,0,0,187.36,48H165.42l-12-29.94A15.93,15.93,0,0,0,138.58,8H117.42a15.93,15.93,0,0,0-14.86,10.06L90.58,48H68.64a16,16,0,0,0-13.89,8.06L27.36,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16v-8h96v8a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM80,152H56a8,8,0,0,1,0-16H80a8,8,0,0,1,0,16Zm120,0H176a8,8,0,0,1,0-16h24a8,8,0,0,1,0,16ZM45.79,104,68.64,64H187.36l22.85,40Z",
+}
+
+_CHIP_FROM = {
+    "flight": "airplane-tilt",
+    "airplane": "airplane-tilt",
+    "airplane-tilt": "airplane-tilt",
+    "ph-airplane-tilt": "airplane-tilt",
+    "train": "train",
+    "ph-train": "train",
+    "ferry": "boat",
+    "boat": "boat",
+    "ph-boat": "boat",
+    "ph-waves": "boat",
+    "waves": "boat",
+    "bus": "bus",
+    "ph-bus": "bus",
+    "car": "car",
+    "ph-car": "car",
+    "taxi": "taxi",
+    "ph-taxi": "taxi",
+    "path": "path",
+    "ph-path": "path",
+}
+
+
+def xfer_chip(mode_or_icon: str) -> str:
+    """32px regular-weight mode chip (inline SVG, works offline)."""
+    raw = (mode_or_icon or "").strip()
+    key = _CHIP_FROM.get(raw) or _CHIP_FROM.get(raw.replace("ph-", "")) or "path"
+    d = _CHIP_PATHS.get(key) or _CHIP_PATHS["path"]
+    return (
+        f'<span class="xfer-chip" aria-hidden="true">'
+        f'<svg class="xfer-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" '
+        f'fill="currentColor" width="18" height="18" focusable="false" aria-hidden="true">'
+        f'<path d="{d}"/></svg></span>'
+    )
+
+
 SYMBOLS = {"ILS": "₪", "USD": "$", "EUR": "€", "GBP": "£", "JPY": "¥", "THB": "฿"}
 HOME_IDS = {"home", "tlv", "origin", "start", None, ""}
 
@@ -552,6 +602,19 @@ def tel_link(number: str, tel: str | None = None) -> str:
         return ""
     href = tel or re.sub(r"[^\d+]", "", number)
     return f'<a class="call" href="tel:{esc(href)}">{icon("ph-phone")} {bdi(esc(number))}</a>'
+
+
+def _emer_link(e: dict) -> str:
+    """One emergency number: nowrap LTR isolate; long numbers span a full row."""
+    number = e.get("number") or e.get("tel") or ""
+    tel = e.get("tel") or re.sub(r"[^\d+]", "", number)
+    compact = re.sub(r"\s+", "", number)
+    wide = " emer-wide" if len(compact) >= 11 else ""
+    return (
+        f'<a class="call{wide}" href="tel:{esc(tel)}">'
+        f'<div class="n">{bdi(esc(number))}</div>'
+        f'<div class="w">{esc(e.get("label") or "")}</div></a>'
+    )
 
 
 def fold(inner: str, detail_id: str) -> str:
@@ -1084,11 +1147,11 @@ def render_xfer(data, x, ui, lang) -> str:
     return (
         f'<article class="{cls}" id="xfer-{esc(xid)}">'
         f'{date_col(transfer_date(data, x), lang)}'
-        f'<div class="node" aria-hidden="true"><i class="dot">{icon(ic)}</i></div>'
+        f'<div class="node" aria-hidden="true"><i class="dot"></i></div>'
         f'<div class="col">'
-        f'<span class="pin" aria-hidden="true">{icon(ic)}</span>'
+        f'<span class="pin" aria-hidden="true"></span>'
         f'<button type="button" class="xfer-sum" aria-expanded="false" aria-controls="xfer-{esc(xid)}-d">'
-        f'<span class="xfer-route">{raw_ltr(route)}</span>'
+        f'<span class="xfer-head">{xfer_chip(x.get("mode") or ic)}<span class="xfer-route">{raw_ltr(route)}</span></span>'
         f'<span class="xfer-meta">{"".join(meta_bits)}</span>'
         f'{icon("ph-caret-down")}</button>'
         f'{fold(inner, "xfer-" + str(xid) + "-d")}</div></article>'
@@ -1782,12 +1845,7 @@ def render_instruments(data, ui, lang) -> str:
         if not em:
             continue
         name = loc(c.get("name"), lang)
-        links = "".join(
-            f'<a href="tel:{esc(e.get("tel") or e.get("number") or "")}">'
-            f'<div class="n">{esc(e.get("number") or "")}</div>'
-            f'<div class="w">{esc(e.get("label") or "")}</div></a>'
-            for e in em
-        )
+        links = "".join(_emer_link(e) for e in em)
         emer_blocks.append(
             f'<h2>{esc(ui["emergency"])}'
             + (f", {esc(name)}" if name else "")
