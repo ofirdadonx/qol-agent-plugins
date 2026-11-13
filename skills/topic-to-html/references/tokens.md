@@ -11,8 +11,8 @@ No `#fff`, `#ffffff`, `white`, `rgb(255,255,255)` and no hex with every channel 
   --font:'Assistant','Inter',system-ui,sans-serif;
   --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s8:32px;--s10:40px;--s12:48px;--s16:64px;
   --r-chip:999px;--r-card:20px;--r-panel:28px;
-  --spring:cubic-bezier(.34,1.56,.64,1);--ease:cubic-bezier(.2,.8,.2,1);
-  --dur-1:160ms;--dur-2:280ms;--dur-3:520ms;
+  --spring:cubic-bezier(.34,1.56,.64,1);--ease:cubic-bezier(.2,.8,.2,1);--fold-ease:cubic-bezier(.22,1,.36,1);
+  --dur-1:160ms;--dur-2:280ms;--dur-3:520ms;--fold-dur:280ms;
 }
 [data-theme="light"]{
   --bg:#d9dde3;
@@ -60,4 +60,6 @@ Icon: `ph-moon-stars` in light, `ph-sun` in dark.
 ## RTL
 - `<html lang="he" dir="rtl">`. Only logical properties: `inset-inline-start/end`, `margin-inline-*`, `padding-inline-*`, `border-inline-*`, `text-align:start`.
 - Numbers and Latin go in Inter with `font-variant-numeric:tabular-nums`; wrap mixed strings in `<bdi>` if they flip.
-- Directional icons point to the reading direction (`ph-caret-left` = forward in RTL).
+- Phones, booking codes, amounts and date ranges: `<span class="ltr tnum">`. `.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;white-space:nowrap}`.
+- Directional icons point to the reading direction (`ph-caret-left` = forward in RTL). Isolate Phosphor duotone icons with `.ph-duotone{direction:ltr;unicode-bidi:isolate}` (see `icons.md`).
+- Hide only with the `hidden` attribute. Put `[hidden]{display:none!important}` in the base CSS so it wins over component `display:flex` / `grid` rules. Do not use a global `:empty{display:none}` — it hides icon `<i>` tags and mesh blobs.
