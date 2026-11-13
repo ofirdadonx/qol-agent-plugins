@@ -1,0 +1,42 @@
+{
+  "group_heading": "To see",
+  "places": [
+    {
+      "id": "miradouro-exemplo",
+      "name": {
+        "en": "Miradouro do Exemplo"
+      },
+      "type": "viewpoint",
+      "type_label": "Viewpoint",
+      "area": "Alfama",
+      "note": "Invented viewpoint used to show a walk-in sight.",
+      "url": "https://example.invalid/miradouro",
+      "maps_url": "https://maps.google.com/?q=38.713,-9.131",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=38.713,-9.131"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Open all day",
+      "price_range": "Free",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Not a restaurant."
+      },
+      "reservation": {
+        "need": "walk_in",
+        "how": {
+          "method": "at_door",
+          "url": null,
+          "app_name": null
+        },
+        "lead_time": null,
+        "book_by": null,
+        "booked": false,
+        "notes": "No ticket needed."
+      }
+    }
+  ]
+}

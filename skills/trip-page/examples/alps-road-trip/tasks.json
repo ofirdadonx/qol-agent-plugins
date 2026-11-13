@@ -1,0 +1,32 @@
+{
+  "headline": "Book first",
+  "lede": "This sample deliberately leaves stays and the return open, so the validator has gaps to show.",
+  "done": [
+    {
+      "text": "Book the outbound London–Geneva flight",
+      "booking_id": "ba-outbound"
+    }
+  ],
+  "open": [
+    {
+      "text": "Book the Chamonix stay (five provisional nights)."
+    },
+    {
+      "text": "Book the Aosta stay (four provisional nights)."
+    },
+    {
+      "text": "Record and book the Chamonix–Aosta transfer (rental car)."
+    },
+    {
+      "text": "Record and book the return to London."
+    },
+    {
+      "text": "Decide whether Annecy stays on the itinerary.",
+      "optional": true
+    },
+    {
+      "text": "Book Refuge du Blé if the first Chamonix dinner is kept.",
+      "optional": true
+    }
+  ]
+}

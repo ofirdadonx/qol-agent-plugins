@@ -1,0 +1,25 @@
+{
+  "estimates": [
+    {
+      "id": "food",
+      "title": "Meals in Lisbon",
+      "label": "estimate",
+      "price": {
+        "amount_min": 180,
+        "amount_max": 260,
+        "currency": "EUR",
+        "note": "Two people, three days, mid-range."
+      },
+      "notes": "Sample range only.",
+      "chart_series": [
+        {
+          "label": "Meals",
+          "amount_min": 180,
+          "amount_max": 260,
+          "currency": "EUR",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

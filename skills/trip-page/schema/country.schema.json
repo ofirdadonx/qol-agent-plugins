@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "country.schema.json",
+  "title": "Country-level practical info",
+  "type": "object",
+  "required": [
+    "id",
+    "name"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Localized strings. Keys are language codes (en, pt, he, …) and optionally 'local' for a local-script form. Include at least the trip's language; 'en' is a useful fallback.",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "badge": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "utc_offset": {
+      "type": "string"
+    },
+    "hours_ahead_of_home": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": "string"
+    },
+    "practical_headline": {
+      "type": "string"
+    },
+    "practical_lede": {
+      "type": "string"
+    },
+    "practical": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "label",
+          "body"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "html": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "emergency": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "label",
+          "number"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "tel": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "embassy": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "phone_emergency": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "entry_docs": {
+      "type": "object",
+      "properties": {
+        "headline": {
+          "type": "string"
+        },
+        "lede": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "packing": {
+      "type": "object",
+      "properties": {
+        "headline": {
+          "type": "string"
+        },
+        "lede": {
+          "type": "string"
+        },
+        "callout": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "climate": {
+      "type": "string"
+    },
+    "transport_notes": {
+      "type": "string"
+    },
+    "timeline_headline": {
+      "type": "string",
+      "description": "Headline for the country timeline section"
+    },
+    "timeline_lede": {
+      "type": "string",
+      "description": "Lede under that headline"
+    },
+    "act_label": {
+      "type": "string",
+      "description": "Small act label, e.g. Portugal · 3 nights"
+    },
+    "journal_headline": {
+      "type": "string",
+      "description": "Day-journal headline"
+    },
+    "journal_lede": {
+      "type": "string",
+      "description": "Day-journal lede"
+    },
+    "journal_act": {
+      "type": "string",
+      "description": "Day-journal act label"
+    },
+    "phrases": {
+      "type": "object",
+      "description": "Cards of short phrases to show (dietary requests, allergies, directions, greetings, etc.). Content is whatever this trip needs, in the local language.",
+      "properties": {
+        "headline": {
+          "type": "string"
+        },
+        "intro": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "e.g. dietary, allergies, directions, greetings"
+              },
+              "label": {
+                "type": "string"
+              },
+              "language_label": {
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "romanization": {
+                      "type": "string"
+                    },
+                    "meaning": {
+                      "type": "string"
+                    },
+                    "lang": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

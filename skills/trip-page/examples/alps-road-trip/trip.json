@@ -1,0 +1,246 @@
+{
+  "id": "alps-road-trip",
+  "storage_key": "alps-road-trip",
+  "title": "Alps road trip",
+  "subtitle": "Twelve provisional nights in the Alps",
+  "tag": "family",
+  "kicker": "Alps road trip",
+  "headline": "Alps road trip",
+  "lede": "A fictional family road trip used as a sample. Several stays and the return flight are still open, so validate_trip.py can show timeline gaps and a BOOK FIRST list.",
+  "brand": "Alps road trip",
+  "footer": "",
+  "dietary_note": "Riley and Ama eat gluten-free. diet_fit is judged against the union (gluten-free).",
+  "dates": {
+    "start": "2027-06-12",
+    "end": "2027-06-24",
+    "flexible": true,
+    "approx_nights": 12,
+    "note": "Provisional window around mid-June. Exact days can move by a few nights."
+  },
+  "departure_at": "2027-06-12T12:00:00+00:00",
+  "return_at": "2027-06-24T12:00:00+00:00",
+  "departure_city": "London",
+  "home_airport": "LHR",
+  "home_tz": "Europe/London",
+  "travelers": [
+    {
+      "name": "Sam Okonkwo",
+      "dietary": [],
+      "passport": "GB",
+      "booking_name": "SAMUEL OKONKWO",
+      "age": 42
+    },
+    {
+      "name": "Riley Okonkwo",
+      "dietary": [
+        "gluten-free"
+      ],
+      "passport": "GB",
+      "booking_name": "RILEY OKONKWO",
+      "age": 40
+    },
+    {
+      "name": "Ama Okonkwo",
+      "dietary": [
+        "gluten-free"
+      ],
+      "passport": "GB",
+      "booking_name": "AMA OKONKWO",
+      "age": 8,
+      "child": true,
+      "gear": "Booster seat for the rental car."
+    }
+  ],
+  "currency": "GBP",
+  "fx": {
+    "date": "2026-11-13",
+    "label": "sample mid-market rate, illustration only",
+    "home": "GBP",
+    "rates_to_home": {
+      "GBP": 1,
+      "EUR": 0.86
+    },
+    "cross_rates": {
+      "EURGBP": 0.86
+    },
+    "sources": {
+      "EUR": "sample"
+    }
+  },
+  "language": "en",
+  "dir": "ltr",
+  "destinations": [
+    {
+      "id": "chamonix",
+      "country": "france",
+      "name": {
+        "en": "Chamonix"
+      },
+      "optional": false,
+      "certainty": "sure",
+      "icon": "ph-map-pin",
+      "coords": {
+        "lat": 45.9237,
+        "lng": 6.8694,
+        "exact": false
+      },
+      "nights": 5,
+      "dates": {
+        "start": "2027-06-12",
+        "end": "2027-06-17",
+        "flexible": true
+      }
+    },
+    {
+      "id": "aosta",
+      "country": "italy",
+      "name": {
+        "en": "Aosta"
+      },
+      "optional": false,
+      "certainty": "sure",
+      "icon": "ph-map-pin",
+      "coords": {
+        "lat": 45.737,
+        "lng": 7.317,
+        "exact": false
+      },
+      "nights": 4,
+      "dates": {
+        "start": "2027-06-17",
+        "end": "2027-06-21",
+        "flexible": true
+      }
+    },
+    {
+      "id": "annecy",
+      "country": "france",
+      "name": {
+        "en": "Annecy"
+      },
+      "optional": true,
+      "certainty": "open",
+      "icon": "ph-map-pin",
+      "coords": {
+        "lat": 45.8992,
+        "lng": 6.1294,
+        "exact": false
+      },
+      "nights": 3,
+      "dates": {
+        "start": "2027-06-21",
+        "end": "2027-06-24",
+        "flexible": true
+      }
+    }
+  ],
+  "kpis": [
+    {
+      "label": "Nights",
+      "value": "12 (provisional)"
+    },
+    {
+      "label": "Travelers",
+      "value": "3 (one child)"
+    },
+    {
+      "label": "Trip type",
+      "value": "family"
+    }
+  ],
+  "nav": [
+    {
+      "href": "#overview",
+      "label": "Overview",
+      "group": "start"
+    },
+    {
+      "href": "#map",
+      "label": "Map"
+    },
+    {
+      "href": "#budget",
+      "label": "Budget"
+    },
+    {
+      "href": "#tasks",
+      "label": "Tasks"
+    }
+  ],
+  "shared_docs": {
+    "headline": "",
+    "lede": "",
+    "items": []
+  },
+  "shared_packing": {
+    "headline": "",
+    "lede": "",
+    "items": [],
+    "note": ""
+  },
+  "overview_notes": [
+    "Destinations still open (dates and lodging are provisional): annecy."
+  ],
+  "map": {
+    "headline": "",
+    "lede": "",
+    "tile_url": "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+    "attribution": "&copy; OpenStreetMap, OpenStreetMap.de",
+    "fallback_svg": "assets/map-fallback.html"
+  },
+  "nights_chart_caption": "",
+  "status_legend": [],
+  "locale": "en-GB",
+  "trip_type": "family",
+  "budget_plan": {
+    "total": 8000,
+    "level": "mid",
+    "currency": "GBP",
+    "notes": null
+  },
+  "preferences": {
+    "priorities": [
+      "nature",
+      "food",
+      "rest"
+    ],
+    "pace": {
+      "style": "few_in_depth",
+      "hotel_changes": "two or three bases, not a new hotel every night"
+    },
+    "lodging": {
+      "types": [
+        "apartment",
+        "hotel"
+      ],
+      "bed": "family room",
+      "notes": "A well-equipped apartment is preferred when travelling with a child."
+    },
+    "transport": {
+      "rental_car": true,
+      "international_license": true,
+      "trains": false,
+      "taxis_only": false,
+      "notes": "Rental car collected at Geneva. International driving permit to be confirmed."
+    }
+  },
+  "already_booked_notes": "Only the outbound flight is booked. The return, the rental car, and every stay are still open.",
+  "entry_checks": {
+    "visa": "For this sample party (British passports, short stays in France and Italy / Schengen): confirm current entry rules on official UK and destination-government pages. This note is illustrative.",
+    "passport_validity": "Look up the current Schengen validity rule (often three months beyond departure from the area). Children's passports follow the same check. Sample only.",
+    "insurance": "Travel medical insurance is strongly recommended. A rental car needs its own cover, including a child booster seat policy.",
+    "power_adapters": "France and Italy use Type C and Type F (Italy also Type L in some buildings), 230 V / 50 Hz. A compact C/F/L set covers both countries.",
+    "problem_dates": [
+      {
+        "dates": "2027-06",
+        "place": "Chamonix",
+        "note": "Early summer is high season in the valley. Lodging books out; this is why the unbooked stays are on BOOK FIRST."
+      }
+    ],
+    "sources": [
+      "https://www.gov.uk/foreign-travel-advice (re-check at planning time)"
+    ],
+    "as_of": "2026-11-13",
+    "notes": "Illustrative research for a fictional sample trip."
+  }
+}

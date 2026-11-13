@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decisions.schema.json",
+  "type": "object",
+  "required": [
+    "decisions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "headline": {
+            "type": "string"
+          },
+          "lede": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "recommended": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "options": {
+            "type": "array"
+          },
+          "chart_caption": {
+            "type": "string"
+          },
+          "card_html_note": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

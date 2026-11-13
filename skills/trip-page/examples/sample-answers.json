@@ -1,0 +1,117 @@
+{
+  "title": "Lisbon long weekend",
+  "subtitle": "Three nights in Lisbon",
+  "trip_type": "city-break",
+  "language": "en",
+  "dir": "ltr",
+  "currency": "USD",
+  "locale": "en-US",
+  "home_tz": "America/New_York",
+  "departure_city": "Boston",
+  "departure_airport": "BOS",
+  "travelers": [
+    {
+      "name": "Maya Chen",
+      "booking_name": "MAYA CHEN",
+      "age": 34,
+      "child": false,
+      "passport": "US",
+      "dietary": ["vegetarian"]
+    },
+    {
+      "name": "Jordan Chen",
+      "booking_name": "JORDAN CHEN",
+      "age": 36,
+      "child": false,
+      "passport": "US",
+      "dietary": []
+    }
+  ],
+  "dietary_note": "Maya is vegetarian. Jordan has no restrictions. diet_fit is judged against the union (vegetarian).",
+  "dates": {
+    "start": "2027-04-16",
+    "end": "2027-04-19",
+    "flexible": false,
+    "approx_nights": 3
+  },
+  "destinations": [
+    {
+      "id": "lisbon",
+      "country": "portugal",
+      "name": "Lisbon",
+      "certainty": "sure",
+      "coords": { "lat": 38.7223, "lng": -9.1393, "exact": false }
+    },
+    {
+      "id": "sintra",
+      "country": "portugal",
+      "name": "Sintra",
+      "certainty": "open",
+      "optional": true,
+      "nights": 0,
+      "dates": { "start": "2027-04-17", "end": "2027-04-17", "flexible": true }
+    }
+  ],
+  "countries": [
+    { "id": "portugal", "name": "Portugal", "currency": "EUR", "timezone": "Europe/Lisbon", "utc_offset": "UTC+1" }
+  ],
+  "already_booked": [
+    {
+      "id": "tap-outbound",
+      "kind": "flight",
+      "title": "Boston – Lisbon (TAP)",
+      "status": "booked",
+      "carrier": "TAP Air Portugal",
+      "number": "TP216",
+      "from": "BOS",
+      "to": "LIS",
+      "from_id": "home",
+      "to_id": "lisbon",
+      "depart_at": "2027-04-16T16:40:00-04:00",
+      "arrive_at": "2027-04-17T05:05:00+01:00",
+      "boundary": true,
+      "amount": 740,
+      "currency": "USD",
+      "notes": "Round-trip paid together. Confirmation is in inbox/."
+    },
+    {
+      "id": "tap-return",
+      "kind": "flight",
+      "title": "Lisbon – Boston (TAP)",
+      "status": "booked",
+      "carrier": "TAP Air Portugal",
+      "number": "TP217",
+      "from": "LIS",
+      "to": "BOS",
+      "from_id": "lisbon",
+      "to_id": "home",
+      "depart_at": "2027-04-19T11:20:00+01:00",
+      "arrive_at": "2027-04-19T14:15:00-04:00",
+      "boundary": true,
+      "notes": "Return half of the same ticket."
+    },
+    {
+      "id": "alfama-house",
+      "kind": "hotel",
+      "title": "Alfama House (sample hotel)",
+      "status": "booked",
+      "destination_id": "lisbon",
+      "amount": 540,
+      "currency": "EUR",
+      "notes": "Three nights, double room. Confirmation in inbox/."
+    }
+  ],
+  "already_booked_notes": "Outbound and return TAP flights and the Lisbon stay are booked. Confirmations can be dropped into inbox/.",
+  "budget": {
+    "total": 2500,
+    "level": "mid",
+    "currency": "USD",
+    "notes": "Flights and hotel already paid; remainder is food, transit and a day trip."
+  },
+  "preferences": {
+    "priorities": ["food", "culture", "walking"],
+    "pace": { "style": "few_in_depth", "hotel_changes": "one hotel for the whole stay", "notes": "Happy to base in Lisbon and day-trip." },
+    "lodging": { "types": ["hotel", "boutique"], "bed": "double" },
+    "transport": { "rental_car": false, "trains": true, "taxis_only": false, "notes": "Walk, metro, and trains. No rental car." }
+  }
+}

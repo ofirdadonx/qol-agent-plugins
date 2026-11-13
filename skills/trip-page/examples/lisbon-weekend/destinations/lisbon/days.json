@@ -1,0 +1,36 @@
+{
+  "days": [
+    {
+      "date": "2027-04-16",
+      "weekday": "Friday",
+      "title": "Overnight flight",
+      "body": "Depart Boston in the afternoon. In the air overnight.",
+      "destination_id": "lisbon",
+      "transfer_id": "flight-tap-outbound"
+    },
+    {
+      "date": "2027-04-17",
+      "weekday": "Saturday",
+      "title": "Arrive and walk Alfama",
+      "body": "Early landing, drop bags, walk the neighbourhood, dinner at Casa Amarelo.",
+      "destination_id": "lisbon"
+    },
+    {
+      "date": "2027-04-18",
+      "weekday": "Sunday",
+      "title": "Optional Sintra day",
+      "body": "If Sintra is confirmed, morning train and a palaces walk. Otherwise a slow Lisbon day and the riverfront.",
+      "destination_id": "lisbon",
+      "optional": true,
+      "undecided": true
+    },
+    {
+      "date": "2027-04-19",
+      "weekday": "Monday",
+      "title": "Morning in the city, afternoon flight home",
+      "body": "Checkout at 11:00. Flight TP217 around midday.",
+      "destination_id": "lisbon",
+      "transfer_id": "flight-tap-return"
+    }
+  ]
+}

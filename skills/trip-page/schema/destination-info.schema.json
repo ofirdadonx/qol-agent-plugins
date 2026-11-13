@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "destination-info.schema.json",
+  "title": "Destination stay, arrival, weather and notes",
+  "type": "object",
+  "required": [
+    "id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "stay_booking_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stay_label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stay_status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary_transfer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "local_address": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Address in the local script, for a taxi card."
+    },
+    "local_address_latin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nav_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "checkin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "checkout": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "arrival": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "weather": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "food_notes": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "season_note": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Extra labelled blocks (hotel details, station-to-hotel, etc.)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "heading": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "html": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "recs_intro": {
+      "type": "string"
+    }
+  }
+}

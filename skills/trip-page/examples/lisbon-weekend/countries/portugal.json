@@ -1,0 +1,98 @@
+{
+  "id": "portugal",
+  "name": {
+    "en": "Portugal"
+  },
+  "badge": "portugal",
+  "timezone": "Europe/Lisbon",
+  "utc_offset": "UTC+1",
+  "hours_ahead_of_home": null,
+  "currency": "EUR",
+  "practical_headline": "Practical notes",
+  "practical_lede": "Sample reminders for a short stay in Lisbon.",
+  "practical": [
+    {
+      "label": "Getting in",
+      "body": "The metro and aerobus both reach the centre from LIS. The sample hotel is in Alfama; a taxi or ride-hail is the simpler late-night option after an overnight flight."
+    },
+    {
+      "label": "Money",
+      "body": "Euro. Cards are widely accepted; keep a little cash for small cafés and trams."
+    }
+  ],
+  "emergency": [
+    {
+      "label": "Emergency",
+      "number": "112",
+      "tel": "112"
+    }
+  ],
+  "embassy": {
+    "name": "",
+    "url": "",
+    "address": "",
+    "phone": "",
+    "phone_emergency": "",
+    "email": "",
+    "source": ""
+  },
+  "phrases": {
+    "headline": "A few useful phrases",
+    "intro": [
+      "Portuguese is the local language. English is widely spoken in central Lisbon."
+    ],
+    "groups": [
+      {
+        "id": "greetings",
+        "label": "Basics",
+        "language_label": "Portuguese",
+        "items": [
+          {
+            "text": "Olá",
+            "romanization": "oh-LAH",
+            "meaning": "Hello",
+            "lang": "pt"
+          },
+          {
+            "text": "Por favor",
+            "romanization": "poor fah-VOR",
+            "meaning": "Please",
+            "lang": "pt"
+          },
+          {
+            "text": "Uma refeição vegetariana, por favor.",
+            "meaning": "A vegetarian meal, please.",
+            "lang": "pt"
+          }
+        ]
+      }
+    ]
+  },
+  "entry_docs": {
+    "headline": "Entry and practical checks",
+    "lede": "Copied from the party's entry_checks for this sample. Re-check official sources.",
+    "items": [
+      "Visa (sample, US passports): visa exemption is typical for a short tourism stay in Schengen, but confirm on official government pages.",
+      "Passport: Schengen entry often requires validity for at least three months beyond departure from the area. Re-check the current rule.",
+      "Power: Type C and Type F sockets, 230 V / 50 Hz. A Type C or F adapter is enough for typical US dual-voltage chargers."
+    ]
+  },
+  "packing": {
+    "headline": "Packing",
+    "lede": "",
+    "callout": "Type C or F power adapter. Light rain layer for April.",
+    "items": [
+      "Type C/F adapter",
+      "Comfortable walking shoes",
+      "Light rain jacket"
+    ]
+  },
+  "climate": "Mid-April in Lisbon is usually mild (mid-teens °C), with a chance of showers. Pack a light layer.",
+  "transport_notes": "Walk, metro, and trains. No rental car for this sample.",
+  "act_label": "Portugal · 3 nights",
+  "timeline_headline": "Lisbon days",
+  "timeline_lede": "",
+  "journal_act": "",
+  "journal_headline": "Journal",
+  "journal_lede": ""
+}

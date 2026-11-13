@@ -1,0 +1,34 @@
+{
+  "id": "sintra",
+  "stay_booking_id": null,
+  "stay_label": null,
+  "stay_status": "open",
+  "summary_transfer": null,
+  "local_address": null,
+  "local_address_latin": null,
+  "phone": null,
+  "nav_url": null,
+  "checkin": null,
+  "checkout": null,
+  "arrival": {
+    "title": "",
+    "status": "open",
+    "items": []
+  },
+  "weather": {
+    "title": "",
+    "source": "",
+    "items": []
+  },
+  "food_notes": {
+    "title": "",
+    "source": "",
+    "items": []
+  },
+  "season_note": "Optional day trip from Lisbon, not a separate overnight. Sample only.",
+  "notes": [
+    "Still open — decide whether to go on 18 April."
+  ],
+  "blocks": [],
+  "recs_intro": ""
+}

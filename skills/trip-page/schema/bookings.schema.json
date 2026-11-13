@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bookings.schema.json",
+  "title": "Bookings — single source of truth for status, price and cancel deadline",
+  "type": "object",
+  "required": [
+    "bookings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "bookings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "title",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "flight",
+              "hotel",
+              "train",
+              "ferry",
+              "bus",
+              "car",
+              "activity",
+              "insurance",
+              "other"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "booked",
+              "open",
+              "optional"
+            ]
+          },
+          "price": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "amount": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "amount_min": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "amount_max": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "currency": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "cancel_deadline": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "charge_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "confirmation_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confirmation_link": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Drive or Gmail search link; never an embedded PDF."
+          },
+          "manage_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "checkin_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "checkin_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "carrier": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cabin": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "seats": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "party": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "destination_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Free-form labelled rows for the booking card."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+# Third-party notices
+
+The default template vendors the following libraries and fonts. They keep their own licenses, which are included here by name. Upstream copies live under `templates/default/vendor/`.
+
+- **Leaflet** 1.9.4 — BSD-2-Clause. https://leafletjs.com/
+- **Chart.js** 4.4.1 — MIT. https://www.chartjs.org/
+- **Phosphor Icons** 2.1.1 (Duotone subset) — MIT. https://phosphoricons.com/
+- **Inter** — SIL Open Font License 1.1. https://rsms.me/inter/
+- **Assistant** — SIL Open Font License 1.1.
+
+Map tiles in the default template are requested from OpenStreetMap.de (`tile.openstreetmap.de`). Follow the OpenStreetMap tile-usage policy and the attribution already in `trip.json` → `map.attribution`. A simple SVG (or HTML) fallback can be supplied as `map.fallback_svg` for environments where tiles are blocked (for example a `file://` page with no Referer).
+
+This skill's own code and documentation are covered by the repository MIT license.

@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "places.schema.json",
+  "title": "Places in a destination file (food.json, sights.json, shopping.json, daytrips.json)",
+  "type": "object",
+  "required": [
+    "places"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "group_heading": {
+      "type": "string"
+    },
+    "places": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "url",
+          "last_verified",
+          "hours",
+          "price_range",
+          "diet_fit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "minProperties": 1,
+            "description": "Localized strings. Keys are language codes (en, pt, he, …) and optionally 'local' for a local-script form. Include at least the trip's language; 'en' is a useful fallback.",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": {
+            "type": "string"
+          },
+          "area": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "order": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maps_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "href": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "href"
+              ]
+            }
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Primary link. Empty if unknown — validator warns."
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "href": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "href"
+              ]
+            }
+          },
+          "last_verified": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "ISO date. Empty if unknown — validator warns."
+          },
+          "hours": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Opening hours. Empty if unknown — validator warns."
+          },
+          "price_range": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "diet_fit": {
+            "description": "Whether this place suits the party's combined dietary restrictions (the union of travelers[].dietary). Null or missing status is a warning when any traveler has restrictions. not_ok is also a warning; the build can omit those places. The note should explain the judgment.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "ok",
+                  "caution",
+                  "not_ok",
+                  null
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "optional": {
+            "type": "boolean"
+          },
+          "caution": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type_label": {
+            "type": "string"
+          },
+          "reservation": {
+            "description": "Whether this restaurant, sight or day trip needs a booking, how to make it, and whether it is already booked. Shopping places may omit this. 'unknown' means not yet researched and is a validation warning. After research, use required, recommended, or walk_in.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "need": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "required",
+                  "recommended",
+                  "walk_in",
+                  "unknown",
+                  null
+                ]
+              },
+              "how": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "website",
+                      "app",
+                      "phone",
+                      "hotel_concierge",
+                      "at_door",
+                      "ticket_online",
+                      null
+                    ]
+                  },
+                  "url": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "app_name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "lead_time": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Human-readable lead time, e.g. '2 weeks' or 'opens 30 days ahead at 10:00 local'."
+              },
+              "book_by": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "description": "Last recommended date to book. May be derived from lead_time and planned_day."
+              },
+              "booked": {
+                "description": "true, false, or a booking id that refers to bookings.json.",
+                "type": [
+                  "boolean",
+                  "string",
+                  "null"
+                ]
+              },
+              "notes": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "planned_day": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "The day this place is planned for, used to derive book_by from lead_time."
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Archive path under sources/ (or a URL) for the original inbox item."
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Original URL, if the inbox item was a link."
+          },
+          "added_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Traveler who contributed this place, if known."
+          },
+          "added_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "raw_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Original note or caption from the inbox item, kept for context."
+          }
+        }
+      }
+    }
+  }
+}
