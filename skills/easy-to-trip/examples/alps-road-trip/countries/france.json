@@ -51,5 +51,38 @@
   "timeline_lede": "",
   "journal_act": "",
   "journal_headline": "",
-  "journal_lede": ""
+  "journal_lede": "",
+  "color": "#002395",
+  "color_2": "#1a3a6b",
+  "tint": "rgba(0,35,149,.10)",
+  "mesh": "rgba(0,35,149,.14)",
+  "flag": {
+    "label": "Flag of France",
+    "shapes": [
+      {
+        "type": "rect",
+        "fill": "#002395",
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#efece6",
+        "x": 300,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#ED2939",
+        "x": 600,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      }
+    ]
+  }
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2
+
+- The default template is the v2 glass design: a sticky two-row glass nav with scrollspy, calm mesh washes, inline SVG country flags, a desktop instrument panel, hairline stays that expand in place, nearly-sharp ticket frames, and glass section cards. The previous design is still available as `--template classic`.
+- Country `flag`, `color`, `color_2`, `tint` and `mesh` fields (optional) drive flags, region colours and the background mesh. Nothing in the template is hard-coded to a country.
+- `--template default|classic` selects the renderer and the vendor assets.
+
 ## v1.1
 
 - Renamed the skill from `trip-page` to `easy-to-trip`. The public name lives in `scripts/skill_meta.py` so it is easy to change again.

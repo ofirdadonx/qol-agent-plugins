@@ -51,5 +51,38 @@
   "timeline_lede": "",
   "journal_act": "",
   "journal_headline": "",
-  "journal_lede": ""
+  "journal_lede": "",
+  "color": "#0d5a3a",
+  "color_2": "#CE2B37",
+  "tint": "rgba(13,90,58,.10)",
+  "mesh": "rgba(13,90,58,.14)",
+  "flag": {
+    "label": "Flag of Italy",
+    "shapes": [
+      {
+        "type": "rect",
+        "fill": "#009246",
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#efece6",
+        "x": 300,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#CE2B37",
+        "x": 600,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      }
+    ]
+  }
 }

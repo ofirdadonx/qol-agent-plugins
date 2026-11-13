@@ -121,5 +121,16 @@
   "optional_undecided": "אופציונלי · טרם הוחלט",
   "at_a_glance": "הטיול במבט אחד",
   "checkin_on_site": "צ׳ק-אין באתר",
-  "transfer": "מעבר"
+  "transfer": "מעבר",
+  "axis": "הציר",
+  "no_amount": "אין סכום במסמך",
+  "before_depart": "לפני ההמראה",
+  "dock_access": "גישה",
+  "dock_itinerary": "מסלול",
+  "instruments": "לוח מכשירים",
+  "closed_booked": "סגור",
+  "still_open": "עדיין לבחירה",
+  "nights_chart_empty": "אין חלוקת לילות במסמך",
+  "sections": "מדורי העמוד",
+  "dock_map": "מפה"
 }

@@ -121,5 +121,16 @@
   "optional_undecided": "Optional · not yet decided",
   "at_a_glance": "The trip at a glance",
   "checkin_on_site": "Check in on the carrier site",
-  "transfer": "Transfer"
+  "transfer": "Transfer",
+  "axis": "Itinerary",
+  "no_amount": "No amount in the document",
+  "before_depart": "Before departure",
+  "dock_access": "Access",
+  "dock_itinerary": "Route",
+  "instruments": "Trip instruments",
+  "closed_booked": "Booked",
+  "still_open": "still to decide",
+  "nights_chart_empty": "No night breakdown in the document",
+  "sections": "Page sections",
+  "dock_map": "Map"
 }

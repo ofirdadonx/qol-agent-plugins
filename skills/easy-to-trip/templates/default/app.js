@@ -315,16 +315,41 @@ if(pb)pb.onclick=openPanel;if(pc)pc.onclick=closePanel;if(sc)sc.onclick=closePan
 $$('#panel a').forEach(a=>a.addEventListener('click',closePanel));
 addEventListener('keydown',e=>{if(e.key==='Escape'){closePanel();if(typeof closePocket==='function')closePocket();if(typeof closeAllStops==='function')closeAllStops();}});
 
-const chips=$$('.chip');
-addEventListener('scroll',()=>{const h=document.documentElement;const pr=$('#prog');if(pr)pr.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'},{passive:true});
+const chips=[...$$('.nav-bar a[href^="#"]'),...$$('.chip')];
+function syncNav(){
+  const h=document.documentElement;
+  const pr=$('#prog');
+  if(pr)pr.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+  const mid=Math.min(160, 80+(document.querySelector('header.top')?.offsetHeight||100));
+  let current=null;
+  for(const c of chips){
+    const id=(c.getAttribute('href')||'').slice(1);
+    const el=id&&document.getElementById(id);
+    if(!el)continue;
+    const r=el.getBoundingClientRect();
+    if(r.top<=mid && r.bottom>mid){current=id;break;}
+  }
+  if(!current && window.scrollY<120){
+    current=((chips[0]&&chips[0].getAttribute('href'))||'#overview').slice(1);
+  }
+  if(current){
+    chips.forEach(c=>c.classList.toggle('on',c.getAttribute('href')==='#'+current));
+    const on=chips.find(c=>c.classList.contains('on'));
+    on&&on.scrollIntoView({block:'nearest',inline:'center'});
+    $$('.dock a[href^="#"]').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+current));
+  }
+}
+addEventListener('scroll',syncNav,{passive:true});
 if('IntersectionObserver' in window){
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){chips.forEach(c=>c.classList.toggle('on',c.getAttribute('href')==='#'+e.target.id));
-    const on=chips.find(c=>c.classList.contains('on'));on&&on.scrollIntoView({block:'nearest',inline:'center'})}}),{rootMargin:'-45% 0px -50% 0px'});
-  $$('section[id]').forEach(s=>io.observe(s));
   const rio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');rio.unobserve(e.target)}}),{threshold:.12});
   $$('.rv').forEach((el,i)=>{el.style.transitionDelay=(i%4)*60+'ms';(reduce||qs.has('static'))?el.classList.add('in'):rio.observe(el)});
 }
-setTheme(theme);if(chips[0])chips[0].classList.add('on');
+setTheme(theme);
+syncNav();
+
+const dockToday=$('#dockToday'),dockPocket=$('#dockPocket');
+if(dockToday)dockToday.addEventListener('click',()=>{if(typeof jumpToToday==='function')jumpToToday();});
+if(dockPocket)dockPocket.addEventListener('click',()=>{if($('#pocket')?.classList.contains('on')){if(typeof closePocket==='function')closePocket();}else{if(typeof openPocket==='function'){openPocket();if(typeof pocketTab==='function')pocketTab(typeof inferPocketTab==='function'?inferPocketTab():'trip');}}});
 
 /* deadlines */
 /* Count calendar days in the deadline's own timezone (from the ISO offset

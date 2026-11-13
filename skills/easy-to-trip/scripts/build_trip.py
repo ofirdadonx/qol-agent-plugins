@@ -13,13 +13,18 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from trip_lib import validate_trip, party_dietary, book_first  # noqa: E402
-from render import render_page  # noqa: E402
 from skill_meta import SKILL_NAME  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-VENDOR = ROOT / "templates" / "default" / "vendor"
-APP_JS = ROOT / "templates" / "default" / "app.js"
 QA = ROOT.parent / "topic-to-html" / "scripts" / "qa_check.py"
+
+
+def template_dir(name: str) -> Path:
+    d = ROOT / "templates" / name
+    if not d.is_dir():
+        raise SystemExit(f"Unknown template {name!r}. Available: " +
+                         ", ".join(sorted(p.name for p in (ROOT / "templates").iterdir() if p.is_dir())))
+    return d
 
 # Opt-in only, via --target drive (or --max-chars / --max-bytes).
 DRIVE_CHAR_LIMIT = 1_000_000
@@ -33,6 +38,7 @@ CSS_FILES = (
     "fonts.css",
     "phosphor.css",
     "leaflet.css",
+    "v2.css",
 )
 JS_FILES = ("leaflet.js", "chart.js")
 FONT_SUFFIXES = {".woff", ".woff2", ".ttf", ".otf", ".eot"}
@@ -281,6 +287,11 @@ def main(argv=None):
              "In --mode site this is the site folder.",
     )
     p.add_argument(
+        "--template", default="default",
+        help="Template folder under templates/. 'default' is the current design; "
+             "'classic' is the previous self-contained template.",
+    )
+    p.add_argument(
         "--mode", choices=["single", "site"], default="single",
         help="single: one self-contained offline HTML file (default). "
              "site: a folder with index.html, separate cacheable assets "
@@ -316,6 +327,17 @@ def main(argv=None):
         if args.out is None:
             args.out = args.site
 
+    global VENDOR, APP_JS
+    tdir = template_dir(args.template)
+    VENDOR = tdir / "vendor"
+    APP_JS = tdir / "app.js"
+
+    # Classic template keeps the pre-redesign renderer.
+    if args.template == "classic":
+        from render_classic import render_page as _render
+    else:
+        from render import render_page as _render
+
     as_of = date.fromisoformat(args.as_of) if args.as_of else date.today()
     result = validate_trip(
         args.data_dir, as_of=as_of,
@@ -346,7 +368,7 @@ def main(argv=None):
         print("Build aborted: fix the errors above.")
         return 1
 
-    body, meta = render_page(result["data"], exclude_not_ok=args.exclude_not_ok)
+    body, meta = _render(result["data"], exclude_not_ok=args.exclude_not_ok)
     max_chars, max_bytes = resolve_caps(args)
 
     if args.mode == "site":

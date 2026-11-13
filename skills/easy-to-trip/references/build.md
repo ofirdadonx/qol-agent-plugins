@@ -64,6 +64,12 @@ There is **no** default character or byte limit.
 
 `--target drive` applies to the assembled HTML (`trip.html` in single mode, `index.html` in site mode). Site-mode `index.html` is typically small because assets sit next to it, so a Drive cap is rarely relevant there — Drive itself wants a single HTML file, which is `--mode single --target drive`.
 
+## Templates
+
+`--template default` (the default) uses `templates/default/` and `scripts/render.py`: the v2 glass page (sticky glass nav, mesh washes, flags, instrument panel, hairline stays, ticket slips). `--template classic` uses `templates/classic/` and `scripts/render_classic.py`, the previous design.
+
+Country colours and flags are not in the template. Put them on each country file (`color`, `color_2`, `tint`, `mesh`, and a `flag` of SVG shapes). The build writes them into a `#trip-theme` stylesheet and inline SVGs. Mesh washes use `--mesh-0` … `--mesh-2` from those colours.
+
 ## Other flags
 
 `--exclude-not-ok` omits places whose `diet_fit` is `not_ok`. `--no-qa` skips the sibling `topic-to-html` `qa_check.py` when that script is present. `--as-of`, `--stale-months`, and `--book-by-days` are passed through to validation.

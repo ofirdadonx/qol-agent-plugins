@@ -107,5 +107,29 @@
   "timeline_lede": "",
   "journal_act": "",
   "journal_headline": "Journal",
-  "journal_lede": ""
+  "journal_lede": "",
+  "color": "#8a2e4e",
+  "color_2": "#343a7a",
+  "tint": "rgba(138,46,78,.10)",
+  "mesh": "rgba(138,46,78,.16)",
+  "flag": {
+    "label": "Flag of Japan",
+    "shapes": [
+      {
+        "type": "rect",
+        "fill": "#efece6",
+        "x": 0,
+        "y": 0,
+        "width": 900,
+        "height": 600
+      },
+      {
+        "type": "circle",
+        "fill": "#BC002D",
+        "cx": 450,
+        "cy": 300,
+        "r": 180
+      }
+    ]
+  }
 }

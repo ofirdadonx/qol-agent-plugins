@@ -240,6 +240,86 @@
           }
         }
       }
+    },
+    "color": {
+      "type": "string",
+      "description": "Accent color for this country (CSS color). Used for the region rail, display type and mesh."
+    },
+    "color_2": {
+      "type": "string",
+      "description": "Secondary accent (CSS color)."
+    },
+    "accent": {
+      "type": "string",
+      "description": "Optional third accent, e.g. a gold for optional/dashed marks."
+    },
+    "tint": {
+      "type": "string",
+      "description": "Translucent tint of the accent (CSS color)."
+    },
+    "mesh": {
+      "type": "string",
+      "description": "Mesh-wash color for the page background (CSS color, typically translucent)."
+    },
+    "flag": {
+      "type": "object",
+      "description": "Inline SVG flag, drawn from simple shapes. Off-white fills should use a grey such as #efece6, never pure #fff.",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Accessible name, e.g. Flag of Japan."
+        },
+        "shapes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "rect",
+                  "circle",
+                  "stripe",
+                  "path"
+                ]
+              },
+              "fill": {
+                "type": "string"
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              },
+              "cx": {
+                "type": "number"
+              },
+              "cy": {
+                "type": "number"
+              },
+              "r": {
+                "type": "number"
+              },
+              "d": {
+                "type": "string",
+                "description": "SVG path data when type is path."
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

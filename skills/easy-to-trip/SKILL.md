@@ -80,7 +80,10 @@ A **by location** button uses the phone's GPS **only on a user tap**, and only w
 - `--site <dir>` is a deprecated alias for `--mode site -o DIR`.
 - Region colours are `--region-0` … `--region-5`, assigned in destination order — not hard-coded to any country.
 - Transfer rows sit on the timeline (outbound at the start of the first country; a `boundary` leg that leaves country A is rendered at the **end of A**).
-- The default template is a starting point and can be swapped when a new design is approved. UI strings live in `templates/default/ui/<lang>.json` (English is the fallback).
+- **`--template default`** (the default): the v2 glass design — a single scrolling page, a sticky glass nav with scrollspy, calm mesh washes, country flags as inline SVG, and glass on the nav, instrument panel, section cards and tickets. Stays are hairline rows that expand in place (320ms ease-out). The live map is Leaflet. Dark mode, the countdown, the journal, recommendations, the pocket sheet, today-mode and the https-only GPS button are all included.
+- **`--template classic`** keeps the previous self-contained design.
+- Flags, mesh washes and region colours come from each country in the trip data (`flag`, `color`, `color_2`, `tint`, `mesh` on the country schema). The template does not hard-code any country. Flag fields that stand in for white should use a light grey (for example `#efece6`), never `#fff`.
+- UI strings live in `templates/<name>/ui/<lang>.json` (English is the fallback).
 - Sibling `topic-to-html` `qa_check.py` runs when present.
 
 ## Scripts
@@ -89,7 +92,7 @@ A **by location** button uses the phone's GPS **only on a user tap**, and only w
 |---|---|
 | `scripts/init_trip.py` | Create the folder tree. Prefer `--from answers.json`. |
 | `scripts/validate_trip.py` | Schemas, refs, dates, secrets, freshness, reservations, inbox, **gaps**, **BOOK FIRST**. `--json`, `--as-of`, `--stale-months`, `--book-by-days`. |
-| `scripts/build_trip.py` | Validate, then assemble HTML. `--mode single|site`, `--target drive`, `--max-chars` / `--max-bytes`, `--exclude-not-ok`, `--allow-oversize`, `--no-qa`. |
+| `scripts/build_trip.py` | Validate, then assemble HTML. `--template default|classic`, `--mode single|site`, `--target drive`, `--max-chars` / `--max-bytes`, `--exclude-not-ok`, `--allow-oversize`, `--no-qa`. |
 | `scripts/inbox_status.py` | List pending and unresolved inbox files. |
 | `scripts/archive_inbox.py` | Move one inbox file to `sources/` and print the archive path. |
 | `scripts/render.py`, `scripts/trip_lib.py` | Shared render and validation library (not usually invoked directly). |

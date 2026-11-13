@@ -22,6 +22,228 @@ ROOT = Path(__file__).resolve().parent.parent
 UI_DIR = ROOT / "templates" / "default" / "ui"
 
 REGION_COLORS = ["#7a3b4a", "#1f6f68", "#3d4d7a", "#8a5a28", "#4a6b3c", "#6b3d6a"]
+
+
+def region_color(country, region_i) -> str:
+    c = (country or {}).get("color")
+    if c:
+        return str(c)
+    return REGION_COLORS[region_i % len(REGION_COLORS)]
+
+
+_COLOR_OK = re.compile(
+    r"^(#[0-9A-Fa-f]{3,8}|rgba?\([^;{}]+\)|color-mix\([^;{}]+\)|var\([^;{}]+\)|[a-zA-Z][a-zA-Z0-9-]*)$"
+)
+
+
+def safe_css_color(value, fallback=""):
+    s = (value or "").strip()
+    if s and _COLOR_OK.match(s):
+        return s
+    return fallback
+
+
+_HE_WD_SHORT = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"]
+_EN_WD_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+_HE_MON_SHORT = {
+    1: "ינו׳", 2: "פבר׳", 3: "מרץ", 4: "אפר׳", 5: "מאי", 6: "יונ׳",
+    7: "יול׳", 8: "אוג׳", 9: "ספט׳", 10: "אוק׳", 11: "נוב׳", 12: "דצמ׳",
+}
+_EN_MON_SHORT = {
+    1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun",
+    7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec",
+}
+
+
+def parse_iso_date(raw):
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(str(raw)[:10])
+    except ValueError:
+        return None
+
+
+def date_col(raw, lang, extra="") -> str:
+    d = parse_iso_date(raw)
+    if not d:
+        return f'<div class="date">{extra}</div>'
+    he = (lang or "").startswith("he")
+    wd = (_HE_WD_SHORT if he else _EN_WD_SHORT)[d.weekday()]
+    mon = (_HE_MON_SHORT if he else _EN_MON_SHORT)[d.month]
+    return (
+        f'<div class="date">{extra}'
+        f'<div class="d tnum">{d.day}</div>'
+        f'<div class="w">{esc(wd)}</div>'
+        f'<div class="mon">{esc(mon)}</div></div>'
+    )
+
+
+def format_span(start, end) -> str:
+    a, b = parse_iso_date(start), parse_iso_date(end)
+    if not a and not b:
+        return ""
+    if a and not b:
+        return f"{a.day:02d}.{a.month:02d}.{a.year}"
+    if b and not a:
+        return f"{b.day:02d}.{b.month:02d}.{b.year}"
+    if a.year == b.year:
+        return f"{a.day:02d}.{a.month:02d}–{b.day:02d}.{b.month:02d}.{b.year}"
+    return f"{a.day:02d}.{a.month:02d}.{a.year}–{b.day:02d}.{b.month:02d}.{b.year}"
+
+
+def dest_nights(d) -> int:
+    if d.get("nights") is not None:
+        return int(d["nights"])
+    a = parse_iso_date((d.get("dates") or {}).get("start"))
+    b = parse_iso_date((d.get("dates") or {}).get("end"))
+    if a and b:
+        return max(0, (b - a).days)
+    if d.get("nights_min") is not None:
+        return int(d["nights_min"])
+    return 0
+
+
+def mast_dates(trip) -> str:
+    dates = trip.get("dates") or {}
+    return format_span(dates.get("start"), dates.get("end"))
+
+
+def party_label(data, lang) -> str:
+    names = []
+    for t in data["trip"].get("travelers") or []:
+        n = (t.get("name") or "").strip()
+        if n:
+            names.append(n.split()[0])
+    if not names:
+        return ""
+    if (lang or "").startswith("he") and len(names) >= 2:
+        return names[0] + " ו" + " ו".join(names[1:])
+    return " · ".join(names)
+
+
+def render_flag(country, size="sm") -> str:
+    flag = (country or {}).get("flag") or {}
+    shapes = flag.get("shapes") or []
+    if not shapes:
+        return ""
+    parts = [
+        '<svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" '
+        'focusable="false" aria-hidden="true">'
+    ]
+    for s in shapes:
+        kind = s.get("type") or "rect"
+        fill = safe_css_color(s.get("fill"), "#efece6")
+        if kind in ("rect", "stripe"):
+            x = s.get("x", 0)
+            y = s.get("y", 0)
+            w = s.get("width", 900)
+            h = s.get("height", 600 if kind == "rect" else 0)
+            parts.append(
+                f'<rect x="{esc(x)}" y="{esc(y)}" width="{esc(w)}" height="{esc(h)}" fill="{esc(fill)}"/>'
+            )
+        elif kind == "circle":
+            parts.append(
+                f'<circle cx="{esc(s.get("cx", 450))}" cy="{esc(s.get("cy", 300))}" '
+                f'r="{esc(s.get("r", 180))}" fill="{esc(fill)}"/>'
+            )
+        elif kind == "path" and s.get("d"):
+            parts.append(f'<path d="{esc(s["d"])}" fill="{esc(fill)}"/>')
+    parts.append("</svg>")
+    label = flag.get("label") or loc((country or {}).get("name"), "en") or (country or {}).get("id") or ""
+    cls = "flag lg" if size == "lg" else "flag"
+    return (
+        f'<span class="{cls}" title="{esc(label)}" aria-label="{esc(label)}">'
+        + "".join(parts)
+        + "</span>"
+    )
+
+
+def theme_style(data) -> str:
+    countries = country_list(data)
+    rules = []
+    meshes = []
+    for i, c in enumerate(countries):
+        color = safe_css_color(region_color(c, i), REGION_COLORS[i % len(REGION_COLORS)])
+        color2 = safe_css_color(c.get("color_2"), color)
+        tint = safe_css_color(c.get("tint"), f"color-mix(in srgb,{color} 10%, transparent)")
+        accent = safe_css_color(c.get("accent"), color2)
+        rules += [
+            f"--region-{i}:{color}",
+            f"--region-{i}-2:{color2}",
+            f"--region-{i}-tint:{tint}",
+            f"--region-{i}-accent:{accent}",
+        ]
+        mesh = safe_css_color(c.get("mesh"), f"color-mix(in srgb,{color} 16%, transparent)")
+        meshes.append(mesh)
+    while len(meshes) < 3:
+        meshes.append("rgba(80,76,72,.08)")
+    for i, m in enumerate(meshes[:3]):
+        rules.append(f"--mesh-{i}:{m}")
+    css = ":root{" + ";".join(rules) + "}"
+    return f'<style id="trip-theme">{css}</style>'
+
+
+def transfer_date(data, x):
+    for key in ("date", "depart_date", "start", "on"):
+        if x.get(key):
+            return x[key]
+    b = booking_by_id(data, x.get("booking_id")) if x.get("booking_id") else None
+    if b:
+        for key in ("depart_at", "departure_at", "start", "date"):
+            if b.get(key):
+                return b[key]
+    lab = x.get("date_label") or ""
+    m = re.search(r"(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?", lab)
+    if m:
+        year_s = m.group(3)
+        if not year_s:
+            year_s = str(((data.get("trip") or {}).get("dates") or {}).get("start") or "2026")[:4]
+        try:
+            return date(int(year_s), int(m.group(2)), int(m.group(1))).isoformat()
+        except ValueError:
+            pass
+    return None
+
+
+def country_span_and_nights(data, country, lang, ui):
+    cid = country["id"]
+    dests = [d for d in data["trip"]["destinations"] if d.get("country") == cid]
+    starts, ends = [], []
+    leading, after, trailing = transfers_in_country(data, cid)
+    for x in leading + trailing:
+        raw = transfer_date(data, x)
+        d = parse_iso_date(raw)
+        if d:
+            starts.append(d.isoformat())
+            ends.append(d.isoformat())
+    nights = 0
+    opt_nights = 0
+    opt_labels = []
+    for d in dests:
+        dates = d.get("dates") or {}
+        if dates.get("start"):
+            starts.append(dates["start"])
+        if dates.get("end"):
+            ends.append(dates["end"])
+        n = dest_nights(d)
+        if d.get("optional"):
+            opt_nights += n
+            if d.get("optional_label"):
+                opt_labels.append(d["optional_label"])
+        else:
+            nights += n
+    span = format_span(min(starts) if starts else None, max(ends) if ends else None)
+    tmpl = ui.get("nights_n") or "{n} nights"
+    nights_h = tmpl.replace("{n}", str(nights))
+    if opt_labels:
+        opt_h = " · ".join(opt_labels)
+    elif opt_nights:
+        opt_h = (ui.get("nights_optional") or "{n} optional nights").replace("{n}", str(opt_nights))
+    else:
+        opt_h = ""
+    return span, nights_h, opt_h, dests
+
 MODE_ICON = {
     "flight": "ph-airplane-tilt",
     "train": "ph-train",
@@ -275,19 +497,34 @@ def render_header(data, ui, lang) -> str:
     trip = data["trip"]
     chips = []
     for n in trip.get("nav") or []:
-        group = f"<small>{esc(n['group'])}</small> " if n.get("group") else ""
-        chips.append(f'<a class="chip" href="{esc(n["href"])}">{group}{esc(n["label"])}</a>')
+        chips.append(f'<a href="{esc(n["href"])}">{esc(n["label"])}</a>')
+    if not chips:
+        chips = [
+            f'<a href="#overview">{esc(ui.get("at_a_glance") or "Overview")}</a>',
+            f'<a href="#itinerary">{esc(ui.get("axis") or "Itinerary")}</a>',
+        ]
+    chips[0] = chips[0].replace("<a ", '<a class="on" ', 1)
     brand = trip.get("brand") or trip.get("title") or ""
+    flags = "".join(render_flag(c, "sm") for c in country_list(data))
+    flags_h = f'<span class="flags">{flags}</span>' if flags else ""
+    dates = mast_dates(trip)
+    dates_h = f'<div class="dates tnum" dir="ltr">{esc(dates)}</div>' if dates else ""
+    who = party_label(data, lang)
+    who_h = f'<div class="who">{esc(who)}</div>' if who else ""
     return (
-        '<div class="mesh" aria-hidden="true"><i></i><i></i><i></i><i></i></div>\n'
-        '<div class="noise" aria-hidden="true"></div>\n'
-        '<header class="topbar glass g-thick">\n'
-        f'  <span class="brand">{esc(brand)}</span>\n'
-        f'  <nav class="chips" aria-label="{esc(ui["contents"])}">{"".join(chips)}</nav>\n'
-        f'  <button type="button" class="jump-today press" id="jumpSearch" aria-label="{esc(ui["search_places"])}">{icon("ph-magnifying-glass")}<span> {esc(ui["search"])}</span></button>\n'
-        f'  <button type="button" class="jump-today press" id="jumpToday" aria-label="{esc(ui["today"])}">{icon("ph-calendar-check")}<span> {esc(ui["today"])}</span></button>\n'
-        f'  <button type="button" class="jump-today press" id="locateBtn" hidden aria-label="{esc(ui["locate_title"])}">{icon("ph-compass")}<span> {esc(ui["locate"])}</span></button>\n'
-        f'  <button class="iconbtn press" id="themeBtn" aria-label="{esc(ui["theme"])}">{icon("ph-moon-stars")}</button>\n'
+        '<header class="top glass g-thick">\n'
+        '  <div class="mast">\n'
+        f'    <div class="wordmark">{esc(brand)}{flags_h}</div>\n'
+        f'    {dates_h}\n'
+        f'    {who_h}\n'
+        '    <div class="mast-actions">\n'
+        f'      <button type="button" class="jump-today press" id="jumpSearch" aria-label="{esc(ui["search_places"])}">{icon("ph-magnifying-glass")}<span> {esc(ui["search"])}</span></button>\n'
+        f'      <button type="button" class="jump-today press" id="jumpToday" aria-label="{esc(ui["today"])}">{icon("ph-calendar-check")}<span> {esc(ui["today"])}</span></button>\n'
+        f'      <button type="button" class="jump-today press" id="locateBtn" hidden aria-label="{esc(ui["locate_title"])}">{icon("ph-compass")}<span> {esc(ui["locate"])}</span></button>\n'
+        f'      <button class="iconbtn press" id="themeBtn" aria-label="{esc(ui["theme"])}">{icon("ph-moon-stars")}</button>\n'
+        "    </div>\n"
+        "  </div>\n"
+        f'  <nav class="nav-bar" aria-label="{esc(ui.get("sections") or ui["contents"])}">{"".join(chips)}</nav>\n'
         '  <div class="progress" aria-hidden="true"><b id="prog"></b></div>\n'
         "</header>"
     )
@@ -358,78 +595,68 @@ def deadline_cards(data, ui, lang: str = "en") -> str:
 
 
 def render_overview(data, ui, lang) -> str:
-    trip = data["trip"]
-    kicker = trip.get("kicker") or trip.get("title") or ""
-    h1 = trip.get("headline") or trip.get("title") or ""
-    lede = trip.get("lede") or ""
-    tag = trip.get("tag")
-    tag_html = f'<span class="tag-feat">{icon("ph-heart")} {esc(tag)}</span>' if tag else ""
-    dep_h = countdown_caption(trip, ui)
-    kpis = []
-    for k in trip.get("kpis") or []:
-        kpis.append(
-            '<div class="kpi glass g-reg" style="padding:var(--s4)">'
-            f'<div class="lab">{esc(k.get("label") or "")}</div>'
-            f'<div class="n num" style="font-size:36px">{raw_ltr(str(k.get("value", "")))}</div>'
-            f'<div class="muted" style="font-size:13.5px">{raw_ltr(k.get("note") or "")}</div></div>'
+    countries = country_list(data)
+    blocks = []
+    for i, c in enumerate(countries):
+        span, nights_h, opt_h, dests = country_span_and_nights(data, c, lang, ui)
+        color = safe_css_color(region_color(c, i), REGION_COLORS[i % len(REGION_COLORS)])
+        flag = render_flag(c, "lg")
+        name = loc(c.get("name"), lang) or c["id"]
+        stops = []
+        for d in dests:
+            nm = loc(d.get("name"), lang) or d["id"]
+            short = re.split(r"\s[—–-]\s", nm)[0]
+            info = ((data.get("destinations") or {}).get(d["id"]) or {}).get("info") or {}
+            stay_st = info.get("stay_status") or ("booked" if info.get("stay_booking_id") else "open")
+            if d.get("optional"):
+                stops.append(f'<span class="opt">{esc(short)}</span>')
+            elif stay_st == "booked":
+                stops.append(f'<span class="ok">{esc(short)} ✓</span>')
+            else:
+                stops.append(esc(short))
+        opt_html = f'<span class="opt">{esc(opt_h)}</span>' if opt_h else ""
+        blocks.append(
+            f'<div class="folio-block" style="--block-color:{esc(color)}">'
+            f'<p class="kicker"><bdi class="tnum" dir="ltr">{esc(span)}</bdi></p>'
+            f'<div class="h-flag">{flag}<p class="display">{esc(name)}</p></div>'
+            f'<p class="nights-line">{esc(nights_h)}{opt_html}</p>'
+            f'<p class="stops-line">{" · ".join(stops)}</p>'
+            "</div>"
         )
-    notes = "".join(
-        f'<p class="src-note" style="margin-top:12px">{raw_ltr(n)}</p>'
-        for n in (trip.get("overview_notes") or [])
-    )
-    legend_items = trip.get("status_legend") or []
+    booked = [b for b in data["bookings"].get("bookings") or [] if b.get("status") == "booked"]
+    closed = ""
+    if booked:
+        titles = ", ".join((b.get("short_title") or b.get("title") or "") for b in booked)
+        closed = f'<p class="closed-line">{esc(ui.get("closed_booked") or "")}: {esc(titles)}.</p>'
+    diet = party_dietary(data)
+    diet_html = ""
+    if diet or data["trip"].get("dietary_note"):
+        bits = ", ".join(diet)
+        note = data["trip"].get("dietary_note") or ""
+        diet_html = (
+            f'<p class="closed-line"><strong>{esc(ui["dietary"])}:</strong> {raw_ltr(bits)}'
+            f'{" — " + raw_ltr(note) if note else ""}</p>'
+        )
+    legend_items = data["trip"].get("status_legend") or []
     legend = (
-        '<div class="status-legend glass g-thin" style="padding:10px 14px;margin-top:14px">'
-        f'<span>{badge("booked", ui)} {esc(legend_items[0] if legend_items else ui["legend_booked"])}</span>'
-        f'<span>{badge("open", ui)} {esc(legend_items[1] if len(legend_items) > 1 else ui["legend_open"])}</span>'
+        '<div class="status-legend" style="margin-top:12px">'
+        f'<span>{badge("booked", ui)} {esc(legend_items[0] if legend_items else ui["legend_booked"])}</span> '
+        f'<span>{badge("open", ui)} {esc(legend_items[1] if len(legend_items) > 1 else ui["legend_open"])}</span> '
         f'<span>{badge("optional", ui)} {esc(legend_items[2] if len(legend_items) > 2 else ui["legend_optional"])}</span>'
         "</div>"
     )
-    diet = party_dietary(data)
-    diet_html = ""
-    if diet or trip.get("dietary_note"):
-        bits = ", ".join(diet)
-        note = trip.get("dietary_note") or ""
-        diet_html = (
-            '<div class="card glass g-thin rv" style="margin-top:var(--s4);padding:16px 20px">'
-            f'<strong>{esc(ui["dietary"])}:</strong> {raw_ltr(bits)}'
-            f'{" — " + raw_ltr(note) if note else ""}</div>'
-        )
-    bento = (
-        f'<div class="bento" style="grid-template-columns:1fr 1fr;gap:var(--s3)">{"".join(kpis)}</div>'
-        if kpis else ""
+    map_html = render_map_figure(data, ui, lang)
+    return (
+        f'<section class="spread" id="overview" aria-label="{esc(ui.get("at_a_glance") or "")}">'
+        f'<div class="folio">{"".join(blocks)}{closed}{diet_html}{legend}'
+        '<div class="today-banner" id="todayBanner" hidden></div>'
+        '<div class="today-card card glass g-thick" id="todayCard" hidden></div>'
+        '<p class="locate-msg" id="locateMsg" hidden></p>'
+        f"</div>{map_html}</section>"
     )
-    parts = []
-    parts.append('<section id="overview" class="hero sec" style="margin-top:0">')
-    parts.append('  <div class="rv">')
-    parts.append(f'    <span class="kicker glass g-thin">{icon("ph-airplane-tilt")} {esc(kicker)}</span>')
-    parts.append(f'    <h1>{raw_ltr(h1)}</h1>')
-    parts.append(f'    <p class="lede">{raw_ltr(lede)}</p>')
-    parts.append('    <div class="count-box">')
-    parts.append(f'      {tag_html}')
-    parts.append('      <div class="card glass g-thick" style="padding:14px 20px" id="countCard">')
-    parts.append(f'        <div class="muted" style="font-weight:700;font-size:13px">{dep_h}</div>')
-    parts.append('        <div class="count-n num" id="countN">-</div>')
-    parts.append(f'        <div class="count-lbl" id="countL">{esc(ui["countdown_label"])}</div>')
-    parts.append('      </div>')
-    parts.append('    </div>')
-    parts.append('    <div class="today-banner" id="todayBanner" hidden></div>')
-    parts.append('    <div class="today-card card glass g-thick" id="todayCard" hidden></div>')
-    parts.append('    <p class="locate-msg" id="locateMsg" hidden></p>')
-    parts.append(f'    {deadline_cards(data, ui, lang)}')
-    parts.append('  </div>')
-    parts.append(f'  <aside class="card glass g-thick rv" aria-label="{esc(ui.get("at_a_glance") or "overview")}">')
-    parts.append(f'    <h3 style="font-size:15px;font-weight:800;margin-bottom:var(--s3);color:var(--muted)">{icon("ph-globe-hemisphere-east")} {esc(ui.get("at_a_glance") or trip.get("title") or "")}</h3>')
-    parts.append(f'    {bento}')
-    parts.append(f'    {notes}')
-    parts.append(f'    {legend}')
-    parts.append(f'    {diet_html}')
-    parts.append('  </aside>')
-    parts.append('</section>')
-    return "\n".join(parts)
 
 
-def render_map(data, ui, lang) -> str:
+def render_map_figure(data, ui, lang) -> str:
     trip = data["trip"]
     info = trip.get("map") or {}
     fallback = ""
@@ -440,33 +667,47 @@ def render_map(data, ui, lang) -> str:
             fallback = p.read_text(encoding="utf-8")
     if not fallback:
         fallback = f'<p class="src-note">{esc(ui["map_offline"])}</p>'
+    cap = info.get("lede") or info.get("headline") or ""
+    attr = info.get("attribution") or ""
+    cap_h = ""
+    if cap or attr:
+        cap_h = f'<figcaption>{raw_ltr(cap)}{" · " if cap and attr else ""}<span class="src">{raw_ltr(attr)}</span></figcaption>'
+    return (
+        f'<figure class="map" id="map">'
+        f'<div class="map-tools">'
+        f'<button type="button" class="stop-toggle press" id="btnLiveMap" aria-pressed="true">{icon("ph-map-trifold")} {esc(ui["live_map"])}</button>'
+        f'<button type="button" class="stop-toggle press" id="btnSvgMap" aria-pressed="false">{icon("ph-path")} {esc(ui["overview_map"])}</button>'
+        f'<p class="map-offline-note" id="mapOfflineNote" hidden></p>'
+        f"</div>"
+        f'<div id="mapLive" class="map-live" dir="ltr" role="region" aria-label="{esc(ui["live_map"])}"></div>'
+        f'<div id="mapFallback" class="map-fallback" hidden>{fallback}</div>'
+        f"{cap_h}</figure>"
+    )
+
+
+def render_nights(data, ui, lang) -> str:
+    trip = data["trip"]
     cap = trip.get("nights_chart_caption") or ""
     cap_html = f'<p class="caption">{icon("ph-info")}<span>{raw_ltr(cap)}</span></p>' if cap else ""
-    headline = info.get("headline") or ""
     nights_h = (trip.get("nights_chart") or {}).get("headline") or ui.get("nights_chart") or ui["nights"]
-    parts = []
-    parts.append('<section id="map" class="sec">')
-    parts.append('  <div class="sec-head rv">')
-    parts.append(f'    <div class="act">{icon("ph-map-trifold")} {esc(ui["live_map"])}</div>')
-    parts.append(f'    <h2>{raw_ltr(headline)}</h2>')
-    parts.append(f'    <p>{raw_ltr(info.get("lede") or "")} <span class="src">{raw_ltr(info.get("attribution") or "")}</span></p>')
-    parts.append('  </div>')
-    parts.append('  <div class="map-wrap">')
-    parts.append('    <div class="map-tools">')
-    parts.append(f'      <button type="button" class="stop-toggle press" id="btnLiveMap" aria-pressed="true">{icon("ph-map-trifold")} {esc(ui["live_map"])}</button>')
-    parts.append(f'      <button type="button" class="stop-toggle press" id="btnSvgMap" aria-pressed="false">{icon("ph-path")} {esc(ui["overview_map"])}</button>')
-    parts.append('      <p class="map-offline-note" id="mapOfflineNote" hidden></p>')
-    parts.append('    </div>')
-    parts.append(f'    <div id="mapLive" class="map-live glass g-reg" dir="ltr" role="region" aria-label="{esc(ui["live_map"])}"></div>')
-    parts.append(f'    <div id="mapFallback" class="map-fallback" hidden>{fallback}</div>')
-    parts.append('  </div>')
-    parts.append('  <div class="viz glass g-reg rv" style="margin-top:var(--s4)">')
-    parts.append(f'    <div class="viz-head"><h3>{esc(nights_h)}</h3></div>')
-    parts.append('    <div class="chart" style="height:280px"><canvas id="nightsChart"></canvas></div>')
-    parts.append(f'    {cap_html}')
-    parts.append('  </div>')
-    parts.append('</section>')
-    return "\n".join(parts)
+    groups = (trip.get("nights_chart") or {}).get("groups")
+    if groups is None:
+        groups = nights_payload(data, lang).get("groups") or []
+    if not groups:
+        body = f'<p class="empty"><strong>{esc(ui.get("nights_chart_empty") or ui.get("no_amount") or "")}</strong></p>'
+    else:
+        body = '<div class="chart" style="height:280px"><canvas id="nightsChart"></canvas></div>'
+    return (
+        f'<section id="nights" class="sec glass g-reg">'
+        f'<p class="kicker">{esc(ui.get("nights") or "")}</p>'
+        f"<h2>{esc(nights_h)}</h2>"
+        f"{body}{cap_html}</section>"
+    )
+
+
+def render_map(data, ui, lang) -> str:
+    """Kept for callers; the live map now lives in the opening spread."""
+    return render_nights(data, ui, lang)
 
 
 def as_item(it) -> str:
@@ -559,7 +800,7 @@ def render_place(pl, dest_id, ui, lang, data) -> str:
 
 def render_xfer(data, x, ui, lang) -> str:
     st = status_of_xfer(data, x)
-    cls = "xfer glass g-thin rv"
+    cls = "item ticket xfer rv"
     if st == "booked":
         cls += " is-closed"
     if x.get("optional") or st == "optional":
@@ -623,12 +864,15 @@ def render_xfer(data, x, ui, lang) -> str:
     xid = x.get("id") or "xfer"
     return (
         f'<article class="{cls}" id="xfer-{esc(xid)}">'
+        f'{date_col(transfer_date(data, x), lang)}'
+        f'<div class="node" aria-hidden="true"><i class="dot">{icon(ic)}</i></div>'
+        f'<div class="col">'
         f'<span class="pin" aria-hidden="true">{icon(ic)}</span>'
         f'<button type="button" class="xfer-sum" aria-expanded="false" aria-controls="xfer-{esc(xid)}-d">'
         f'<span class="xfer-route">{raw_ltr(route)}</span>'
         f'<span class="xfer-meta">{"".join(meta_bits)}</span>'
         f'{icon("ph-caret-down")}</button>'
-        f'{fold(inner, "xfer-" + str(xid) + "-d")}</article>'
+        f'{fold(inner, "xfer-" + str(xid) + "-d")}</div></article>'
     )
 
 
@@ -639,7 +883,7 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
     optional = bool(dest.get("optional"))
     stay_st = info.get("stay_status") or ("booked" if info.get("stay_booking_id") else "open")
     stay_st_badge = "optional" if optional else ("booked" if stay_st == "booked" else "open")
-    cls = "stop glass g-reg rv"
+    cls = "item stay stop rv"
     if stay_st == "booked":
         cls += " is-closed"
     if optional:
@@ -732,6 +976,9 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
     opt_attr = ' data-optional="true"' if optional else ""
     return (
         f'<article class="{cls}" id="stop-{esc(did)}" data-id="{esc(did)}"{opt_attr}>'
+        f'{date_col(dates.get("start"), lang)}'
+        f'<div class="node" aria-hidden="true"><i class="dot"></i></div>'
+        f'<div class="col">'
         f'<span class="pin">{index}</span>'
         f'<div class="stop-sum">'
         f'<div class="stop-sum-top"><h3>{icon(ic)} {esc(name)}</h3></div>'
@@ -743,15 +990,15 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
         f'<div class="stop-detail" id="{esc(did)}-detail">'
         f'<button type="button" class="sheet-close press" aria-label="{esc(ui["close"])}">{icon("ph-x")} {esc(ui["close"])}</button>'
         f'{season}{taxi}<div class="rows">{"".join(blocks)}</div>{recs}'
-        f'</div></div></div></article>'
+        f'</div></div></div></div></article>'
     )
 
 
-def render_country(data, country, region_i, ui, lang, exclude_not_ok=False) -> str:
+def render_country_axis(data, country, region_i, ui, lang, exclude_not_ok=False) -> str:
     cid = country["id"]
     dests = [d for d in data["trip"]["destinations"] if d.get("country") == cid]
     leading, after, trailing = transfers_in_country(data, cid)
-    color = REGION_COLORS[region_i % len(REGION_COLORS)]
+    color = safe_css_color(region_color(country, region_i), REGION_COLORS[region_i % len(REGION_COLORS)])
     parts = []
     for x in leading:
         parts.append(render_xfer(data, x, ui, lang))
@@ -766,23 +1013,39 @@ def render_country(data, country, region_i, ui, lang, exclude_not_ok=False) -> s
             parts.append(render_xfer(data, x, ui, lang))
     for x in trailing:
         parts.append(render_xfer(data, x, ui, lang))
-    act = country.get("act_label") or loc(country.get("name"), lang)
-    head = country.get("timeline_headline") or loc(country.get("name"), lang)
-    lede = country.get("timeline_lede") or ""
-    tline = f'<div class="tline" data-region="{region_i}" style="--region:{color}">{"".join(parts)}</div>'
+    span, nights_h, opt_h, _dests = country_span_and_nights(data, country, lang, ui)
+    name = loc(country.get("name"), lang) or cid
+    meta = f'<bdi class="tnum" dir="ltr">{esc(span)}</bdi> · {esc(nights_h)}'
+    if opt_h:
+        meta += f' <span class="opt">{esc(opt_h)}</span>'
+    flag = render_flag(country, "sm")
+    return (
+        f'<section id="{esc(cid)}" class="country-block" data-region="{region_i}" style="--block-color:{esc(color)};--region:{esc(color)}">'
+        f'<div class="country-head"><span class="nm">{esc(name)}</span>'
+        f'<span class="meta">{meta}</span><span class="rule"></span>{flag}</div>'
+        f'<div class="tline" data-region="{region_i}" style="--block-color:{esc(color)};--region:{esc(color)}">{"".join(parts)}</div>'
+        "</section>"
+    )
+
+
+def render_country_rest(data, country, region_i, ui, lang, exclude_not_ok=False) -> str:
+    color = safe_css_color(region_color(country, region_i), REGION_COLORS[region_i % len(REGION_COLORS)])
     chunks = [
-        f'<section id="{esc(cid)}" class="sec" data-region="{region_i}" style="--region:{color}">'
-        f'<div class="sec-head rv"><div class="act">{icon("ph-map-trifold")} {esc(act)}</div>'
-        f'<h2>{raw_ltr(head)}</h2><p>{raw_ltr(lede)}</p></div>{tline}'
+        render_practical(country, ui, lang, region_i, color),
+        render_phrases(country, ui, lang),
+        render_entry(country, ui, lang),
+        render_packing_country(country, ui, lang),
+        render_decisions(data, country["id"], ui, lang),
+        render_days(data, country["id"], country, ui, lang, first=(region_i == 0)),
     ]
-    chunks.append(render_practical(country, ui, lang, region_i, color))
-    chunks.append(render_phrases(country, ui, lang))
-    chunks.append(render_entry(country, ui, lang))
-    chunks.append(render_packing_country(country, ui, lang))
-    chunks.append(render_decisions(data, cid, ui, lang))
-    chunks.append(render_days(data, cid, country, ui, lang, first=(region_i == 0)))
-    chunks.append("</section>")
     return "\n".join(c for c in chunks if c)
+
+
+def render_country(data, country, region_i, ui, lang, exclude_not_ok=False) -> str:
+    return (
+        render_country_axis(data, country, region_i, ui, lang, exclude_not_ok=exclude_not_ok)
+        + render_country_rest(data, country, region_i, ui, lang, exclude_not_ok=exclude_not_ok)
+    )
 
 
 def kv_row(label, body) -> str:
@@ -891,7 +1154,8 @@ def render_packing_country(country, ui, lang) -> str:
 
 def render_decisions(data, cid, ui, lang) -> str:
     decs = data.get("decisions") or {}
-    items = [d for d in (decs.get("decisions") if isinstance(decs, dict) else []) if d.get("country") == cid]
+    all_dec = list(decs.get("decisions") if isinstance(decs, dict) else [])
+    items = [d for d in all_dec if d.get("country") == cid]
     if not items:
         return ""
     out = []
@@ -939,9 +1203,9 @@ def render_decisions(data, cid, ui, lang) -> str:
                 f'<h3>{raw_ltr(d.get("card_html_note") or "")}</h3>'
                 f'<p>{raw_ltr(d.get("lede") or "")}</p></div>'
             )
-        anchor = ' id="choose"' if n == 0 else ""
+        sid = "choose" if all_dec and d is all_dec[0] else f'choose-{d["id"]}'
         out.append(
-            f'<section id="choose-{esc(d["id"])}" class="sec"{anchor}>'
+            f'<section id="{esc(sid)}" class="sec">'
             f'<div class="sec-head rv"><div class="act">{icon("ph-path")} {esc(ui["choose"])}</div>'
             f'<h2>{raw_ltr(d.get("headline") or d.get("title") or "")}</h2>'
             f'<p>{raw_ltr(d.get("lede") or "")}</p></div>'
@@ -989,9 +1253,9 @@ def render_days(data, cid, country, ui, lang, first=False) -> str:
     act = country.get("journal_act") or ui["journal"]
     head = country.get("journal_headline") or ""
     lede = country.get("journal_lede") or ""
-    extra_id = ' id="days"' if first else ""
+    sid = "days" if first else f"days-{cid}"
     return (
-        f'<section id="days-{esc(cid)}" class="sec country-chunk"{extra_id}>'
+        f'<section id="{esc(sid)}" class="sec country-chunk">'
         f'<div class="sec-head rv"><div class="act">{icon("ph-calendar-blank")} {esc(act)}</div>'
         f'<h2>{raw_ltr(head)}</h2><p>{raw_ltr(lede)}</p></div>'
         f'<details class="more glass g-thin rv" open>'
@@ -1104,7 +1368,8 @@ def render_budget(data, ui, lang) -> str:
         f'<p class="orig">{" · ".join(hero_orig)}</p></div>'
         f'<div class="bud-break"><div class="viz glass g-reg rv">'
         f'<div class="viz-head"><h3>{esc(ui["budget_booked"])}</h3><span class="src">{esc(fx.get("label") or "")}</span></div>'
-        f'<div class="chart" style="height:220px"><canvas id="bookedChart"></canvas></div></div>'
+        + (f'<div class="chart" style="height:220px"><canvas id="bookedChart"></canvas></div>' if booked_cards and total else f'<p class="empty"><strong>{esc(ui.get("no_amount") or "")}</strong></p>')
+        + '</div>'
         f'<div class="grid2" style="margin-top:var(--s4)">'
         f'<div class="card glass g-reg rv"><h3 style="font-size:16px;font-weight:800;margin-bottom:12px">{icon("ph-check-circle")} {esc(ui["budget_booked"])}</h3>'
         f'{empty_booked}</div>'
@@ -1178,7 +1443,21 @@ def render_shared(data, ui, lang) -> str:
             f'<h3 style="font-size:16px;font-weight:800;margin-bottom:10px;color:var(--warn)">{icon("ph-circle-dashed")} {esc(ui["tasks_open"])}</h3>'
             f'<ul class="bul">{lis_t(tasks.get("open"))}</ul></div></div></section>'
         )
+    pack_i = next((i for i, s in enumerate(out) if 'id="pack"' in s), None)
+    task_i = next((i for i, s in enumerate(out) if 'id="tasks"' in s), None)
+    if pack_i is not None and task_i is not None:
+        wrapped = f'<div class="duo">{out[pack_i]}{out[task_i]}</div>'
+        kept, done = [], False
+        for k, s in enumerate(out):
+            if k in (pack_i, task_i):
+                if not done:
+                    kept.append(wrapped)
+                    done = True
+                continue
+            kept.append(s)
+        out = kept
     return "\n".join(out)
+
 
 def render_pocket(data, ui, lang) -> str:
     countries = country_list(data)
@@ -1258,13 +1537,98 @@ def render_pocket(data, ui, lang) -> str:
     )
 
 
+def render_instruments(data, ui, lang) -> str:
+    trip = data["trip"]
+    dep_h = countdown_caption(trip, ui)
+    deadlines = deadline_cards(data, ui, lang)
+    codes = []
+    for b in data["bookings"].get("bookings") or []:
+        if b.get("status") != "booked" or not b.get("confirmation_code"):
+            continue
+        title = b.get("short_title") or b.get("title") or ""
+        code = b["confirmation_code"]
+        codes.append(
+            f'<div class="code-row"><span class="who">{esc(title)}</span>'
+            f'<span class="code tnum">{esc(code)}</span>'
+            f'{badge("booked", ui)}{copybtn(code, ui)}</div>'
+        )
+    emer_blocks = []
+    for c in country_list(data):
+        em = c.get("emergency") or []
+        if not em:
+            continue
+        name = loc(c.get("name"), lang)
+        links = "".join(
+            f'<a href="tel:{esc(e.get("tel") or e.get("number") or "")}">'
+            f'<div class="n">{esc(e.get("number") or "")}</div>'
+            f'<div class="w">{esc(e.get("label") or "")}</div></a>'
+            for e in em
+        )
+        emer_blocks.append(
+            f'<h2>{esc(ui["emergency"])}'
+            + (f", {esc(name)}" if name else "")
+            + f'</h2><div class="emer">{links}</div>'
+        )
+    fx = trip.get("fx") or {}
+    rates = fx.get("rates_to_home") or {}
+    home = fx.get("home") or trip.get("currency") or ""
+    snap = []
+    for cur, rate in list(rates.items())[:3]:
+        try:
+            r = float(rate)
+        except (TypeError, ValueError):
+            continue
+        amt = 1000 if r < 0.05 else (100 if r < 1 else 1)
+        home_amt = amt * r
+        home_txt = f"{home_amt:.2f}".rstrip("0").rstrip(".")
+        snap.append(
+            f'<div class="cell"><span class="a">{esc(symbol(cur))}{amt:,}</span>'
+            f'<span class="b">{esc(symbol(home))}{esc(home_txt)}</span></div>'
+        )
+    fx_html = ""
+    if snap:
+        fx_date = fx.get("date") or ""
+        fx_html = (
+            f'<hr class="hr"><h2>{esc(ui["fx"])}</h2>'
+            f'<div class="fx-snap">{"".join(snap)}</div>'
+            f'<div class="src">{raw_ltr(fx.get("label") or "")}'
+            + (f' · <bdi class="tnum" dir="ltr">{esc(fx_date)}</bdi>' if fx_date else "")
+            + "</div>"
+        )
+    codes_h = (
+        f'<hr class="hr"><h2>{esc(ui["bookings"])}</h2>{"".join(codes)}' if codes else ""
+    )
+    emer_h = "".join(f'<hr class="hr">{e}' for e in emer_blocks)
+    return (
+        f'<aside class="instruments glass g-thick" id="instruments" aria-label="{esc(ui.get("instruments") or "")}">'
+        f'<h2>{esc(ui.get("before_depart") or "")}</h2>'
+        f'<div class="lead"><span class="tnum" id="countN">-</span></div>'
+        f'<div class="sub" id="countL">{esc(ui["countdown_label"])}</div>'
+        f'<div class="stack"><div class="k">{dep_h}</div></div>'
+        f'<hr class="hr"><h2>{esc(ui["deadlines"])}</h2>'
+        f"{deadlines}{codes_h}{emer_h}{fx_html}"
+        "</aside>"
+    )
+
+
+def render_dock(data, ui, lang) -> str:
+    return (
+        f'<nav class="dock" aria-label="{esc(ui.get("contents") or "")}">'
+        f'<button type="button" id="dockToday">{icon("ph-calendar-check")}<span>{esc(ui["today"])}</span></button>'
+        f'<a href="#itinerary" id="dockItin">{icon("ph-path")}<span>{esc(ui.get("dock_itinerary") or ui.get("axis") or "")}</span></a>'
+        f'<a href="#map" id="dockMap">{icon("ph-map-trifold")}<span>{esc(ui.get("dock_map") or ui["live_map"])}</span></a>'
+        f'<button type="button" id="dockPocket">{icon("ph-identification-card")}<span>{esc(ui.get("dock_access") or ui["pocket"])}</span></button>'
+        "</nav>"
+    )
+
+
 def render_panel(data, ui, lang) -> str:
     links = []
     for n in data["trip"].get("nav") or []:
         links.append(f'<a href="{esc(n["href"])}">{esc(n["label"])}</a>')
     return (
         f'<button class="panel-toggle press" id="panelBtn" aria-controls="panel" aria-expanded="false">{icon("ph-list")} {esc(ui["contents"])}</button>'
-        f'<aside class="panel glass g-thick" id="panel" role="dialog" aria-label="{esc(ui["contents"])}">'
+        f'<aside class="toc-panel glass g-thick" id="panel" role="dialog" aria-label="{esc(ui["contents"])}">'
         f'<h3>{esc(ui["contents"])}</h3>{"".join(links)}'
         f'<button class="close press" id="panelClose">{esc(ui["close"])}</button></aside>'
     )
@@ -1272,23 +1636,35 @@ def render_panel(data, ui, lang) -> str:
 
 def render_body(data, ui, lang, exclude_not_ok=False) -> str:
     countries = country_list(data)
-    sections = [
-        render_header(data, ui, lang),
-        '<main class="wrap">',
-        render_overview(data, ui, lang),
-        render_map(data, ui, lang),
-    ]
+    axis, rest_c = [], []
     for i, c in enumerate(countries):
-        sections.append(render_country(data, c, i, ui, lang, exclude_not_ok=exclude_not_ok))
-    sections.append(render_search(data, ui, lang))
-    sections.append(render_budget(data, ui, lang))
-    sections.append(render_fx(data, ui))
-    sections.append(render_shared(data, ui, lang))
+        axis.append(render_country_axis(data, c, i, ui, lang, exclude_not_ok=exclude_not_ok))
+        rest_c.append(render_country_rest(data, c, i, ui, lang, exclude_not_ok=exclude_not_ok))
     footer = data["trip"].get("footer") or ui["footer_default"]
-    sections.append(f'<p class="foot rv">{raw_ltr(footer)}</p>')
-    sections.append("</main>")
-    sections.append(render_panel(data, ui, lang))
-    sections.append(render_pocket(data, ui, lang))
+    sections = [
+        theme_style(data),
+        '<div class="mesh" aria-hidden="true"></div>',
+        '<div class="grain" aria-hidden="true"></div>',
+        render_header(data, ui, lang),
+        '<div class="shell">',
+        render_overview(data, ui, lang),
+        f'<section class="itinerary" id="itinerary" aria-label="{esc(ui.get("axis") or "")}">'
+        f'<h2>{esc(ui.get("axis") or "")}</h2>{"".join(axis)}</section>',
+        render_instruments(data, ui, lang),
+        "</div>",
+        '<div class="rest">',
+        render_nights(data, ui, lang),
+        "\n".join(s for s in rest_c if s),
+        render_search(data, ui, lang),
+        render_budget(data, ui, lang),
+        render_fx(data, ui),
+        render_shared(data, ui, lang),
+        f'<p class="foot rv">{raw_ltr(footer)}</p>',
+        "</div>",
+        render_panel(data, ui, lang),
+        render_pocket(data, ui, lang),
+        render_dock(data, ui, lang),
+    ]
     return "\n".join(s for s in sections if s)
 
 
