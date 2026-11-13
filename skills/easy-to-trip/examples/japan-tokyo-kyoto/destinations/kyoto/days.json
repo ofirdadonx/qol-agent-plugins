@@ -1,0 +1,41 @@
+{
+  "days": [
+    {
+      "date": "2027-05-19",
+      "weekday": "Wednesday",
+      "title": "Arrive on the Shinkansen",
+      "body": "Late-morning arrival, check in at the inn, a walk along the sample riverside.",
+      "destination_id": "kyoto",
+      "transfer_id": "shinkansen-west"
+    },
+    {
+      "date": "2027-05-20",
+      "weekday": "Thursday",
+      "title": "Pavilion and Kamo Shojin",
+      "body": "Optional timed tickets at Lantern Garden Pavilion. Evening shojin dinner already booked on Omakase.",
+      "destination_id": "kyoto"
+    },
+    {
+      "date": "2027-05-21",
+      "weekday": "Friday",
+      "title": "A walking day",
+      "body": "Neighbourhood streets and the river. No reservations on this sample day.",
+      "destination_id": "kyoto"
+    },
+    {
+      "date": "2027-05-22",
+      "weekday": "Saturday",
+      "title": "A slower last full day",
+      "body": "Free day. Spend any leftover IC-card balance.",
+      "destination_id": "kyoto"
+    },
+    {
+      "date": "2027-05-23",
+      "weekday": "Sunday",
+      "title": "Airport express and flight home",
+      "body": "Checkout at 11:00. Airport express to KIX for the afternoon Sample Pacific flight.",
+      "destination_id": "kyoto",
+      "transfer_id": "flight-return"
+    }
+  ]
+}

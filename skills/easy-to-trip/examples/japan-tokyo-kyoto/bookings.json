@@ -1,0 +1,86 @@
+{
+  "bookings": [
+    {
+      "id": "ua-outbound",
+      "type": "flight",
+      "title": "San Francisco – Tokyo (sample airline)",
+      "short_title": "Outbound flight",
+      "status": "booked",
+      "price": {
+        "amount": 1480,
+        "currency": "USD",
+        "note": null
+      },
+      "notes": "Round-trip paid together. Sample confirmation can be dropped into inbox/. Invented flight.",
+      "destination_id": null,
+      "confirmation_code": "SMP104",
+      "confirmation_link": null,
+      "carrier": "Sample Pacific",
+      "number": "SP104"
+    },
+    {
+      "id": "ua-return",
+      "type": "flight",
+      "title": "Osaka – San Francisco (sample airline)",
+      "short_title": "Return flight",
+      "status": "booked",
+      "price": null,
+      "notes": "Return half of the same ticket. Invented flight.",
+      "destination_id": null,
+      "confirmation_code": "SMP105",
+      "confirmation_link": null,
+      "carrier": "Sample Pacific",
+      "number": "SP105"
+    },
+    {
+      "id": "maple-house",
+      "type": "hotel",
+      "title": "Maple House Shibuya (sample hotel)",
+      "short_title": "Tokyo hotel",
+      "status": "booked",
+      "price": {
+        "amount": 72000,
+        "currency": "JPY",
+        "note": null
+      },
+      "notes": "Four nights, double room. Invented hotel.",
+      "destination_id": "tokyo",
+      "confirmation_code": "MPL88A",
+      "confirmation_link": null
+    },
+    {
+      "id": "kamo-inn",
+      "type": "hotel",
+      "title": "Kamo Riverside Inn (sample hotel)",
+      "short_title": "Kyoto hotel",
+      "status": "booked",
+      "price": {
+        "amount": 64000,
+        "currency": "JPY",
+        "note": null
+      },
+      "notes": "Four nights, double room. Invented hotel.",
+      "destination_id": "kyoto",
+      "confirmation_code": "KMO21B",
+      "confirmation_link": null
+    },
+    {
+      "id": "hikari-west",
+      "type": "train",
+      "title": "Tokyo – Kyoto Shinkansen (sample)",
+      "short_title": "Shinkansen",
+      "status": "booked",
+      "price": {
+        "amount": 28600,
+        "currency": "JPY",
+        "note": "Two reserved ordinary-car seats."
+      },
+      "notes": "Two reserved ordinary-car seats. Invented train number. Local transit uses an IC card, not this ticket.",
+      "destination_id": null,
+      "confirmation_code": "HKR469",
+      "confirmation_link": null,
+      "carrier": "Sample Tokaido Shinkansen",
+      "number": "Hikari 469"
+    }
+  ]
+}

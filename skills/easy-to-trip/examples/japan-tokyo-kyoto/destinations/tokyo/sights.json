@@ -1,0 +1,42 @@
+{
+  "group_heading": "To see",
+  "places": [
+    {
+      "id": "sample-park-ridge",
+      "name": {
+        "en": "Sample Park Ridge"
+      },
+      "type": "park",
+      "type_label": "Park",
+      "area": "Shibuya",
+      "note": "Invented hillside park used to show a walk-in sight.",
+      "url": "https://example.invalid/sample-park-ridge",
+      "maps_url": "https://maps.google.com/?q=35.66,139.70",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=35.66,139.70"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Open all day",
+      "price_range": "Free",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Not a restaurant."
+      },
+      "reservation": {
+        "need": "walk_in",
+        "how": {
+          "method": "at_door",
+          "url": null,
+          "app_name": null
+        },
+        "lead_time": null,
+        "book_by": null,
+        "booked": false,
+        "notes": "No ticket needed."
+      }
+    }
+  ]
+}

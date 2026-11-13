@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "transfers.schema.json",
+  "title": "Inter-destination transfers (timeline transit rows)",
+  "type": "object",
+  "required": [
+    "transfers"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "transfers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "from",
+          "to",
+          "mode"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "from_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "to_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "depart_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "arrive_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "time_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "duration_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "flight",
+              "train",
+              "ferry",
+              "bus",
+              "car",
+              "path"
+            ]
+          },
+          "icon": {
+            "type": "string"
+          },
+          "carrier": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "route_label": {
+            "type": "string"
+          },
+          "booking_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "booking_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "optional": {
+            "type": "boolean"
+          },
+          "boundary": {
+            "type": "boolean",
+            "description": "True for country-boundary or trip start/end legs."
+          },
+          "tips": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "details_blocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "heading": {
+                  "type": "string"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

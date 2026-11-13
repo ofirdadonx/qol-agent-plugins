@@ -1,0 +1,88 @@
+{
+  "id": "italy",
+  "name": {
+    "en": "Italy"
+  },
+  "badge": "italy",
+  "timezone": "Europe/Rome",
+  "utc_offset": "UTC+2",
+  "hours_ahead_of_home": null,
+  "currency": "EUR",
+  "practical_headline": "",
+  "practical_lede": "",
+  "practical": [],
+  "emergency": [],
+  "embassy": {
+    "name": "",
+    "url": "",
+    "address": "",
+    "phone": "",
+    "phone_emergency": "",
+    "email": "",
+    "source": ""
+  },
+  "phrases": {
+    "headline": "",
+    "intro": [],
+    "groups": []
+  },
+  "entry_docs": {
+    "headline": "Entry and practical checks",
+    "lede": "See trip.entry_checks. Re-check official sources.",
+    "items": [
+      "Confirm current entry rules for British passports on official UK and destination-government pages. This sample note is illustrative.",
+      "Power: Type C and Type F (Italy also Type L in some buildings), 230 V / 50 Hz."
+    ]
+  },
+  "packing": {
+    "headline": "Packing",
+    "lede": "",
+    "callout": "Type C/F/L adapters. Booster seat for the rental car (Ama).",
+    "items": [
+      "Adapters",
+      "Layers for altitude",
+      "Booster seat"
+    ]
+  },
+  "climate": "The Aosta valley is usually dry and warm in June, with cooler evenings.",
+  "transport_notes": "Sample plan: rental car from Geneva, international driving permit to be confirmed.",
+  "act_label": "Italy",
+  "timeline_headline": "",
+  "timeline_lede": "",
+  "journal_act": "",
+  "journal_headline": "",
+  "journal_lede": "",
+  "color": "#0d5a3a",
+  "color_2": "#CE2B37",
+  "tint": "rgba(13,90,58,.10)",
+  "mesh": "rgba(13,90,58,.14)",
+  "flag": {
+    "label": "Flag of Italy",
+    "shapes": [
+      {
+        "type": "rect",
+        "fill": "#009246",
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#efece6",
+        "x": 300,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#CE2B37",
+        "x": 600,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      }
+    ]
+  }
+}

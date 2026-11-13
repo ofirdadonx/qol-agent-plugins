@@ -1,0 +1,220 @@
+{
+  "id": "japan-tokyo-kyoto",
+  "storage_key": "japan-tokyo-kyoto",
+  "title": "Tokyo and Kyoto, nine days",
+  "subtitle": "A fictional sample trip used by the skill",
+  "tag": "city-break",
+  "kicker": "Tokyo and Kyoto",
+  "headline": "Tokyo and Kyoto, nine days",
+  "lede": "A fictional eight-night trip used as a sample for this skill. Places, flights, hotels and booking notes are invented. It shows Japan-typical patterns: restaurant reservations through TableCheck, Tabelog and Omakase, a walk-in ramen shop, a Shinkansen transfer, an IC-card note, and an attraction with timed tickets.",
+  "brand": "Tokyo and Kyoto",
+  "footer": "",
+  "dietary_note": "Nora is vegetarian. Sam has no restrictions. diet_fit is judged against the union (vegetarian).",
+  "dates": {
+    "start": "2027-05-14",
+    "end": "2027-05-23",
+    "flexible": false,
+    "approx_nights": 8
+  },
+  "departure_at": "2027-05-14T11:20:00-07:00",
+  "return_at": "2027-05-23T10:15:00-07:00",
+  "departure_city": "San Francisco",
+  "home_airport": "SFO",
+  "home_tz": "America/Los_Angeles",
+  "travelers": [
+    {
+      "name": "Nora Patel",
+      "dietary": [
+        "vegetarian"
+      ],
+      "passport": "US",
+      "booking_name": "NORA PATEL",
+      "age": 31,
+      "child": false
+    },
+    {
+      "name": "Sam Patel",
+      "dietary": [],
+      "passport": "US",
+      "booking_name": "SAM PATEL",
+      "age": 33,
+      "child": false
+    }
+  ],
+  "currency": "USD",
+  "fx": {
+    "date": "2026-11-13",
+    "label": "sample mid-market rate, illustration only",
+    "home": "USD",
+    "rates_to_home": {
+      "USD": 1,
+      "JPY": 0.0067
+    },
+    "cross_rates": {
+      "USDJPY": 149.25
+    },
+    "sources": {
+      "JPY": "sample"
+    }
+  },
+  "language": "en",
+  "dir": "ltr",
+  "destinations": [
+    {
+      "id": "tokyo",
+      "country": "japan",
+      "name": {
+        "en": "Tokyo"
+      },
+      "optional": false,
+      "certainty": "sure",
+      "icon": "ph-buildings",
+      "coords": {
+        "lat": 35.658,
+        "lng": 139.7016,
+        "exact": false
+      },
+      "dates": {
+        "start": "2027-05-15",
+        "end": "2027-05-19"
+      },
+      "nights": 4
+    },
+    {
+      "id": "kyoto",
+      "country": "japan",
+      "name": {
+        "en": "Kyoto"
+      },
+      "optional": false,
+      "certainty": "sure",
+      "icon": "ph-tree",
+      "coords": {
+        "lat": 35.0116,
+        "lng": 135.7681,
+        "exact": false
+      },
+      "dates": {
+        "start": "2027-05-19",
+        "end": "2027-05-23"
+      },
+      "nights": 4
+    }
+  ],
+  "kpis": [
+    {
+      "label": "Nights",
+      "value": "8"
+    },
+    {
+      "label": "Travelers",
+      "value": "2"
+    },
+    {
+      "label": "Trip type",
+      "value": "city-break"
+    }
+  ],
+  "nav": [
+    {
+      "href": "#overview",
+      "label": "Overview",
+      "group": "start"
+    },
+    {
+      "href": "#map",
+      "label": "Map"
+    },
+    {
+      "href": "#budget",
+      "label": "Budget"
+    },
+    {
+      "href": "#tasks",
+      "label": "Tasks"
+    }
+  ],
+  "shared_docs": {
+    "headline": "",
+    "lede": "",
+    "items": []
+  },
+  "shared_packing": {
+    "headline": "",
+    "lede": "",
+    "items": [],
+    "note": ""
+  },
+  "overview_notes": [
+    "Both cities and the transfer between them are booked. Restaurant and ticket reservations still open are on the tasks list."
+  ],
+  "map": {
+    "headline": "",
+    "lede": "",
+    "tile_url": "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+    "attribution": "&copy; OpenStreetMap, OpenStreetMap.de",
+    "fallback_svg": "assets/map-fallback.html"
+  },
+  "nights_chart_caption": "Four booked nights in Tokyo, then four booked nights in Kyoto.",
+  "status_legend": [
+    "Booked — flights, both stays, and the Shinkansen are confirmed.",
+    "Open — still to decide or book (a recommended lunch and a timed-ticket pavilion)."
+  ],
+  "locale": "en-US",
+  "trip_type": "city-break",
+  "budget_plan": {
+    "total": 5500,
+    "level": "mid",
+    "currency": "USD",
+    "notes": "Flights, hotels and the Shinkansen are already paid; remainder is food, local transit and tickets."
+  },
+  "preferences": {
+    "priorities": [
+      "food",
+      "culture",
+      "walking"
+    ],
+    "pace": {
+      "style": "few_in_depth",
+      "hotel_changes": "one hotel in each city",
+      "notes": "Four nights in Tokyo, then four in Kyoto. No day trips that need a third hotel."
+    },
+    "lodging": {
+      "types": [
+        "hotel",
+        "boutique"
+      ],
+      "bed": "double"
+    },
+    "transport": {
+      "rental_car": false,
+      "trains": true,
+      "taxis_only": false,
+      "notes": "Trains and an IC card (Suica, Pasmo or ICOCA) for local transit. No rental car."
+    }
+  },
+  "already_booked_notes": "Outbound and return flights, both stays, and the Tokyo–Kyoto Shinkansen are booked. Confirmations can be dropped into inbox/.",
+  "entry_checks": {
+    "visa": "For this sample party (US passports, short tourism stay in Japan): visa exemption is typical for stays under 90 days, but confirm on official US and Japanese government pages, and complete any current pre-arrival process (for example Visit Japan Web) before travel. This note is illustrative.",
+    "passport_validity": "Japan often expects a passport valid for the duration of the stay. Re-check the current rule. Sample only.",
+    "insurance": "Not a legal entry requirement for this sample route, but travel medical insurance is strongly recommended. Confirm card-packaged cover and whether a top-up is needed.",
+    "power_adapters": "Japan uses Type A and Type B sockets, 100 V / 50 or 60 Hz (Tokyo is 50 Hz). A Type A adapter is enough for typical US dual-voltage chargers. A short conversion plug is usually all that is needed.",
+    "problem_dates": [
+      {
+        "date": "2027-05-05",
+        "place": "Japan",
+        "note": "Children's Day, at the end of Golden Week (sample year). This trip starts after that holiday week, so crowds should have eased; re-check local calendars."
+      }
+    ],
+    "sources": [
+      "https://travel.state.gov/ (re-check at planning time)",
+      "https://www.mofa.go.jp/ (re-check at planning time)",
+      "https://www.visitjapan.jp/ (re-check at planning time)"
+    ],
+    "as_of": "2026-11-13",
+    "notes": "Illustrative research for a fictional sample trip. Always re-check official sources."
+  },
+  "countdown": {
+    "caption": "Countdown to departure, Friday 14 May at 11:20"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "group_heading": "Where to eat",
+  "places": [
+    {
+      "id": "aoba-counter",
+      "name": {
+        "en": "Aoba Counter",
+        "ja": "青葉カウンター"
+      },
+      "type": "restaurant",
+      "type_label": "Restaurant",
+      "area": "Shibuya",
+      "note": "Invented vegetarian kaiseki-style counter. Booked through TableCheck.",
+      "url": "https://example.invalid/aoba-counter",
+      "maps_url": "https://maps.google.com/?q=Aoba+Counter+Tokyo",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=Aoba+Counter+Tokyo"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Tue–Sat 18:00–22:00",
+      "price_range": "¥¥¥",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Vegetarian tasting menu. The party's combined restriction is vegetarian."
+      },
+      "reservation": {
+        "need": "required",
+        "how": {
+          "method": "app",
+          "url": "https://example.invalid/tablecheck/aoba",
+          "app_name": "TableCheck"
+        },
+        "lead_time": "3 weeks",
+        "book_by": "2027-04-24",
+        "booked": true,
+        "notes": "Booked for 15 May, 18:30, two people. Sample only. TableCheck is a common channel for restaurant reservations in Japan."
+      },
+      "planned_day": "2027-05-15",
+      "source": "sources/2026-10-15-aoba-counter.txt",
+      "source_url": null,
+      "added_by": "Nora Patel",
+      "added_date": "2026-10-15",
+      "raw_note": "A friend recommended this invented counter for a vegetarian tasting menu, book on TableCheck about three weeks ahead."
+    },
+    {
+      "id": "midori-bowl",
+      "name": {
+        "en": "Midori Bowl (sample ramen)",
+        "ja": "みどりボウル"
+      },
+      "type": "restaurant",
+      "type_label": "Ramen",
+      "aliases": ["ramen", "ראמן", "みどりボウル"],
+      "dish": "Vegetable shoyu ramen",
+      "area": "Shimokitazawa",
+      "note": "Invented walk-in ramen shop with a vegetable shoyu broth. No ticket, no booking.",
+      "url": "https://example.invalid/midori-bowl",
+      "maps_url": "https://maps.google.com/?q=Midori+Bowl+Tokyo",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=Midori+Bowl+Tokyo"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Daily 11:00–15:00, 17:30–21:30",
+      "price_range": "¥",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Vegetable shoyu broth, no pork or fish stock (sample). Combined party restriction is vegetarian. Re-ask on the day — many ramen shops are not safe for vegetarians."
+      },
+      "reservation": {
+        "need": "walk_in",
+        "how": {
+          "method": "at_door",
+          "url": null,
+          "app_name": null
+        },
+        "lead_time": null,
+        "book_by": null,
+        "booked": false,
+        "notes": "A short queue at lunch is typical. No reservation."
+      },
+      "planned_day": "2027-05-16"
+    },
+    {
+      "id": "nishi-diner",
+      "name": {
+        "en": "Nishi Market Diner"
+      },
+      "type": "restaurant",
+      "type_label": "Restaurant",
+      "area": "Shimokitazawa",
+      "note": "Invented casual vegetarian-friendly lunch. Tabelog is the usual place to look it up and, where offered, to book.",
+      "url": "https://example.invalid/nishi-diner",
+      "maps_url": "https://maps.google.com/?q=Nishi+Market+Diner+Tokyo",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=Nishi+Market+Diner+Tokyo"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Thu–Tue 11:30–15:00, 18:00–21:30",
+      "price_range": "¥¥",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Mostly vegetable dishes; the sample menu marks a vegetarian set. Combined party restriction is vegetarian."
+      },
+      "reservation": {
+        "need": "recommended",
+        "how": {
+          "method": "website",
+          "url": "https://example.invalid/tabelog/nishi-diner",
+          "app_name": "Tabelog"
+        },
+        "lead_time": "a few days",
+        "book_by": "2027-05-14",
+        "booked": false,
+        "notes": "Walk-in is often possible at lunch; a Tabelog booking is safer on a weekend. Sample only. Not yet booked — this is a recommended, not required, reservation."
+      },
+      "planned_day": "2027-05-17"
+    }
+  ]
+}

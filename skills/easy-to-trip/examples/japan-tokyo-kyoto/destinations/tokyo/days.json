@@ -1,0 +1,48 @@
+{
+  "days": [
+    {
+      "date": "2027-05-14",
+      "weekday": "Friday",
+      "title": "Overnight flight",
+      "body": "Depart San Francisco late morning. In the air across the date line.",
+      "destination_id": "tokyo",
+      "transfer_id": "flight-outbound"
+    },
+    {
+      "date": "2027-05-15",
+      "weekday": "Saturday",
+      "title": "Arrive and dinner at Aoba Counter",
+      "body": "Mid-afternoon landing, drop bags at Maple House, evening vegetarian tasting menu (already booked on TableCheck).",
+      "destination_id": "tokyo"
+    },
+    {
+      "date": "2027-05-16",
+      "weekday": "Sunday",
+      "title": "Walk-in ramen and a neighbourhood walk",
+      "body": "Lunch at Midori Bowl — vegetable broth, no booking. Afternoon at Sample Park Ridge.",
+      "destination_id": "tokyo"
+    },
+    {
+      "date": "2027-05-17",
+      "weekday": "Monday",
+      "title": "Optional Tabelog lunch",
+      "body": "Nishi Market Diner is recommended, not required. Book on Tabelog a few days ahead if you want a table.",
+      "destination_id": "tokyo"
+    },
+    {
+      "date": "2027-05-18",
+      "weekday": "Tuesday",
+      "title": "A slower Tokyo day",
+      "body": "Free day before the morning Shinkansen. No reservations on this sample day.",
+      "destination_id": "tokyo"
+    },
+    {
+      "date": "2027-05-19",
+      "weekday": "Wednesday",
+      "title": "Morning Shinkansen to Kyoto",
+      "body": "Checkout at 11:00 is after the 09:33 Hikari — leave bags or take an earlier checkout. Reserved seats already booked.",
+      "destination_id": "tokyo",
+      "transfer_id": "shinkansen-west"
+    }
+  ]
+}

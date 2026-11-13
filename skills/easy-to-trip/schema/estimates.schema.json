@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "estimates.schema.json",
+  "title": "Open estimates — clearly labelled, never mixed into the booked total",
+  "type": "object",
+  "required": [
+    "estimates"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "estimates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "price"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "price": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "amount": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "amount_min": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "amount_max": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "currency": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "label": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "booking_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "chart_series": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "amount_min": {
+                  "type": "number"
+                },
+                "amount_max": {
+                  "type": "number"
+                },
+                "currency": {
+                  "type": "string"
+                },
+                "optional": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "days.schema.json",
+  "title": "Day-by-day journal for one destination or a country stretch",
+  "type": "object",
+  "required": [
+    "days"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "days": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "date"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "weekday": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "destination_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "transfer_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "booking_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "optional": {
+            "type": "boolean"
+          },
+          "undecided": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
