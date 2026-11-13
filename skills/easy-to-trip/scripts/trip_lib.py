@@ -861,3 +861,133 @@ def validate_trip(data_dir: Path, as_of=None, stale_months=6, book_by_days=7):
         "budget": derive_budget(data),
         "book_first": first,
     }
+
+
+
+# --- i18n and contrast helpers (v9 findings) ---
+
+def pluralize(n, forms) -> str:
+    """Pick a plural form. 1 = one, 2 = two if provided else other, 0 and 3+ = other.
+    English typically supplies only one/other. Hebrew often supplies two (dual).
+    The chosen template may include {n}; forms without {n} (יום, שעתיים) are used as-is.
+    """
+    forms = forms or {}
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        n = 0
+    if n == 1 and forms.get("one"):
+        tmpl = forms["one"]
+    elif n == 2 and forms.get("two"):
+        tmpl = forms["two"]
+    else:
+        tmpl = forms.get("other") or "{n}"
+    return str(tmpl).replace("{n}", str(n))
+
+
+def parse_hex_color(s):
+    """Return (r,g,b) from #rgb / #rrggbb / rgb() / rgba(), or None."""
+    import re
+    if not s:
+        return None
+    s = str(s).strip()
+    if s.startswith("#"):
+        h = s[1:]
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        if len(h) == 6:
+            try:
+                return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
+            except ValueError:
+                return None
+        return None
+    m = re.match(r"rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)", s, re.I)
+    if m:
+        return tuple(int(m.group(i)) for i in (1, 2, 3))
+    return None
+
+
+def hex_color(rgb) -> str:
+    return "#{:02x}{:02x}{:02x}".format(*(max(0, min(255, int(c))) for c in rgb))
+
+
+def relative_luminance(rgb) -> float:
+    def f(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+    r, g, b = rgb
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+
+
+def contrast_ratio(a, b) -> float:
+    l1, l2 = relative_luminance(a), relative_luminance(b)
+    hi, lo = (l1, l2) if l1 >= l2 else (l2, l1)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def _rgb_to_hsl(r, g, b):
+    r, g, b = r / 255.0, g / 255.0, b / 255.0
+    mx, mn = max(r, g, b), min(r, g, b)
+    l = (mx + mn) / 2.0
+    if mx == mn:
+        return 0.0, 0.0, l
+    d = mx - mn
+    s = d / (2.0 - mx - mn) if l > 0.5 else d / (mx + mn)
+    if mx == r:
+        h = ((g - b) / d + (6.0 if g < b else 0.0)) / 6.0
+    elif mx == g:
+        h = ((b - r) / d + 2.0) / 6.0
+    else:
+        h = ((r - g) / d + 4.0) / 6.0
+    return h, s, l
+
+
+def _hsl_to_rgb(h, s, l):
+    def hue(p, q, t):
+        if t < 0:
+            t += 1
+        if t > 1:
+            t -= 1
+        if t < 1 / 6:
+            return p + (q - p) * 6 * t
+        if t < 1 / 2:
+            return q
+        if t < 2 / 3:
+            return p + (q - p) * (2 / 3 - t) * 6
+        return p
+
+    if s == 0:
+        v = int(round(l * 255))
+        return (v, v, v)
+    q = l * (1 + s) if l < 0.5 else l + s - l * s
+    p = 2 * l - q
+    r = hue(p, q, h + 1 / 3)
+    g = hue(p, q, h)
+    b = hue(p, q, h - 1 / 3)
+    return tuple(int(round(x * 255)) for x in (r, g, b))
+
+
+DARK_PAPER = (0x1C, 0x1F, 0x24)
+LIGHT_PAPER = (0xD2, 0xCE, 0xC6)
+
+
+def lighten_for_contrast(color, bg=DARK_PAPER, min_ratio=4.5):
+    """Keep hue, ease saturation, raise lightness until contrast vs bg meets min_ratio.
+
+    Used for country region tokens on the dark paper. Returns a #rrggbb string,
+    or None if the input colour cannot be parsed (leave the light token as-is).
+    """
+    rgb = parse_hex_color(color) if not isinstance(color, tuple) else color
+    if not rgb:
+        return None
+    if contrast_ratio(rgb, bg) >= min_ratio and relative_luminance(rgb) > relative_luminance(bg):
+        return hex_color(rgb)
+    h, s, l = _rgb_to_hsl(*rgb)
+    s = min(s, 0.52)
+    for step in range(0, 45):
+        ll = min(0.94, max(l, 0.54) + step * 0.01)
+        cand = _hsl_to_rgb(h, s, ll)
+        if contrast_ratio(cand, bg) >= min_ratio:
+            return hex_color(cand)
+    return hex_color(_hsl_to_rgb(h, s, 0.92))

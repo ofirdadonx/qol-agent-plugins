@@ -38,7 +38,7 @@
   "cancel_by": "Free cancellation",
   "checkin_by": "Check-in",
   "days_left": "days left",
-  "countdown_label": "days to departure",
+  "countdown_label": "{days} to departure",
   "live_map": "Live map",
   "overview_map": "Overview map",
   "map_offline": "Tiles could not be loaded. The overview map is shown instead.",
@@ -102,8 +102,8 @@
   "nights_optional": "{n} optional nights",
   "nights_undecided": "{n} nights · not yet decided",
   "today_banner": "Today: {title}.",
-  "before_one": "1 day to departure, and {hours} hours",
-  "before_soon": "days to departure · {hours} hours left",
+  "before_one": "{days} to departure, and {hours}",
+  "before_soon": "{days} to departure · {hours} left",
   "warnings_n": "{n} freshness or diet warnings — see the build log.",
   "nights_chart": "Nights by destination",
   "code": "Code",
@@ -143,5 +143,111 @@
   "still_open": "still to decide",
   "nights_chart_empty": "No night breakdown in the document",
   "sections": "Page sections",
-  "dock_map": "Map"
+  "dock_map": "Map",
+  "deadline_two": "2 days left",
+  "plural_day": {
+    "one": "1 day",
+    "other": "{n} days"
+  },
+  "plural_day_word": {
+    "one": "day",
+    "other": "days"
+  },
+  "plural_hour": {
+    "one": "1 hour",
+    "other": "{n} hours"
+  },
+  "plural_minute": {
+    "one": "1 minute",
+    "other": "{n} minutes"
+  },
+  "plural_night": {
+    "one": "1 night",
+    "other": "{n} nights"
+  },
+  "search_aliases": [
+    [
+      "ראמן",
+      "ramen"
+    ],
+    [
+      "סושי",
+      "sushi"
+    ],
+    [
+      "סשימי",
+      "sashimi"
+    ],
+    [
+      "טמפורה",
+      "tempura"
+    ],
+    [
+      "יקיטורי",
+      "yakitori"
+    ],
+    [
+      "אומאקסה",
+      "omakase"
+    ],
+    [
+      "איזאקאיה",
+      "izakaya"
+    ],
+    [
+      "סובה",
+      "soba"
+    ],
+    [
+      "אודון",
+      "udon"
+    ],
+    [
+      "קארי",
+      "curry"
+    ],
+    [
+      "גיוזה",
+      "gyoza"
+    ],
+    [
+      "שינקונסן",
+      "shinkansen",
+      "bullet train"
+    ],
+    [
+      "מקדש",
+      "temple",
+      "shrine"
+    ],
+    [
+      "שוק",
+      "market"
+    ],
+    [
+      "מוזיאון",
+      "museum"
+    ],
+    [
+      "רכבת",
+      "train"
+    ],
+    [
+      "מלון",
+      "hotel"
+    ],
+    [
+      "פיצה",
+      "pizza"
+    ],
+    [
+      "פסטה",
+      "pasta"
+    ],
+    [
+      "גלידה",
+      "gelato",
+      "ice cream"
+    ]
+  ]
 }

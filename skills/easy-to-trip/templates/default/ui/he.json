@@ -38,7 +38,7 @@
   "cancel_by": "ביטול חינם",
   "checkin_by": "צ׳ק-אין",
   "days_left": "ימים",
-  "countdown_label": "ימים להמראה",
+  "countdown_label": "{days} ליציאה",
   "live_map": "מפה חיה",
   "overview_map": "מפת סקירה",
   "map_offline": "לא ניתן היה לטעון את האריחים. מוצגת מפת הסקירה.",
@@ -80,7 +80,7 @@
   "confirmation": "אישור",
   "deadline_passed": "עבר · בוצע",
   "deadline_today": "היום",
-  "deadline_one": "נשאר יום אחד",
+  "deadline_one": "עוד יום",
   "deadline_n": "עוד {n} ימים",
   "during_short": "בטיול",
   "during_label": "הטיול כבר התחיל.",
@@ -102,8 +102,8 @@
   "nights_optional": "{n} לילות אופציונליות",
   "nights_undecided": "{n} לילות · טרם נקבע",
   "today_banner": "היום: {title}.",
-  "before_one": "יום ליציאה, ועוד {hours} שעות",
-  "before_soon": "ימים ליציאה · עוד {hours} שעות",
+  "before_one": "{days} ליציאה, ועוד {hours}",
+  "before_soon": "{days} ליציאה · עוד {hours}",
   "warnings_n": "{n} אזהרות עדכניות או תזונה — ראו ביומן הבנייה.",
   "nights_chart": "חלוקת הלילות לפי יעד",
   "code": "קוד",
@@ -143,5 +143,116 @@
   "still_open": "עדיין לבחירה",
   "nights_chart_empty": "אין חלוקת לילות במסמך",
   "sections": "מדורי העמוד",
-  "dock_map": "מפה"
+  "dock_map": "מפה",
+  "deadline_two": "עוד יומיים",
+  "plural_day": {
+    "one": "יום",
+    "two": "יומיים",
+    "other": "{n} ימים"
+  },
+  "plural_day_word": {
+    "one": "יום",
+    "two": "יומיים",
+    "other": "ימים"
+  },
+  "plural_hour": {
+    "one": "שעה",
+    "two": "שעתיים",
+    "other": "{n} שעות"
+  },
+  "plural_minute": {
+    "one": "דקה",
+    "two": "שתי דקות",
+    "other": "{n} דקות"
+  },
+  "plural_night": {
+    "one": "לילה אחד",
+    "two": "{n} לילות",
+    "other": "{n} לילות"
+  },
+  "search_aliases": [
+    [
+      "ראמן",
+      "ramen"
+    ],
+    [
+      "סושי",
+      "sushi"
+    ],
+    [
+      "סשימי",
+      "sashimi"
+    ],
+    [
+      "טמפורה",
+      "tempura"
+    ],
+    [
+      "יקיטורי",
+      "yakitori"
+    ],
+    [
+      "אומאקסה",
+      "omakase"
+    ],
+    [
+      "איזאקאיה",
+      "izakaya"
+    ],
+    [
+      "סובה",
+      "soba"
+    ],
+    [
+      "אודון",
+      "udon"
+    ],
+    [
+      "קארי",
+      "curry"
+    ],
+    [
+      "גיוזה",
+      "gyoza"
+    ],
+    [
+      "שינקונסן",
+      "shinkansen",
+      "bullet train"
+    ],
+    [
+      "מקדש",
+      "temple",
+      "shrine"
+    ],
+    [
+      "שוק",
+      "market"
+    ],
+    [
+      "מוזיאון",
+      "museum"
+    ],
+    [
+      "רכבת",
+      "train"
+    ],
+    [
+      "מלון",
+      "hotel"
+    ],
+    [
+      "פיצה",
+      "pizza"
+    ],
+    [
+      "פסטה",
+      "pasta"
+    ],
+    [
+      "גלידה",
+      "gelato",
+      "ice cream"
+    ]
+  ]
 }

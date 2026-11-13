@@ -84,6 +84,11 @@ A **by location** button uses the phone's GPS **only on a user tap**, and only w
 - **`--template classic`** keeps the previous self-contained design.
 - Flags, mesh washes and region colours come from each country in the trip data (`flag`, `color`, `color_2`, `tint`, `mesh` on the country schema). The template does not hard-code any country. Flag fields that stand in for white should use a light grey (for example `#efece6`), never `#fff`.
 - UI strings live in `templates/<name>/ui/<lang>.json` (English is the fallback).
+
+## Template pitfalls
+
+Patterns that have bitten this page — fold selectors, sticky nav vs `overflow-x`, the progress bar, the pocket sheet, dark-mode country tokens, bidi amounts, Hebrew plurals, narrow Chart.js, search ranking, badges, tap targets and contrast, and `backdrop-filter` — are in [`references/template-pitfalls.md`](references/template-pitfalls.md). Follow them when you change the default template or the renderer.
+
 - Sibling `topic-to-html` `qa_check.py` runs when present.
 
 ## Scripts

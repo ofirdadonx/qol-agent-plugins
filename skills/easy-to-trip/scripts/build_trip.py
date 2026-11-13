@@ -275,6 +275,29 @@ def check_caps(html: str, max_chars, max_bytes, allow_oversize: bool) -> int:
     return 0
 
 
+
+def prepare_qa_source(qa_target: Path, mode: str, site_dir: Path | None = None) -> Path:
+    """qa_check.py reads tokens from the HTML source. In site mode the CSS is
+    linked, so build a temporary page with the stylesheets inlined."""
+    if mode != "site":
+        return qa_target
+    html = qa_target.read_text(encoding="utf-8")
+    chunks = []
+    for name in CSS_FILES:
+        src = (site_dir / "assets" / "css" / name) if site_dir else None
+        if src and src.exists():
+            chunks.append(f"/* {name} */\n" + src.read_text(encoding="utf-8"))
+    # Also pull any other css sitting next to them (should already be in CSS_FILES).
+    injected = "<style>\n" + "\n".join(chunks) + "\n</style>\n"
+    if "<head>" in html:
+        html = html.replace("<head>", "<head>\n" + injected, 1)
+    else:
+        html = injected + html
+    tmp = Path("/tmp") / f"qa_inline_{qa_target.stem}.html"
+    tmp.write_text(html, encoding="utf-8")
+    return tmp
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(
         description=f"Build a {SKILL_NAME} page: one self-contained HTML file, "
@@ -395,13 +418,23 @@ def main(argv=None):
         print(f"Wrote {out}")
         qa_target = out
 
+    qa_file = prepare_qa_source(qa_target, args.mode, out if args.mode == "site" else None)
     if not args.no_qa and QA.exists():
-        r = subprocess.run([sys.executable, str(QA), str(qa_target)], capture_output=True, text=True)
+        r = subprocess.run([sys.executable, str(QA), str(qa_file)], capture_output=True, text=True)
         sys.stdout.write(r.stdout)
         sys.stderr.write(r.stderr)
         if r.returncode != 0:
             print("qa_check reported failures.")
             return r.returncode
+    if not args.no_qa:
+        contrast = Path(__file__).resolve().parent / "qa_contrast.py"
+        if contrast.exists():
+            r = subprocess.run([sys.executable, str(contrast), str(qa_file)], capture_output=True, text=True)
+            sys.stdout.write(r.stdout)
+            sys.stderr.write(r.stderr)
+            if r.returncode != 0:
+                print("qa_contrast reported failures.")
+                return r.returncode
     diet = party_dietary(result["data"])
     if diet:
         print(f"Party dietary (union): {', '.join(diet)}")

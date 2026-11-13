@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.3
+
+- Folded the v9 page-review findings into the default template (see `references/template-pitfalls.md`):
+  - Fold open-state selectors also match a `.fold` inside `.col`; a bare descendant `.is-open .fold` is not used, so nested folds stay closed.
+  - `html`/`body` use `overflow-x: clip` and `scroll-padding-top` so the glass nav stays sticky; overflowing children are fixed (progress bar, long URLs) instead of hidden.
+  - The progress bar is `position: absolute; width: auto; inset-inline: …` with no physical `left`/`right: auto` after it.
+  - `.pocket.glass` stays `position: fixed` even though `.glass` is `relative`. Pocket close is a visible 44px button; leftover `display: none !important` on `.sheet-close` is gone.
+  - Dark-mode country tokens are computed (same hue, lighter) and emitted after `#trip-theme` under `html[data-theme="dark"]`. Blocks use `var(--region-N)`, never inline hex. `scripts/qa_contrast.py` checks muted and dark region contrast at 4.5:1.
+  - LTR amounts and times render as one `<bdi class="tnum" dir="ltr">` atom (thousands commas included). The budget hero stacks an English label over the amount on RTL lines.
+  - Hebrew plurals (1 singular, 2 dual when the UI provides it, 0 and 3+ plural) live in `ui/he.json` and drive both the renderer and the countdown. English stays one/other. No frozen `{n} שעות`.
+  - Chart.js bar charts flip to `indexAxis: 'y'` below 700px, with `autoSkip: false`, a taller canvas, and min-height cleared together with height.
+  - Search ranks name and aliases, then type, then dish/city, then body text, and accepts a place `aliases` field plus a small generic Hebrew↔Latin list in the UI files.
+  - "Open" badges use neutral ink on thick glass, not a warning colour. The booked checkmark phrase sits only on the badge.
+  - Mobile tap targets are at least 44px. Light `--muted` is `#4a515c` (5.10:1 on paper). Leaflet tiles dim in dark mode; markers are taken off the tab path when the list is the keyboard path.
+  - `backdrop-filter` is limited to floating chrome (nav, dock, pocket, instruments). Display weights use 700, not a synthesized 800. Only the Assistant 400/600/700 and Inter 400 faces stay inlined.
+
+
 ## v1.2
 
 - The default template is the v2 glass design: a sticky two-row glass nav with scrollspy, calm mesh washes, inline SVG country flags, a desktop instrument panel, hairline stays that expand in place, nearly-sharp ticket frames, and glass section cards. The previous design is still available as `--template classic`.

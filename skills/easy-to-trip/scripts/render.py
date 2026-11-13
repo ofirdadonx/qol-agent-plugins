@@ -14,7 +14,9 @@ from trip_lib import (
     derive_budget,
     effective_book_by,
     iter_places,
+    lighten_for_contrast,
     party_dietary,
+    pluralize,
     reservation_is_booked,
 )
 
@@ -217,7 +219,26 @@ def theme_style(data) -> str:
     for i, m in enumerate(meshes[:3]):
         rules.append(f"--mesh-{i}:{m}")
     css = ":root{" + ";".join(rules) + "}"
-    return f'<style id="trip-theme">{css}</style>'
+    # Dark-mode region tokens: computed from each country's colour (same hue,
+    # lighter), emitted AFTER #trip-theme so they win, under html[data-theme="dark"]
+    # for specificity. Never hard-code a country's hex here.
+    dark_rules = []
+    for i, c in enumerate(countries):
+        color = safe_css_color(region_color(c, i), REGION_COLORS[i % len(REGION_COLORS)])
+        color2 = safe_css_color(c.get("color_2"), color)
+        dark = lighten_for_contrast(color)
+        dark2 = lighten_for_contrast(color2) or dark
+        if dark:
+            dark_rules.append(f"--region-{i}:{dark}")
+        if dark2:
+            dark_rules.append(f"--region-{i}-2:{dark2}")
+        tint = f"color-mix(in srgb,{dark or color} 22%, transparent)"
+        dark_rules.append(f"--region-{i}-tint:{tint}")
+        if dark2:
+            dark_rules.append(f"--region-{i}-accent:{dark2}")
+    dark_css = "html[data-theme=\"dark\"]{" + ";".join(dark_rules) + "}" if dark_rules else ""
+    dark_tag = f'<style id="trip-theme-dark">{dark_css}</style>' if dark_css else ""
+    return f'<style id="trip-theme">{css}</style>\n{dark_tag}'
 
 
 def transfer_date(data, x):
@@ -270,8 +291,10 @@ def country_span_and_nights(data, country, lang, ui):
         else:
             nights += n
     span = format_span(min(starts) if starts else None, max(ends) if ends else None)
-    tmpl = ui.get("nights_n") or "{n} nights"
-    nights_h = tmpl.replace("{n}", str(nights))
+    nights_h = pluralize(
+        nights,
+        ui.get("plural_night") or {"one": "1 night", "other": "{n} nights"},
+    )
     if opt_labels:
         opt_h = " · ".join(opt_labels)
     elif opt_nights:
@@ -316,15 +339,37 @@ def loc(obj, lang: str, fallback: str = "en") -> str:
     )
 
 
+# Whole LTR numeric atoms (amounts, times, dates). The thousands comma must
+# sit inside the first character class so "1,124.75" is one match, never "1," + "124.75".
 _NUM_RE = re.compile(
-    r"(\+?\d[\d./:–-]{1,}\d|\d+[.,]?\d*\s*[%$€£¥₪฿°]|¥[\d,.\-–]+|฿[\d,.\-–]+|\$[\d,.\-–]+|₪[\d,.\-–]+)"
+    r"("
+    r"[$€£¥₪฿]\s?\d{1,3}(?:,\d{3})+(?:\.\d+)?"
+    r"|[$€£¥₪฿]\s?\d+(?:[.,]\d+)?"
+    r"|¥[\d,.\-–]+"
+    r"|฿[\d,.\-–]+"
+    r"|\$[\d,.\-–]+"
+    r"|₪[\d,.\-–]+"
+    r"|\d{1,3}(?:,\d{3})+(?:\.\d+)?(?:\s?(?:USD|EUR|ILS|JPY|THB|GBP|CHF|[%$€£¥₪฿°]))?"
+    r"|\d+[.,]\d+\s?(?:USD|EUR|ILS|JPY|THB|GBP|CHF|[%$€£¥₪฿°])?"
+    r"|\d+\s?(?:USD|EUR|ILS|JPY|THB|GBP|CHF|[%$€£¥₪฿°])"
+    r"|\d{1,2}:\d{2}(?::\d{2})?"
+    r"|\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}(?::\d{2})?)?"
+    r"|\+?\d[\d,./:–-]{1,}\d"
+    r")"
 )
+
+
+def bdi(inner_escaped: str) -> str:
+    """Wrap a complete LTR atom. Never split a number across spans."""
+    if not inner_escaped:
+        return ""
+    return f'<bdi class="tnum" dir="ltr">{inner_escaped}</bdi>'
 
 
 def ltr(s: str) -> str:
     if not s:
         return s
-    return _NUM_RE.sub(lambda m: f'<span class="ltr tnum">{m.group(0)}</span>', s)
+    return _NUM_RE.sub(lambda m: bdi(m.group(0)), s)
 
 
 def raw_ltr(s) -> str:
@@ -340,7 +385,7 @@ def countdown_caption(trip, ui) -> str:
         return ""
     try:
         dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        return f'<span class="ltr tnum">{esc(dt.strftime("%Y-%m-%d %H:%M"))}</span>'
+        return bdi(esc(dt.strftime("%Y-%m-%d %H:%M")))
     except ValueError:
         return esc(raw)
 
@@ -393,7 +438,7 @@ def tel_link(number: str, tel: str | None = None) -> str:
     if not number:
         return ""
     href = tel or re.sub(r"[^\d+]", "", number)
-    return f'<a class="call" href="tel:{esc(href)}">{icon("ph-phone")} <span class="ltr tnum">{esc(number)}</span></a>'
+    return f'<a class="call" href="tel:{esc(href)}">{icon("ph-phone")} {bdi(esc(number))}</a>'
 
 
 def fold(inner: str, detail_id: str) -> str:
@@ -413,7 +458,7 @@ def money(amount, currency) -> str:
         txt = f"{amount:,.2f} {currency or ''}".strip()
     else:
         txt = f"{amount:,} {currency or ''}".strip()
-    return f'<span class="ltr tnum">{esc(txt)}</span>'
+    return bdi(esc(txt))
 
 
 def country_list(data) -> list:
@@ -576,9 +621,9 @@ def format_deadline_date(dt, lang: str) -> str:
     stamp = f"{dt.day:02d}.{dt.month:02d}.{dt.year}"
     if (lang or "").startswith("he"):
         wd = _HE_WEEKDAYS[dt.weekday()]
-        return f'{wd} <span class="ltr tnum">{esc(stamp)}</span>'
+        return f'{wd} {bdi(esc(stamp))}'
     wd = dt.strftime("%a")
-    return f'{esc(wd)} <span class="ltr tnum">{esc(stamp)}</span>'
+    return f'{esc(wd)} {bdi(esc(stamp))}'
 
 
 def deadline_cards(data, ui, lang: str = "en") -> str:
@@ -604,7 +649,7 @@ def deadline_cards(data, ui, lang: str = "en") -> str:
                 date_h = format_deadline_date(dt, lang)
             except ValueError:
                 sort_key = datetime.max
-                date_h = f'<span class="ltr tnum">{esc(raw)}</span>'
+                date_h = bdi(esc(raw))
             title = ui.get(label_key) or field
             short = b.get("short_title") or ""
             custom = b.get(detail_key[field])
@@ -653,7 +698,7 @@ def render_overview(data, ui, lang) -> str:
             else:
                 stops.append(f'<span>{esc(short)}</span>')
         blocks.append(
-            f'<div class="folio-block" style="--block-color:{esc(color)}">'
+            f'<div class="folio-block" style="--block-color:var(--region-{i})">'
             f'<p class="kicker"><bdi class="tnum" dir="ltr">{esc(span)}</bdi></p>'
             f'<div class="h-flag">{flag}<p class="display">{esc(name)}</p></div>'
             f'<p class="nights-line">{esc(nights_h)}</p>'
@@ -676,11 +721,37 @@ def render_overview(data, ui, lang) -> str:
             f'<p class="closed-line"><strong>{esc(ui["dietary"])}:</strong> {body}</p>'
         )
     legend_items = data["trip"].get("status_legend") or []
+
+    def _legend_caption(item, kind, fallback):
+        """The checkmark phrase ('סגור ✓' / 'Booked ✓') lives only on the badge."""
+        badge_html = badge(kind, ui)
+        text = item if item else fallback
+        if not text:
+            return badge_html
+
+        def _norm(s):
+            return re.sub(r"[\s✓✔✔︎]+", "", re.sub(r"<[^>]+>", "", str(s))).casefold()
+
+        phrases = [
+            ui.get("booked") if kind == "booked" else "",
+            ui.get("open") if kind == "open" else "",
+            ui.get("optional") if kind == "optional" else "",
+            ui.get("closed_booked") if kind == "booked" else "",
+            ui.get("legend_booked") if kind == "booked" else "",
+            ui.get("legend_open") if kind == "open" else "",
+            ui.get("legend_optional") if kind == "optional" else "",
+            badge_html,
+        ]
+        ntext = _norm(text)
+        if any(p and ntext == _norm(p) for p in phrases):
+            return badge_html
+        return f"{badge_html} {esc(text)}"
+
     legend = (
         '<div class="status-legend" style="margin-top:12px">'
-        f'<span>{badge("booked", ui)} {esc(legend_items[0] if legend_items else ui["legend_booked"])}</span> '
-        f'<span>{badge("open", ui)} {esc(legend_items[1] if len(legend_items) > 1 else ui["legend_open"])}</span> '
-        f'<span>{badge("optional", ui)} {esc(legend_items[2] if len(legend_items) > 2 else ui["legend_optional"])}</span>'
+        f'<span>{_legend_caption(legend_items[0] if legend_items else None, "booked", ui.get("legend_booked"))}</span> '
+        f'<span>{_legend_caption(legend_items[1] if len(legend_items) > 1 else None, "open", ui.get("legend_open"))}</span> '
+        f'<span>{_legend_caption(legend_items[2] if len(legend_items) > 2 else None, "optional", ui.get("legend_optional"))}</span>'
         "</div>"
     )
     map_html = render_map_figure(data, ui, lang)
@@ -949,7 +1020,7 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
     stay_label = info.get("stay_label") or ""
     meta_bits = []
     if date_lbl:
-        meta_bits.append(f'<span class="ltr tnum">{esc(date_lbl)}</span>')
+        meta_bits.append(bdi(esc(date_lbl)))
     if nights_undecided:
         meta_bits.append(f'<span class="badge pick">{esc(nights_lbl)}</span>')
     elif nights_lbl:
@@ -962,7 +1033,10 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
     elif stay_st == "booked":
         meta_bits.append(badge("booked", ui))
     if stay_st == "booked" and stay_label:
-        meta_bits.append(f"<span>{esc(stay_label)}</span>")
+        _bn = re.sub(r"[\s✓✔]+", "", ui.get("booked") or "")
+        _ln = re.sub(r"[\s✓✔]+", "", stay_label)
+        if _ln.casefold() != _bn.casefold():
+            meta_bits.append(f"<span>{esc(stay_label)}</span>")
     elif stay_st != "booked" and not nights_undecided:
         meta_bits.append(f'<span class="badge wait">{esc(stay_label or ui["stay_open"])}</span>')
     meta = "".join(meta_bits)
@@ -1058,10 +1132,10 @@ def render_country_axis(data, country, region_i, ui, lang, exclude_not_ok=False)
         meta += f' <span class="stop-opt">{esc(opt_h)}</span>'
     flag = render_flag(country, "sm")
     return (
-        f'<section id="{esc(cid)}" class="country-block" data-region="{region_i}" style="--block-color:{esc(color)};--region:{esc(color)}">'
+        f'<section id="{esc(cid)}" class="country-block" data-region="{region_i}" style="--block-color:var(--region-{region_i});--region:var(--region-{region_i})">'
         f'<div class="country-head"><span class="nm">{esc(name)}</span>'
         f'<span class="meta">{meta}</span><span class="rule"></span>{flag}</div>'
-        f'<div class="tline" data-region="{region_i}" style="--block-color:{esc(color)};--region:{esc(color)}">{"".join(parts)}</div>'
+        f'<div class="tline" data-region="{region_i}" style="--block-color:var(--region-{region_i});--region:var(--region-{region_i})">{"".join(parts)}</div>'
         "</section>"
     )
 
@@ -1119,10 +1193,10 @@ def render_practical(country, ui, lang, region_i, color) -> str:
     h = country.get("practical_headline") or ui["practical"]
     lede = country.get("practical_lede") or ""
     return (
-        f'<section id="{esc(cid)}-practical" class="sec country-chunk" data-region="{region_i}" style="--region:{color}">'
+        f'<section id="{esc(cid)}-practical" class="sec country-chunk" data-region="{region_i}" style="--region:var(--region-{region_i})">'
         f'<div class="sec-head rv"><div class="act">{icon("ph-compass")} {esc(ui["practical"])} · {esc(loc(country.get("name"), lang))}</div>'
         f'<h2>{raw_ltr(h)}</h2><p>{raw_ltr(lede)}</p></div>'
-        f'<div class="card glass g-reg rv"><h3 style="font-size:18px;font-weight:800;margin-bottom:12px">{esc(loc(country.get("name"), lang))}</h3>'
+        f'<div class="card glass g-reg rv"><h3 style="font-size:18px;font-weight:700;margin-bottom:12px">{esc(loc(country.get("name"), lang))}</h3>'
         f'<div class="kv-stack">{"".join(rows)}</div></div></section>'
     )
 
@@ -1356,7 +1430,9 @@ def render_budget(data, ui, lang) -> str:
     for r in bud["booked_rows"]:
         amt = money(r["amount"], r["currency"])
         home_amt = fmt_home(r["home_amount"], home)
-        hero_orig.append(f'{esc(r["title"] or "")} {amt}')
+        hero_orig.append(
+            f'<span class="bud-pair"><span class="bud-lab">{esc(r["title"] or "")}</span>{amt}</span>'
+        )
         code = r.get("confirmation_code")
         booked_cards.append(
             f'<div class="book glass g-thin"><div class="k">{esc(r["title"] or "")} '
@@ -1402,16 +1478,16 @@ def render_budget(data, ui, lang) -> str:
         f'<h2>{esc(ui["budget"])}</h2>'
         f'<p>{raw_ltr(fx.get("label") or ui["fx"])}{(" · " + raw_ltr(fx_date)) if fx_date else ""}</p></div>'
         f'<div class="bud-hero card glass g-thick rv"><div class="lab">{esc(ui["budget_hero"])}</div>'
-        f'<div class="n num"><span class="ltr tnum">{esc(total_txt)}</span></div>'
-        f'<p class="orig">{" · ".join(hero_orig)}</p></div>'
+        f'<div class="n num">{bdi(esc(total_txt))}</div>'
+        f'<p class="orig bud-pairs">{"".join(hero_orig)}</p></div>'
         f'<div class="bud-break"><div class="viz glass g-reg rv">'
         f'<div class="viz-head"><h3>{esc(ui["budget_booked"])}</h3><span class="src">{esc(fx.get("label") or "")}</span></div>'
         + (f'<div class="chart" style="height:220px"><canvas id="bookedChart"></canvas></div>' if booked_cards and total else f'<p class="empty"><strong>{esc(ui.get("no_amount") or "")}</strong></p>')
         + '</div>'
         f'<div class="grid2" style="margin-top:var(--s4)">'
-        f'<div class="card glass g-reg rv"><h3 style="font-size:16px;font-weight:800;margin-bottom:12px">{icon("ph-check-circle")} {esc(ui["budget_booked"])}</h3>'
+        f'<div class="card glass g-reg rv"><h3 style="font-size:16px;font-weight:700;margin-bottom:12px">{icon("ph-check-circle")} {esc(ui["budget_booked"])}</h3>'
         f'{empty_booked}</div>'
-        f'<div class="card glass g-reg rv bud-open"><h3 style="font-size:16px;font-weight:800;margin-bottom:12px">{icon("ph-hourglass")} {esc(ui["budget_open"])}</h3>'
+        f'<div class="card glass g-reg rv bud-open"><h3 style="font-size:16px;font-weight:700;margin-bottom:12px">{icon("ph-hourglass")} {esc(ui["budget_open"])}</h3>'
         f'{"".join(open_cards)}</div></div></div>{est_chart}</section>'
     )
 
@@ -1475,10 +1551,10 @@ def render_shared(data, ui, lang) -> str:
             f'<div class="act">{icon("ph-list-checks")} {esc(ui["tasks_open"])}</div>'
             f'<h2>{raw_ltr(tasks.get("headline") or "")}</h2><p>{raw_ltr(tasks.get("lede") or "")}</p></div>'
             f'<div class="grid2"><div class="card glass g-reg rv">'
-            f'<h3 style="font-size:16px;font-weight:800;margin-bottom:10px;color:var(--pos)">{icon("ph-check-circle")} {esc(ui["tasks_done"])}</h3>'
+            f'<h3 style="font-size:16px;font-weight:700;margin-bottom:10px;color:var(--pos)">{icon("ph-check-circle")} {esc(ui["tasks_done"])}</h3>'
             f'<ul class="bul">{lis_t(tasks.get("done"), done=True)}</ul></div>'
             f'<div class="card glass g-reg rv">'
-            f'<h3 style="font-size:16px;font-weight:800;margin-bottom:10px;color:var(--warn)">{icon("ph-circle-dashed")} {esc(ui["tasks_open"])}</h3>'
+            f'<h3 style="font-size:16px;font-weight:700;margin-bottom:10px;color:var(--warn)">{icon("ph-circle-dashed")} {esc(ui["tasks_open"])}</h3>'
             f'<ul class="bul">{lis_t(tasks.get("open"))}</ul></div></div></section>'
         )
     pack_i = next((i for i, s in enumerate(out) if 'id="pack"' in s), None)
@@ -1563,7 +1639,7 @@ def render_pocket(data, ui, lang) -> str:
         panes.append(f'<div data-pane="{esc(cid)}"><div class="p-inner">{"".join(blocks)}</div></div>')
     return (
         f'<button type="button" class="pocket-toggle press" id="pocketBtn" aria-controls="pocket" aria-expanded="false" aria-label="{esc(ui["pocket"])}">{icon("ph-identification-card")} {esc(ui["pocket"])}</button>'
-        f'<aside class="pocket glass g-thick" id="pocket" role="dialog" aria-label="{esc(ui["pocket"])}" aria-hidden="true">'
+        f'<aside class="pocket glass g-thick" id="pocket" role="dialog" aria-label="{esc(ui["pocket"])}" aria-hidden="true" inert>'
         f'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
         f'<h3>{icon("ph-identification-card")} {esc(ui["pocket_title"])}</h3>'
         f'<button type="button" class="sheet-close press" id="pocketClose" aria-label="{esc(ui["close"])}">{icon("ph-x")}</button></div>'
@@ -1655,7 +1731,7 @@ def render_dock(data, ui, lang) -> str:
         f'<button type="button" id="dockToday">{icon("ph-calendar-check")}<span>{esc(ui["today"])}</span></button>'
         f'<a href="#itinerary" id="dockItin">{icon("ph-path")}<span>{esc(ui.get("dock_itinerary") or ui.get("axis") or "")}</span></a>'
         f'<a href="#map" id="dockMap">{icon("ph-map-trifold")}<span>{esc(ui.get("dock_map") or ui["live_map"])}</span></a>'
-        f'<button type="button" id="dockPocket">{icon("ph-identification-card")}<span>{esc(ui.get("dock_access") or ui["pocket"])}</span></button>'
+        f'<button type="button" id="dockPocket" aria-controls="pocket" aria-expanded="false">{icon("ph-identification-card")}<span>{esc(ui.get("dock_access") or ui["pocket"])}</span></button>'
         "</nav>"
     )
 
@@ -1783,6 +1859,8 @@ def runtime_payload(data, ui, lang, exclude_not_ok=False) -> dict:
             "type_label": pl.get("type_label") or pl.get("type") or kind,
             "blurb": pl.get("note") or "",
             "order": pl.get("order") or "",
+            "dish": pl.get("dish") or pl.get("order") or "",
+            "aliases": [a for a in (pl.get("aliases") or []) if a],
             "caution": pl.get("caution") or "",
             "price": pl.get("price_range") or "",
             "maps": pl.get("maps") or ([{"label": ui["maps"], "href": pl["maps_url"]}] if pl.get("maps_url") else []),

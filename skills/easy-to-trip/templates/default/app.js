@@ -22,7 +22,76 @@ function styleChart(c){if(!c||!c.options)return;const t=css('--text-2'),g=css('-
   if(c.options.plugins&&c.options.plugins.legend)c.options.plugins.legend.labels={...(c.options.plugins.legend.labels||{}),color:t};
   (c.data.datasets||[]).forEach(d=>{if(d._c){const col=Array.isArray(d._c)?d._c.map(css):css(d._c);d.borderColor=col;
     d.backgroundColor=d._fill?css(d._c)+'22':(c.config.type==='bar'?(Array.isArray(col)?col.map(x=>x+'cc'):col+'cc'):col)}})}
-function mk(id,cfg){if(!window.Chart)return null;const el=document.getElementById(id);if(!el)return null;const c=new Chart(el,cfg);styleChart(c);c.update('none');charts.push(c);return c}
+
+function isNarrowChart(){return matchMedia('(max-width:700px)').matches}
+function wrapTick(label, max){
+  const s=String(label??'');
+  if(s.length<=max)return s;
+  const parts=s.split(/\s+/);
+  const lines=[]; let cur='';
+  parts.forEach(w=>{
+    if(!cur)cur=w;
+    else if((cur+' '+w).length<=max)cur+=' '+w;
+    else{lines.push(cur);cur=w;}
+  });
+  if(cur)lines.push(cur);
+  return lines.length===1?lines[0]:lines;
+}
+function applyBarAxis(chart, nCats){
+  if(!chart||!chart.options||!chart.canvas)return;
+  const narrow=isNarrowChart();
+  const opts=chart.options;
+  const scales=opts.scales||{};
+  const currentVal=(opts.indexAxis==='y')?(scales.x||{}):(scales.y||{});
+  const valTicks=currentVal.ticks||{};
+  const cat={
+    reverse:rtl,
+    ticks:{
+      maxRotation:0,
+      autoSkip:false,
+      color:valTicks.color,
+      callback:function(v){
+        const l=this.getLabelForValue?this.getLabelForValue(v):v;
+        return wrapTick(l, narrow?22:16);
+      }
+    },
+    grid:{display:false}
+  };
+  const val={
+    position:rtl?'right':'left',
+    beginAtZero:currentVal.beginAtZero!==undefined?currentVal.beginAtZero:true,
+    max:currentVal.max,
+    ticks:{callback:valTicks.callback,stepSize:valTicks.stepSize,color:valTicks.color},
+    grid:currentVal.grid||{}
+  };
+  opts.indexAxis=narrow?'y':'x';
+  opts.scales=narrow?{x:val,y:cat}:{x:cat,y:val};
+  const wrap=chart.canvas.parentElement;
+  if(wrap){
+    if(narrow){
+      const h=Math.max(200,(nCats||3)*56+36);
+      wrap.style.height=h+'px';
+      wrap.style.minHeight=h+'px';
+    }else{
+      wrap.style.height='';
+      wrap.style.minHeight='';
+    }
+  }
+  try{chart.resize()}catch(e){}
+  chart.update('none');
+}
+function watchCharts(){
+  const mq=matchMedia('(max-width:700px)');
+  const on=()=>charts.forEach(c=>{
+    if(c.config&&c.config.type==='bar'){
+      const n=(c.data&&c.data.labels&&c.data.labels.length)||3;
+      applyBarAxis(c,n);
+    }
+  });
+  if(mq.addEventListener)mq.addEventListener('change',on);
+  else if(mq.addListener)mq.addListener(on);
+}
+function mk(id,cfg){if(!window.Chart)return null;const el=document.getElementById(id);if(!el)return null;const c=new Chart(el,cfg);styleChart(c);if((cfg&&cfg.type)==='bar'||(c.config&&c.config.type==='bar')){const n=(cfg.data&&cfg.data.labels&&cfg.data.labels.length)||3;applyBarAxis(c,n);}c.update('none');charts.push(c);return c}
 function fmt(n){return Math.round(n).toLocaleString(locale)}
 const tipBase={rtl:rtl,padding:12,cornerRadius:12,backgroundColor:'rgba(30,34,42,.92)',titleColor:'#cfd3d9',bodyColor:'#c3c8d0'};
 const base=(extra={})=>({animation:ANIM,responsive:true,maintainAspectRatio:false,layout:{padding:{left:10,right:2}},interaction:{mode:'index',intersect:false},
@@ -167,6 +236,7 @@ function showOpt(id,i){
   if(flag&&saved==null)flag.hidden=true;
 });
 
+watchCharts();
 /* --- FX --- */
 function runFx(){
   const amtEl=$('#fxAmt'),fromEl=$('#fxFrom'),out=$('#fxOut');
@@ -192,16 +262,26 @@ const CD=T.countdown||{};
 
 function currentSeg(now){return TODAY.find(p=>now>=p.from&&now<p.to)}
 
+function plural(n, forms){
+  forms=forms||{};
+  n=Math.round(Number(n)||0);
+  const tmpl=(n===1&&forms.one)?forms.one:((n===2&&forms.two)?forms.two:(forms.other||'{n}'));
+  return String(tmpl).replace(/\{n\}/g, String(n));
+}
 function tick(){
   const now=new Date();
   const nEl=$('#countN'),lEl=$('#countL'),ban=$('#todayBanner');
   if(DEP&&now<DEP){
     const ms=DEP-now,d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000);
     if(nEl)nEl.textContent=d;
-    const one=CD.before_one||UI.before_one||'1 day to departure, and {hours} hours';
-    const soon=CD.before_soon||UI.before_soon||'days to departure · {hours} hours left';
-    const many=CD.before||UI.countdown_label||'days to departure';
-    if(lEl)lEl.textContent=d===1?one.replace('{hours}',h).replace('{days}',d):((d<14?soon:many).replace('{hours}',h).replace('{days}',d));
+    const hours=plural(h, UI.plural_hour||{one:'1 hour',other:'{n} hours'});
+    const days=plural(d, UI.plural_day_word||{one:'day',two:null,other:'days'});
+    const one=CD.before_one||UI.before_one||'{days} to departure, and {hours}';
+    const soon=CD.before_soon||UI.before_soon||'{days} to departure · {hours} left';
+    const many=CD.before||UI.countdown_label||'{days} to departure';
+    let caption=d===1?one:((d<14)?soon:many);
+    caption=String(caption).replace(/\{hours\}\s*(שעות|hours)/gi,'{hours}').replace(/\{days\}\s*(ימים|days)/gi,'{days}');
+    if(lEl)lEl.textContent=caption.replace(/\{hours\}/g,hours).replace(/\{days\}/g,days);
     if(ban){ban.hidden=true;ban.replaceChildren();}
   }else if(DEP&&LAND&&now<=LAND){
     if(nEl)nEl.textContent=CD.during_short||UI.during_short||'On the trip';
@@ -394,7 +474,9 @@ function deadlineKind(end, now, iso){
 function deadlineLabel(kind, d){
   if(kind==='passed')return UI.deadline_passed||'Passed';
   if(d===0)return UI.deadline_today||'Today';
-  if(d===1)return UI.deadline_one||'1 day left';
+  if(d===1)return UI.deadline_one||plural(d, UI.plural_day||{one:'1 day left',other:'{n} days left'});
+  if(d===2&&UI.deadline_two)return UI.deadline_two;
+  if(UI.plural_deadline)return plural(d, UI.plural_deadline);
   return (UI.deadline_n||'{n} days left').replace('{n}',d);
 }
 function updateDeadlines(){
@@ -419,7 +501,7 @@ function foldUnit(el){return el&&(el.closest('.stop, .xfer')||el);}
 function isFoldOpen(el){return !!(el&&el.classList.contains('is-open'));}
 function setFold(el, open, instant){
   if(!el)return;
-  const fold=el.querySelector(':scope > .fold');
+  const fold=el.querySelector(':scope > .fold, :scope > .col > .fold');
   const inner=fold&&fold.querySelector(':scope > .fold-inner');
   const btn=el.querySelector('.stop-toggle, .xfer-sum');
   const snap=instant||reduce;
@@ -478,7 +560,7 @@ function initAnimDetails(){
     const sum=d.querySelector(':scope > summary');
     if(!sum)return;
     d.dataset.anim='1';
-    let fold=d.querySelector(':scope > .fold');
+    let fold=d.querySelector(':scope > .fold, :scope > .col > .fold');
     if(!fold){
       fold=document.createElement('div');fold.className='fold';
       const inner=document.createElement('div');inner.className='fold-inner';
@@ -517,16 +599,25 @@ function openPocket(){
   const p=$('#pocket'),s=$('#sheetScrim')||$('#scrim');
   if(!p)return;
   closePanel();
-  p.classList.add('on');p.setAttribute('aria-hidden','false');
+  p.classList.add('on');
+  p.setAttribute('aria-hidden','false');
+  p.removeAttribute('inert');
+  p.removeAttribute('hidden');
   $('#pocketBtn')&&$('#pocketBtn').setAttribute('aria-expanded','true');
+  $('#dockPocket')&&$('#dockPocket').setAttribute('aria-expanded','true');
   if(s){s.hidden=false;s.classList.add('on');}
   document.body.style.overflow='hidden';
+  const close=$('#pocketClose');
+  if(close){try{close.focus()}catch(e){}}
 }
 function closePocket(){
   const p=$('#pocket'),s=$('#sheetScrim');
   if(!p)return;
-  p.classList.remove('on');p.setAttribute('aria-hidden','true');
+  p.classList.remove('on');
+  p.setAttribute('aria-hidden','true');
+  p.setAttribute('inert','');
   $('#pocketBtn')&&$('#pocketBtn').setAttribute('aria-expanded','false');
+  $('#dockPocket')&&$('#dockPocket').setAttribute('aria-expanded','false');
   if(s&&!$('#panel')?.classList.contains('on')){s.classList.remove('on');s.hidden=true;document.body.style.overflow='';}
 }
 function pocketTab(t){
@@ -580,7 +671,7 @@ function initMap(){
       const exact=p.exact?(UI.pin_exact||''):(UI.pin_approx||'');
       const opt=p.optional?`<br><strong>${esc(UI.optional||'')}</strong>`:'';
       const popup=`<div dir="${T.dir||'ltr'}" lang="${T.lang||''}"><strong>${esc(p.name)}</strong>${opt}<br><span class="ltr tnum">${esc(p.dates)}</span> · ${esc(p.nights)}<br>${esc(p.note||'')}<br><small>${esc(exact)}</small><br><a href="${esc(p.href)}">${esc(UI.to_dest||'')}</a></div>`;
-      L.marker([p.lat,p.lng],{icon,title:p.name,zIndexOffset:p.optional?800:0}).bindPopup(popup).addTo(tripMap);
+      L.marker([p.lat,p.lng],{icon,title:p.name,keyboard:false,zIndexOffset:p.optional?800:0}).bindPopup(popup).addTo(tripMap);
       (byRegion[p.region_i||0]||(byRegion[p.region_i||0]=[])).push(p);
     });
     Object.keys(byRegion).forEach(k=>{
@@ -604,6 +695,8 @@ function initMap(){
     }
     if(pins.length)tripMap.fitBounds(pins.map(p=>[p.lat,p.lng]),{padding:[32,32],maxZoom:6});
     else tripMap.setView([20,0],2);
+    const mc=tripMap.getContainer&&tripMap.getContainer();
+    if(mc)mc.querySelectorAll('.leaflet-marker-icon,.leaflet-marker-shadow,.trip-pin').forEach(n=>n.setAttribute('tabindex','-1'));
     showMapLive();
   }catch(e){showMapFallback(UI.map_offline||'');}
 }
@@ -621,7 +714,46 @@ function normQ(s){
   s=s.replace(/[^\p{L}\p{N}]+/gu,' ');
   return s.replace(/\s+/g,' ').trim();
 }
-const REC=(T.recs||[]).map(it=>({...it,_hay:normQ([it.name,it.city,it.type,it.type_label,it.blurb,it.order,it.caution,it.dest,it.price].join(' '))}));
+function aliasExpand(parts){
+  const toks=(parts||[]).filter(Boolean).map(String);
+  const out=toks.slice();
+  const lower=toks.map(s=>s.toLowerCase());
+  (UI.search_aliases||[]).forEach(g=>{
+    const gl=(g||[]).map(x=>String(x).toLowerCase());
+    if(gl.some(x=>lower.some(t=>t.includes(x)||x.includes(t))))out.push(...g);
+  });
+  return out;
+}
+function recHay(it){
+  const aliases=[].concat(it.aliases||[]);
+  const name=normQ(aliasExpand([it.name, ...aliases]).join(' '));
+  const type=normQ([it.type,it.type_label].filter(Boolean).join(' '));
+  const dish=normQ([it.dish,it.order,it.city].filter(Boolean).join(' '));
+  const body=normQ([it.blurb,it.caution,it.dest,it.price].filter(Boolean).join(' '));
+  const all=normQ(aliasExpand([it.name,...aliases,it.type,it.type_label,it.dish,it.order,it.city,it.blurb,it.caution,it.dest,it.price]).join(' '));
+  return {name,type,dish,body,all};
+}
+function recScore(it,q){
+  if(!q)return 1;
+  const toks=q.split(' ').filter(Boolean);
+  const h=it._h||recHay(it);
+  let score=0;
+  for(const tok of toks){
+    const inName=h.name.includes(tok);
+    const inType=h.type.includes(tok);
+    const inDish=h.dish.includes(tok);
+    const inBody=h.body.includes(tok);
+    const inAll=h.all.includes(tok);
+    if(!(inName||inType||inDish||inBody||inAll))return 0;
+    if(inName)score+=8;
+    else if(inType)score+=6;
+    else if(inDish)score+=4;
+    else if(inAll)score+=4;
+    else score+=1;
+  }
+  return score;
+}
+const REC=(T.recs||[]).map(it=>{const h=recHay(it);return {...it,_h:h,_hay:h.all};});
 let rsCountry=(T.countries&&T.countries[0]&&T.countries[0].id)||'',rsTypes=new Set(),rsCity='';
 function rsCitiesFor(c){
   const seen=[],set=new Set();
@@ -639,11 +771,15 @@ function recMatch(it,q){
   if(rsTypes.size&&!rsTypes.has(it.type))return false;
   if(rsCity&&it.city!==rsCity)return false;
   if(!q)return true;
-  return q.split(' ').every(tok=>tok&&it._hay.includes(tok));
+  return recScore(it,q)>0;
 }
 function runRecSearch(){
   const q=normQ(($('#rsq')||{}).value||'');
-  const hits=REC.filter(it=>recMatch(it,q));
+  let scored=REC.filter(it=>recMatch(it,q)).map(it=>({it,s:q?recScore(it,q):1}));
+  const strong=scored.filter(h=>h.s>=4);
+  if(q&&strong.length)scored=strong;
+  scored.sort((a,b)=>b.s-a.s||String(a.it.name||'').localeCompare(String(b.it.name||''),locale));
+  const hits=scored.map(h=>h.it);
   const list=$('#rsList'),empty=$('#rsEmpty'),count=$('#rsCount');
   const cName=((T.countries||[]).find(c=>c.id===rsCountry)||{}).name||rsCountry;
   if(count){

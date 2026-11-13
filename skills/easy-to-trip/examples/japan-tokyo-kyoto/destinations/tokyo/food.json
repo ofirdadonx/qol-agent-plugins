@@ -53,6 +53,8 @@
       },
       "type": "restaurant",
       "type_label": "Ramen",
+      "aliases": ["ramen", "ראמן", "みどりボウル"],
+      "dish": "Vegetable shoyu ramen",
       "area": "Shimokitazawa",
       "note": "Invented walk-in ramen shop with a vegetable shoyu broth. No ticket, no booking.",
       "url": "https://example.invalid/midori-bowl",

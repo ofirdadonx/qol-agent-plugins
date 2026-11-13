@@ -10,7 +10,7 @@
 [data-theme="light"]{
   --bg:#d9dde3;
   --mesh-1:#c6d3e6;--mesh-2:#d8cde2;--mesh-3:#c9e0d8;--mesh-4:#e3d8c8;
-  --text:#1b1f26;--text-2:#3a414c;--muted:#525a66;
+  --text:#1b1f26;--text-2:#3a414c;--muted:#4a515c;
   --accent:#3b5fc4;--accent-ink:#2a4596;--accent-tint:rgba(59,95,196,.14);
   --pos:#13653d;--neg:#9c2d2d;--warn:#74470a;
   --pos-tint:rgba(29,122,76,.13);--neg-tint:rgba(178,58,58,.11);--warn-tint:rgba(143,90,14,.12);
@@ -36,7 +36,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:var(--font);color:var(--text);background:var(--bg);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+body{font-family:var(--font);color:var(--text);background:var(--bg);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:clip}
 .num,.tnum{font-family:'Inter',var(--font);font-variant-numeric:tabular-nums}
 
 /* ===== Mesh background + noise ===== */
@@ -77,9 +77,9 @@ body{font-family:var(--font);color:var(--text);background:var(--bg);font-size:17
 
 /* ===== Type ===== */
 .kicker{display:inline-flex;gap:8px;align-items:center;font-weight:700;font-size:14px;color:var(--accent-ink);padding:5px 12px;border-radius:var(--r-chip)}
-h1{font-size:clamp(34px,5.2vw,58px);font-weight:800;line-height:1.08;letter-spacing:-.02em;margin:var(--s4) 0 var(--s3)}
+h1{font-size:clamp(34px,5.2vw,58px);font-weight:700;line-height:1.08;letter-spacing:-.02em;margin:var(--s4) 0 var(--s3)}
 .lede{font-size:20px;color:var(--text-2);max-width:60ch}
-h2{font-size:clamp(24px,3vw,32px);font-weight:800;line-height:1.2;letter-spacing:-.01em}
+h2{font-size:clamp(24px,3vw,32px);font-weight:700;line-height:1.2;letter-spacing:-.01em}
 .act{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--muted);margin-bottom:var(--s2)}
 .sec{margin-top:var(--s16);scroll-margin-top:96px}
 .sec-head{margin-bottom:var(--s6);max-width:68ch}
@@ -92,7 +92,7 @@ h2{font-size:clamp(24px,3vw,32px);font-weight:800;line-height:1.2;letter-spacing
 .card{border-radius:var(--r-card);padding:var(--s6)}
 .bottom{padding:var(--s6) var(--s6) var(--s5)}
 .bottom h3{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:700;letter-spacing:.05em;color:var(--muted);margin-bottom:var(--s3)}
-.verdict{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:800;color:var(--pos);margin-bottom:var(--s3)}
+.verdict{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:700;color:var(--pos);margin-bottom:var(--s3)}
 .verdict .ph{font-size:34px}
 .bottom ul{list-style:none;display:grid;gap:10px}
 .bottom li{display:flex;gap:10px;align-items:flex-start;color:var(--text)}
@@ -132,7 +132,7 @@ h2{font-size:clamp(24px,3vw,32px);font-weight:800;line-height:1.2;letter-spacing
 .opt.best .tag{color:var(--pos);background:var(--pos-tint)}
 .opt.weak .tag{color:var(--neg);background:var(--neg-tint)}
 .opt.weak{background:linear-gradient(var(--neg-tint),var(--neg-tint)),var(--g-reg)}
-.opt h4{font-size:24px;font-weight:800;margin:10px 0 6px}
+.opt h4{font-size:24px;font-weight:700;margin:10px 0 6px}
 .opt p{color:var(--text-2);font-size:15.5px}
 
 /* ===== Deep dive L1: glossary term ===== */
@@ -172,7 +172,7 @@ details.more .body code{font-family:Inter,monospace;font-size:14px;background:va
 /* ===== Timeline / risks ===== */
 .tl{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4)}
 .tl .card{padding:var(--s5)}
-.tl .when{font-weight:800;font-size:22px}
+.tl .when{font-weight:700;font-size:22px}
 .tl .cond{color:var(--text-2);font-size:15.5px;margin-top:4px}
 .tl .ph.big{font-size:30px;color:var(--warn)}
 .risks{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:var(--s4)}
@@ -243,7 +243,7 @@ ol.steps{list-style:none}
 
 .src{display:inline-flex;align-items:center;gap:4px;font:600 11.5px var(--font);color:var(--muted);padding:2px 8px;border-radius:999px;border:1px solid var(--g-border);background:var(--g-thin);vertical-align:middle;white-space:nowrap;margin-inline-start:6px}
 .calc{display:grid;gap:6px;font-size:15.5px}.calc div{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-radius:12px}
-.calc .tot{font-weight:800;border-top:1px solid var(--g-border);border-radius:0;padding-top:10px}
+.calc .tot{font-weight:700;border-top:1px solid var(--g-border);border-radius:0;padding-top:10px}
 .pg-banner{display:flex;gap:14px;align-items:flex-start;padding:var(--s5) var(--s6);border-radius:var(--r-card);border:1.5px dashed color-mix(in srgb,var(--warn) 60%,transparent);background:linear-gradient(var(--warn-tint),var(--warn-tint)),var(--g-reg)}
 .pg-banner .ph{font-size:30px;color:var(--warn);flex:none}
 .pg{margin-top:var(--s16);padding-top:var(--s8);border-top:2px dashed var(--g-border)}
@@ -271,7 +271,7 @@ ol.steps{list-style:none}
 .miss{margin-top:10px;font-size:14px;color:var(--warn);display:flex;gap:8px;align-items:flex-start}
 @media(max-width:560px){.pl{grid-template-columns:1fr}.seg button{padding:7px 12px;font-size:13.5px}}
 /* v4.3 mobile hardening */
-html{overflow-x:hidden}
+html{overflow-x:clip;scroll-padding-top:var(--nav-h,96px)}
 .viz,.card,.opt,.kpi{min-width:0}
 canvas{max-width:100%}
 @media (max-width:560px){

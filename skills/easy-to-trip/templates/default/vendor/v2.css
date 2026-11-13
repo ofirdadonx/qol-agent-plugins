@@ -11,7 +11,7 @@
   --paper-wash:#d5d0c8;
   --ink:#1b1f26;
   --ink-2:#3a414c;
-  --muted:#525a66;
+  --muted:#4a515c;
   --rule:rgba(42,46,51,.16);
   --rule-2:rgba(42,46,51,.28);
   --pos:#13653d;
@@ -23,7 +23,7 @@
   --g-thick:rgba(222,217,210,.86);
   --g-edge:rgba(244,246,249,.78);
   --g-border:rgba(42,46,51,.15);
-  --nav-h:108px;
+  --nav-h:96px;
   --panel-w:332px;
   --ease-out:cubic-bezier(.16,1,.3,1);
   --dur-1:160ms;
@@ -105,8 +105,8 @@ html,body{
   min-width:0;
 }
 body{background:transparent;padding-bottom:0}
-html{background:var(--paper);overflow-x:hidden}
-body{overflow-x:hidden;max-width:100%}
+html{background:var(--paper);overflow-x:clip;scroll-padding-top:var(--nav-h,96px);scroll-behavior:smooth}
+body{overflow-x:clip;max-width:100%}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 a{color:inherit;text-decoration:none}
 img,svg{display:block;max-width:100%}
@@ -136,16 +136,27 @@ img,svg{display:block;max-width:100%}
 .glass{
   position:relative;
   background:var(--g-reg);
-  -webkit-backdrop-filter:blur(24px) saturate(180%);
-  backdrop-filter:blur(24px) saturate(180%);
   border:1px solid var(--g-border);
   box-shadow:0 1px 1px rgba(30,40,60,.04),0 10px 28px -12px rgba(30,40,60,.14);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+/* Backdrop-filter only on floating chrome — not every card. */
+header.top,
+#panel.toc-panel, aside#panel,
+.pocket.glass, .pocket,
+.instruments,
+.dock{
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  backdrop-filter:blur(24px) saturate(180%);
 }
 .glass::after{
   content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background:linear-gradient(180deg,var(--g-edge) 0,transparent 1.6px);z-index:1;
 }
 .g-thin{background:var(--g-thin)}
+/* Sheets and the pocket stay fixed even though .glass sets position:relative. */
+.pocket.glass,.pocket{position:fixed}
 .g-reg{background:var(--g-reg)}
 .g-thick{background:var(--g-thick)}
 .glass > *,.sec > *,.instruments > *{position:relative;z-index:2}
@@ -188,8 +199,8 @@ header.top .mast{
   letter-spacing:.02em;border:1px solid transparent;white-space:nowrap}
 .nav-bar a:hover{background:var(--g-thin);border-color:var(--g-border);color:var(--ink)}
 .nav-bar a.on{background:var(--ink);color:var(--paper);border-color:var(--ink);box-shadow:none}
-header.top .progress{inset-inline:56px;bottom:0;height:2px}
-header.top .progress b{background:var(--region-0)}
+header.top .progress{position:absolute;inset-inline:56px;inset-block-end:0;width:auto;height:2px}
+header.top .progress b{background:var(--region-0);display:block;height:100%;width:0}
 
 /* Hide the classic floating TOC button on this template; nav covers it. */
 .panel-toggle{display:none}
@@ -233,7 +244,7 @@ header.top .progress b{background:var(--region-0)}
 .folio-block::before,.folio-block::after{content:none;display:none;background:none}
 .kicker{font:700 11.5px var(--font);letter-spacing:.12em;color:var(--muted);margin-bottom:6px;
   background:transparent;padding:0;border-radius:0;display:block}
-.display{font-size:clamp(40px,6vw,68px);font-weight:800;line-height:.92;letter-spacing:-.035em;margin:0 0 8px;color:var(--block-color,var(--region-0))}
+.display{font-size:clamp(40px,6vw,68px);font-weight:700;line-height:.92;letter-spacing:-.035em;margin:0 0 8px;color:var(--block-color,var(--region-0))}
 .nights-line{font:600 20px var(--font);color:var(--ink);margin-bottom:8px}
 .stops-line{font:600 15.5px var(--font);color:var(--ink-2);line-height:1.7;margin:0}
 .stops-line .ok{color:var(--pos);font-weight:700}
@@ -271,8 +282,8 @@ figure.map, .spread .map{
 
 /* ===== Instruments sidebar ===== */
 .instruments{
-  position:sticky;top:92px;border-radius:16px;padding:18px 16px 16px;width:var(--panel-w);
-  max-width:100%;box-sizing:border-box;overflow-x:hidden;min-width:0;
+  position:sticky;top:var(--nav-h,96px);border-radius:16px;padding:18px 16px 16px;width:var(--panel-w);
+  max-width:100%;box-sizing:border-box;overflow-x:clip;min-width:0;
   background:var(--g-thick);
   -webkit-backdrop-filter:blur(24px) saturate(160%);
   backdrop-filter:blur(24px) saturate(160%);
@@ -280,8 +291,8 @@ figure.map, .spread .map{
   box-shadow:0 1px 1px rgba(30,40,60,.04),0 10px 28px -10px rgba(30,40,60,.16),inset 0 1px 0 var(--g-edge);
   z-index:3;
 }
-.instruments h2{font:800 12px var(--font);letter-spacing:.12em;color:var(--muted);margin:0 0 8px}
-.instruments .lead{font:800 28px var(--font);letter-spacing:-.03em;line-height:1.05;margin:0 0 4px}
+.instruments h2{font:700 12px var(--font);letter-spacing:.12em;color:var(--muted);margin:0 0 8px}
+.instruments .lead{font:700 28px var(--font);letter-spacing:-.03em;line-height:1.05;margin:0 0 4px}
 .instruments .lead .tnum, .instruments #countN{font-family:'Inter',var(--font);font-variant-numeric:tabular-nums}
 .instruments .sub, .instruments #countL{font:500 13.5px var(--font);color:var(--ink-2);line-height:1.45;margin-bottom:14px}
 .instruments .hr{border:0;border-top:1px solid var(--rule);margin:14px 0}
@@ -332,10 +343,10 @@ figure.map, .spread .map{
 
 /* ===== Itinerary ===== */
 .itinerary{padding-top:0;position:relative;z-index:2;margin-top:0}
-.itinerary > h2{font:800 13px var(--font);letter-spacing:.14em;color:var(--muted);margin:0 0 14px}
+.itinerary > h2{font:700 13px var(--font);letter-spacing:.14em;color:var(--muted);margin:0 0 14px}
 .country-head{display:flex;align-items:baseline;gap:14px;margin:28px 0 14px;padding-inline-start:58px}
 .country-head:first-of-type{margin-top:0}
-.country-head .nm{font:800 15px var(--font);letter-spacing:.04em;color:var(--block-color,var(--region-0))}
+.country-head .nm{font:700 15px var(--font);letter-spacing:.04em;color:var(--block-color,var(--region-0))}
 .country-head .meta{font:500 13px var(--font);color:var(--muted)}
 .country-head .rule{flex:1;height:1px;background:var(--rule)}
 .country-head .flag{align-self:center}
@@ -390,7 +401,7 @@ article.stay:hover, article.stay.is-hover{
   border-radius:2px;
 }
 article.stay .stop-sum-top h3, article.stay .city{
-  font:800 20px var(--font);line-height:1.15;letter-spacing:-.01em;
+  font:700 20px var(--font);line-height:1.15;letter-spacing:-.01em;
 }
 article.stay .pin{display:none}
 
@@ -453,7 +464,7 @@ article.ticket .xfer-route, article.ticket .kind{
 .sec > .kicker, .rest .kicker{font:700 11.5px var(--font);letter-spacing:.12em;color:var(--muted);margin-bottom:4px}
 .sec-head .act{font:700 11.5px var(--font);letter-spacing:.12em;color:var(--muted)}
 .sec-head h2, .sec > h2, .rest h2{
-  font:800 28px var(--font);letter-spacing:-.03em;line-height:1.15;margin:0 0 6px;
+  font:700 28px var(--font);letter-spacing:-.03em;line-height:1.15;margin:0 0 6px;
 }
 .sec-head p, .sec > .lede{font:500 14.5px var(--font);color:var(--ink-2);line-height:1.5;max-width:62ch;margin-bottom:18px}
 
@@ -467,12 +478,12 @@ article.ticket .xfer-route, article.ticket .kind{
 .duo .sec, .duo > section{margin-bottom:0}
 
 /* Budget */
-.bud-hero .n, .bud-hero .num{font:800 32px 'Inter',var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.bud-hero .n, .bud-hero .num{font:700 32px 'Inter',var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
 .empty{
   padding:16px 18px;border:1px dashed var(--rule-2);border-radius:10px;
   font:600 14px var(--font);color:var(--ink-2);line-height:1.5;
 }
-.empty strong{color:var(--ink);font-weight:800}
+.empty strong{color:var(--ink);font-weight:700}
 
 /* Recs: fewer loud chips. Pressed chip is ink, warm-grey text, not a paper highlight. */
 .chips button[aria-pressed="true"],
@@ -519,7 +530,7 @@ article.ticket .xfer-route, article.ticket .kind{
   .mast .dates,.mast .who{font-size:12px}
   .mast-actions{justify-self:end;align-self:center;gap:4px}
   .mast-actions .jump-today span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
-  header.top .progress{inset-inline:16px}
+  header.top .progress{position:absolute;inset-inline:16px;inset-block-end:0;width:auto}
 
   /* Horizontally scrollable nav with faded edges; first/last chips stay reachable. */
   header.top .nav-wrap{
@@ -600,3 +611,154 @@ h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.025em;line-height:1.12}
 .folio .closed-line{max-width:46ch}
 .instruments .phone, .instruments .emer + .src{overflow-wrap:anywhere}
 #dockMap span{max-width:8em;text-align:center}
+
+
+/* ===== v9 review findings (generic) ===== */
+
+/* 1. Folds live inside .col, not always as a direct child of the article.
+   Never a bare .is-open .fold — that would also open nested folds. */
+.is-open > .fold,
+.is-open > .col > .fold,
+details.is-open > .fold{
+  grid-template-rows:1fr;
+  opacity:1;
+}
+
+/* 3. Progress already uses width:auto + inset-inline. Do not set left/right:auto
+   after inset-inline — physical sides reset the logical insets. */
+
+/* 10. "Open" is a status, not a warning. Neutral ink on thick glass. */
+.badge.wait{
+  color:var(--ink-2);
+  background:var(--g-thick);
+  border:1px solid var(--g-border);
+}
+html[data-theme="light"] .badge.closed,
+[data-theme="light"] .badge.closed{
+  color:#0f5a36;
+}
+
+/* 6. Label-over-value pairs: each isolated, for an English name + amount on an RTL line. */
+.bud-hero .orig.bud-pairs,
+.bud-pairs{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  max-width:36em;
+  margin-inline:auto;
+  text-align:center;
+}
+.bud-pair{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1px;
+  unicode-bidi:isolate;
+}
+.bud-pair .bud-lab{
+  font:600 13.5px var(--font);
+  color:var(--ink-2);
+  line-height:1.3;
+}
+.bud-pair .tnum{
+  font:700 15px 'Inter',var(--font);
+  font-variant-numeric:tabular-nums;
+  color:var(--ink);
+}
+
+/* 8. Room for wrapped / horizontal-bar tick labels. min-height is overridden
+   together with height when the JS axis flip runs. */
+.chart, .viz .chart, [id$="Chart"], canvas.chart{
+  min-height:180px;
+}
+
+/* 11. 44px tap targets on mobile. */
+@media (max-width:899px){
+  .nav-bar a{
+    min-height:44px;
+    padding-inline:12px;
+    display:inline-flex;
+    align-items:center;
+  }
+  .mast-actions .jump-today,
+  .mast-actions .iconbtn,
+  #themeBtn, #jumpToday, #jumpSearch, #locateBtn{
+    min-height:44px;
+    min-width:44px;
+    width:44px;
+    height:44px;
+    padding:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .stop-toggle, .xfer-sum, .copybtn, .chk-list label, .pocket .pseg button,
+  a.navbtn, a.maps, a.call, a.ext{
+    min-height:44px;
+  }
+  /* Map ends above the dock; override both height and min-height. */
+  .spread .map-live, .spread #mapLive{
+    height:220px;
+    min-height:0;
+    margin-bottom:calc(8px + 72px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* 11. Dim OSM tiles on dark paper. */
+html[data-theme="dark"] .leaflet-tile-pane{
+  filter:brightness(.78) saturate(.88) contrast(1.05);
+}
+
+/* 12. Backdrop-filter only on floating chrome (nav, dock, pocket, instruments).
+   Content sections keep the glass look (tint, edge, hairline) without a blur pass. */
+.rest > .sec, .rest section.sec, .country-chunk, section.sec.glass,
+#nights, #recs-search, #budget, #fx, #docs, #pack, #tasks, #choose,
+[id$="-practical"], [id$="-docs"], [id$="-pack"], [id^="days-"], [id^="choose-"],
+article.ticket, article.xfer.ticket,
+figure.map, .spread .map,
+.rest .card.glass, .country-chunk .card.glass,
+.day.glass, .book.glass, .blk, .recs.glass,
+article.stay:hover, article.stay.is-hover{
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+
+/* 2. Mid-width: stack the opening spread so the folio is not squeezed. */
+@media (min-width:900px) and (max-width:1279px){
+  .shell{padding-inline:32px;gap:24px 32px;max-width:100%;min-width:0}
+  .rest{padding-inline:32px}
+  header.top .mast, .nav-wrap, .nav-bar{padding-inline:32px}
+  header.top .progress{inset-inline:32px;width:auto;position:absolute;inset-block-end:0}
+  .spread{grid-template-columns:1fr;gap:24px}
+  .folio{min-width:0}
+  figure.map, .spread .map{max-width:none;width:100%;justify-self:stretch;min-width:0}
+  .spread .map-live, .spread #mapLive{height:420px;max-width:100%;min-height:0}
+}
+
+/* Pocket close is a real button (44px). Fold close buttons stay hidden —
+   the toggle on the row closes the fold. No display:none !important. */
+.fold .sheet-close{display:none}
+.pocket .sheet-close,
+#pocketClose{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:44px;
+  min-height:44px;
+  border-radius:2px;
+}
+@media (max-width:899px){
+  .pocket{
+    inset-inline:0;
+    bottom:0;
+    max-width:none;
+    width:auto;
+    border-radius:20px 20px 0 0;
+    z-index:100;
+    max-height:min(90vh,720px);
+  }
+}
+
+/* Long external URLs wrap instead of overflowing (finding 2: fix the child). */
+a.ext, .ext{overflow-wrap:anywhere;word-break:break-word;max-width:100%}

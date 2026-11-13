@@ -68,8 +68,8 @@ There is **no** default character or byte limit.
 
 `--template default` (the default) uses `templates/default/` and `scripts/render.py`: the v2 glass page (sticky glass nav, mesh washes, flags, instrument panel, hairline stays, ticket slips). `--template classic` uses `templates/classic/` and `scripts/render_classic.py`, the previous design.
 
-Country colours and flags are not in the template. Put them on each country file (`color`, `color_2`, `tint`, `mesh`, and a `flag` of SVG shapes). The build writes them into a `#trip-theme` stylesheet and inline SVGs. Mesh washes use `--mesh-0` … `--mesh-2` from those colours.
+Country colours and flags are not in the template. Put them on each country file (`color`, `color_2`, `tint`, `mesh`, and a `flag` of SVG shapes). The build writes them into a `#trip-theme` stylesheet and inline SVGs. Mesh washes use `--mesh-0` … `--mesh-2` from those colours. Dark-mode region tokens are computed and written in a following `#trip-theme-dark` block; see `references/template-pitfalls.md` when changing the default template.
 
 ## Other flags
 
-`--exclude-not-ok` omits places whose `diet_fit` is `not_ok`. `--no-qa` skips the sibling `topic-to-html` `qa_check.py` when that script is present. `--as-of`, `--stale-months`, and `--book-by-days` are passed through to validation.
+`--exclude-not-ok` omits places whose `diet_fit` is `not_ok`. `--no-qa` skips the sibling `topic-to-html` `qa_check.py` and this skill's `qa_contrast.py` (muted and dark region contrast, 4.5:1). `--as-of`, `--stale-months`, and `--book-by-days` are passed through to validation.

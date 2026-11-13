@@ -61,6 +61,20 @@
               "null"
             ]
           },
+          "dish": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A dish or order to highlight. Search ranks this with the name and type."
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Alternative names (other scripts or spellings) that search matches, on top of the small generic list in the UI file."
+          },
           "maps_url": {
             "type": [
               "string",
