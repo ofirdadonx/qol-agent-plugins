@@ -3,6 +3,7 @@
 ## v1.2
 
 - The default template is the v2 glass design: a sticky two-row glass nav with scrollspy, calm mesh washes, inline SVG country flags, a desktop instrument panel, hairline stays that expand in place, nearly-sharp ticket frames, and glass section cards. The previous design is still available as `--template classic`.
+- Template polish: mesh washes are full-bleed (no boxed decorations behind country names); the party line is omitted when the wordmark already names the travelers; booking confirmation codes are shown once, with copy actions in a column inside the panel; optional destinations sit inline in the city list with a dashed style; dietary codes are shown as localized labels from the UI file; the mobile nav is a fade-edged scroll strip; the mobile toolbar sits in the header row; the desktop gap before the itinerary is tightened.
 - Country `flag`, `color`, `color_2`, `tint` and `mesh` fields (optional) drive flags, region colours and the background mesh. Nothing in the template is hard-coded to a country.
 - `--template default|classic` selects the renderer and the vendor assets.
 

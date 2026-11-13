@@ -334,8 +334,20 @@ function syncNav(){
   }
   if(current){
     chips.forEach(c=>c.classList.toggle('on',c.getAttribute('href')==='#'+current));
-    const on=chips.find(c=>c.classList.contains('on'));
-    on&&on.scrollIntoView({block:'nearest',inline:'center'});
+    const on=chips.find(c=>c.classList.contains('on') && c.closest('.nav-bar'));
+    if(on){
+      const bar=on.closest('.nav-bar');
+      if(bar){
+        const br=bar.getBoundingClientRect();
+        const or=on.getBoundingClientRect();
+        const pad=24;
+        if(or.left<br.left+pad || or.right>br.right-pad){
+          // Scroll only the nav strip; scrollIntoView would also jump the page.
+          const delta=((or.left+or.right)/2)-((br.left+br.right)/2);
+          bar.scrollBy({left:delta,behavior:'instant'});
+        }
+      }
+    }
     $$('.dock a[href^="#"]').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+current));
   }
 }

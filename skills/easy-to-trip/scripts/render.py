@@ -122,6 +122,42 @@ def party_label(data, lang) -> str:
     return " · ".join(names)
 
 
+def who_if_needed(brand: str, who: str) -> str:
+    """Skip the party line when the wordmark already names the travelers."""
+    if not who:
+        return ""
+    if brand and who in brand:
+        return ""
+    return who
+
+
+def diet_phrase(data, ui) -> str:
+    """Localized dietary labels from ui[diet_<code>]; codes stay in the data."""
+    labels = []
+    for code in party_dietary(data):
+        label = (ui.get("diet_" + code) or "").strip()
+        if not label:
+            label = (code or "").replace("-", " ").replace("_", " ").strip()
+        if label:
+            labels.append(label)
+    return " · ".join(labels)
+
+
+def booking_display_title(b) -> str:
+    """Short title, or the full title with a repeated confirmation code stripped."""
+    short = (b.get("short_title") or "").strip()
+    if short:
+        return short
+    title = (b.get("title") or "").strip()
+    code = (b.get("confirmation_code") or "").strip()
+    if code and code in title:
+        title = title.replace(code, "")
+        title = re.sub(r"[\s·•|,:\-–—]+$", "", title)
+        title = re.sub(r"^[\s·•|,:\-–—]+", "", title)
+        title = re.sub(r"\s+", " ", title).strip()
+    return title or code
+
+
 def render_flag(country, size="sm") -> str:
     flag = (country or {}).get("flag") or {}
     shapes = flag.get("shapes") or []
@@ -509,14 +545,16 @@ def render_header(data, ui, lang) -> str:
     flags_h = f'<span class="flags">{flags}</span>' if flags else ""
     dates = mast_dates(trip)
     dates_h = f'<div class="dates tnum" dir="ltr">{esc(dates)}</div>' if dates else ""
-    who = party_label(data, lang)
+    who = who_if_needed(brand, party_label(data, lang))
     who_h = f'<div class="who">{esc(who)}</div>' if who else ""
     return (
         '<header class="top glass g-thick">\n'
         '  <div class="mast">\n'
-        f'    <div class="wordmark">{esc(brand)}{flags_h}</div>\n'
-        f'    {dates_h}\n'
-        f'    {who_h}\n'
+        '    <div class="mast-lead">\n'
+        f'      <div class="wordmark">{esc(brand)}{flags_h}</div>\n'
+        f'      {dates_h}\n'
+        f'      {who_h}\n'
+        '    </div>\n'
         '    <div class="mast-actions">\n'
         f'      <button type="button" class="jump-today press" id="jumpSearch" aria-label="{esc(ui["search_places"])}">{icon("ph-magnifying-glass")}<span> {esc(ui["search"])}</span></button>\n'
         f'      <button type="button" class="jump-today press" id="jumpToday" aria-label="{esc(ui["today"])}">{icon("ph-calendar-check")}<span> {esc(ui["today"])}</span></button>\n'
@@ -524,7 +562,7 @@ def render_header(data, ui, lang) -> str:
         f'      <button class="iconbtn press" id="themeBtn" aria-label="{esc(ui["theme"])}">{icon("ph-moon-stars")}</button>\n'
         "    </div>\n"
         "  </div>\n"
-        f'  <nav class="nav-bar" aria-label="{esc(ui.get("sections") or ui["contents"])}">{"".join(chips)}</nav>\n'
+        f'  <div class="nav-wrap"><nav class="nav-bar" aria-label="{esc(ui.get("sections") or ui["contents"])}">{"".join(chips)}</nav></div>\n'
         '  <div class="progress" aria-hidden="true"><b id="prog"></b></div>\n'
         "</header>"
     )
@@ -598,7 +636,7 @@ def render_overview(data, ui, lang) -> str:
     countries = country_list(data)
     blocks = []
     for i, c in enumerate(countries):
-        span, nights_h, opt_h, dests = country_span_and_nights(data, c, lang, ui)
+        span, nights_h, _opt_h, dests = country_span_and_nights(data, c, lang, ui)
         color = safe_css_color(region_color(c, i), REGION_COLORS[i % len(REGION_COLORS)])
         flag = render_flag(c, "lg")
         name = loc(c.get("name"), lang) or c["id"]
@@ -609,33 +647,33 @@ def render_overview(data, ui, lang) -> str:
             info = ((data.get("destinations") or {}).get(d["id"]) or {}).get("info") or {}
             stay_st = info.get("stay_status") or ("booked" if info.get("stay_booking_id") else "open")
             if d.get("optional"):
-                stops.append(f'<span class="opt">{esc(short)}</span>')
+                stops.append(f'<span class="stop-opt">{esc(short)}</span>')
             elif stay_st == "booked":
                 stops.append(f'<span class="ok">{esc(short)} ✓</span>')
             else:
-                stops.append(esc(short))
-        opt_html = f'<span class="opt">{esc(opt_h)}</span>' if opt_h else ""
+                stops.append(f'<span>{esc(short)}</span>')
         blocks.append(
             f'<div class="folio-block" style="--block-color:{esc(color)}">'
             f'<p class="kicker"><bdi class="tnum" dir="ltr">{esc(span)}</bdi></p>'
             f'<div class="h-flag">{flag}<p class="display">{esc(name)}</p></div>'
-            f'<p class="nights-line">{esc(nights_h)}{opt_html}</p>'
+            f'<p class="nights-line">{esc(nights_h)}</p>'
             f'<p class="stops-line">{" · ".join(stops)}</p>'
             "</div>"
         )
     booked = [b for b in data["bookings"].get("bookings") or [] if b.get("status") == "booked"]
     closed = ""
     if booked:
-        titles = ", ".join((b.get("short_title") or b.get("title") or "") for b in booked)
+        titles = ", ".join(booking_display_title(b) for b in booked)
         closed = f'<p class="closed-line">{esc(ui.get("closed_booked") or "")}: {esc(titles)}.</p>'
-    diet = party_dietary(data)
     diet_html = ""
-    if diet or data["trip"].get("dietary_note"):
-        bits = ", ".join(diet)
-        note = data["trip"].get("dietary_note") or ""
+    phrase = diet_phrase(data, ui)
+    note = data["trip"].get("dietary_note") or ""
+    if phrase or note:
+        body = esc(phrase)
+        if note:
+            body = (body + " — " if body else "") + esc(note)
         diet_html = (
-            f'<p class="closed-line"><strong>{esc(ui["dietary"])}:</strong> {raw_ltr(bits)}'
-            f'{" — " + raw_ltr(note) if note else ""}</p>'
+            f'<p class="closed-line"><strong>{esc(ui["dietary"])}:</strong> {body}</p>'
         )
     legend_items = data["trip"].get("status_legend") or []
     legend = (
@@ -1017,7 +1055,7 @@ def render_country_axis(data, country, region_i, ui, lang, exclude_not_ok=False)
     name = loc(country.get("name"), lang) or cid
     meta = f'<bdi class="tnum" dir="ltr">{esc(span)}</bdi> · {esc(nights_h)}'
     if opt_h:
-        meta += f' <span class="opt">{esc(opt_h)}</span>'
+        meta += f' <span class="stop-opt">{esc(opt_h)}</span>'
     flag = render_flag(country, "sm")
     return (
         f'<section id="{esc(cid)}" class="country-block" data-region="{region_i}" style="--block-color:{esc(color)};--region:{esc(color)}">'
@@ -1545,12 +1583,12 @@ def render_instruments(data, ui, lang) -> str:
     for b in data["bookings"].get("bookings") or []:
         if b.get("status") != "booked" or not b.get("confirmation_code"):
             continue
-        title = b.get("short_title") or b.get("title") or ""
+        title = booking_display_title(b)
         code = b["confirmation_code"]
         codes.append(
-            f'<div class="code-row"><span class="who">{esc(title)}</span>'
-            f'<span class="code tnum">{esc(code)}</span>'
-            f'{badge("booked", ui)}{copybtn(code, ui)}</div>'
+            f'<div class="code-row"><div class="code-meta"><span class="who">{esc(title)}</span>'
+            f'<span class="code tnum">{esc(code)}</span></div>'
+            f'<div class="code-actions">{badge("booked", ui)}{copybtn(code, ui)}</div></div>'
         )
     emer_blocks = []
     for c in country_list(data):
@@ -1647,9 +1685,11 @@ def render_body(data, ui, lang, exclude_not_ok=False) -> str:
         '<div class="grain" aria-hidden="true"></div>',
         render_header(data, ui, lang),
         '<div class="shell">',
+        '<div class="shell-main">',
         render_overview(data, ui, lang),
         f'<section class="itinerary" id="itinerary" aria-label="{esc(ui.get("axis") or "")}">'
         f'<h2>{esc(ui.get("axis") or "")}</h2>{"".join(axis)}</section>',
+        "</div>",
         render_instruments(data, ui, lang),
         "</div>",
         '<div class="rest">',

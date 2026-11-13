@@ -385,15 +385,21 @@ def render_overview(data, ui, lang) -> str:
         f'<span>{badge("optional", ui)} {esc(legend_items[2] if len(legend_items) > 2 else ui["legend_optional"])}</span>'
         "</div>"
     )
-    diet = party_dietary(data)
     diet_html = ""
-    if diet or trip.get("dietary_note"):
-        bits = ", ".join(diet)
-        note = trip.get("dietary_note") or ""
+    labels = []
+    for code in party_dietary(data):
+        label = (ui.get("diet_" + code) or "").strip() or (code or "").replace("-", " ").replace("_", " ").strip()
+        if label:
+            labels.append(label)
+    phrase = " · ".join(labels)
+    note = trip.get("dietary_note") or ""
+    if phrase or note:
+        body = esc(phrase)
+        if note:
+            body = (body + " — " if body else "") + esc(note)
         diet_html = (
             '<div class="card glass g-thin rv" style="margin-top:var(--s4);padding:16px 20px">'
-            f'<strong>{esc(ui["dietary"])}:</strong> {raw_ltr(bits)}'
-            f'{" — " + raw_ltr(note) if note else ""}</div>'
+            f'<strong>{esc(ui["dietary"])}:</strong> {body}</div>'
         )
     bento = (
         f'<div class="bento" style="grid-template-columns:1fr 1fr;gap:var(--s3)">{"".join(kpis)}</div>'
