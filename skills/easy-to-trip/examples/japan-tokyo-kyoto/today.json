@@ -1,0 +1,84 @@
+{
+  "segments": [
+    {
+      "from": "2027-05-14",
+      "to": "2027-05-14",
+      "title": "Fly to Tokyo",
+      "sleep": "Overnight on the plane",
+      "plan": "Midday departure from San Francisco",
+      "day": "Friday",
+      "stop": "tokyo",
+      "nav": "#stop-tokyo"
+    },
+    {
+      "from": "2027-05-15",
+      "to": "2027-05-15",
+      "title": "Arrive Tokyo",
+      "sleep": "Maple House Shibuya",
+      "plan": "Land mid-afternoon, drop bags, evening walk in Shibuya. Dinner at Aoba Counter.",
+      "day": "Saturday",
+      "stop": "tokyo",
+      "nav": "#stop-tokyo"
+    },
+    {
+      "from": "2027-05-16",
+      "to": "2027-05-16",
+      "title": "Tokyo, walk-in ramen and neighbourhoods",
+      "sleep": "Maple House Shibuya",
+      "plan": "Lunch at Midori Bowl (walk-in). Afternoon in a quiet neighbourhood.",
+      "day": "Sunday",
+      "stop": "tokyo",
+      "nav": "#stop-tokyo"
+    },
+    {
+      "from": "2027-05-17",
+      "to": "2027-05-18",
+      "title": "More Tokyo",
+      "sleep": "Maple House Shibuya",
+      "plan": "Optional Tabelog lunch at Nishi Market Diner. Slow museum and park days.",
+      "day": "Monday–Tuesday",
+      "stop": "tokyo",
+      "nav": "#stop-tokyo"
+    },
+    {
+      "from": "2027-05-19",
+      "to": "2027-05-19",
+      "title": "Shinkansen to Kyoto",
+      "sleep": "Kamo Riverside Inn",
+      "plan": "Morning Hikari to Kyoto, check in, evening walk along the river.",
+      "day": "Wednesday",
+      "stop": "kyoto",
+      "nav": "#stop-kyoto"
+    },
+    {
+      "from": "2027-05-20",
+      "to": "2027-05-20",
+      "title": "Kyoto, timed-ticket pavilion",
+      "sleep": "Kamo Riverside Inn",
+      "plan": "Lantern Garden Pavilion if tickets are bought. Dinner at Kamo Shojin.",
+      "day": "Thursday",
+      "stop": "kyoto",
+      "nav": "#stop-kyoto"
+    },
+    {
+      "from": "2027-05-21",
+      "to": "2027-05-22",
+      "title": "Kyoto at a walking pace",
+      "sleep": "Kamo Riverside Inn",
+      "plan": "Temples and a neighbourhood walk. No reservations required.",
+      "day": "Friday–Saturday",
+      "stop": "kyoto",
+      "nav": "#stop-kyoto"
+    },
+    {
+      "from": "2027-05-23",
+      "to": "2027-05-23",
+      "title": "Fly home from Kansai",
+      "sleep": "",
+      "plan": "Airport express to KIX, afternoon flight to San Francisco.",
+      "day": "Sunday",
+      "stop": "kyoto",
+      "nav": "#stop-kyoto"
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "title": "Tokyo and Kyoto, nine days",
+  "subtitle": "A fictional sample trip used by the skill",
+  "trip_type": "city-break",
+  "language": "en",
+  "dir": "ltr",
+  "currency": "USD",
+  "locale": "en-US",
+  "home_tz": "America/Los_Angeles",
+  "departure_city": "San Francisco",
+  "departure_airport": "SFO",
+  "travelers": [
+    {
+      "name": "Nora Patel",
+      "dietary": [
+        "vegetarian"
+      ],
+      "passport": "US",
+      "booking_name": "NORA PATEL",
+      "age": 31,
+      "child": false
+    },
+    {
+      "name": "Sam Patel",
+      "dietary": [],
+      "passport": "US",
+      "booking_name": "SAM PATEL",
+      "age": 33,
+      "child": false
+    }
+  ],
+  "dietary_note": "Nora is vegetarian. Sam has no restrictions. diet_fit is judged against the union (vegetarian).",
+  "dates": {
+    "start": "2027-05-14",
+    "end": "2027-05-23",
+    "flexible": false,
+    "approx_nights": 8
+  },
+  "destinations": [
+    {
+      "id": "tokyo",
+      "country": "japan",
+      "name": "Tokyo",
+      "certainty": "sure",
+      "coords": {
+        "lat": 35.658,
+        "lng": 139.7016,
+        "exact": false
+      },
+      "dates": {
+        "start": "2027-05-15",
+        "end": "2027-05-19"
+      },
+      "nights": 4
+    },
+    {
+      "id": "kyoto",
+      "country": "japan",
+      "name": "Kyoto",
+      "certainty": "sure",
+      "coords": {
+        "lat": 35.0116,
+        "lng": 135.7681,
+        "exact": false
+      },
+      "dates": {
+        "start": "2027-05-19",
+        "end": "2027-05-23"
+      },
+      "nights": 4
+    }
+  ],
+  "countries": [
+    {
+      "id": "japan",
+      "name": "Japan",
+      "currency": "JPY",
+      "timezone": "Asia/Tokyo",
+      "utc_offset": "UTC+9"
+    }
+  ],
+  "already_booked": [
+    {
+      "id": "ua-outbound",
+      "kind": "flight",
+      "title": "San Francisco – Tokyo (sample airline)",
+      "status": "booked",
+      "carrier": "Sample Pacific",
+      "number": "SP104",
+      "from": "SFO",
+      "to": "HND",
+      "from_id": "home",
+      "to_id": "tokyo",
+      "depart_at": "2027-05-14T11:20:00-07:00",
+      "arrive_at": "2027-05-15T14:55:00+09:00",
+      "boundary": true,
+      "amount": 1480,
+      "currency": "USD",
+      "notes": "Round-trip paid together. Sample confirmation can be dropped into inbox/. Invented flight."
+    },
+    {
+      "id": "ua-return",
+      "kind": "flight",
+      "title": "Osaka – San Francisco (sample airline)",
+      "status": "booked",
+      "carrier": "Sample Pacific",
+      "number": "SP105",
+      "from": "KIX",
+      "to": "SFO",
+      "from_id": "kyoto",
+      "to_id": "home",
+      "depart_at": "2027-05-23T16:40:00+09:00",
+      "arrive_at": "2027-05-23T10:15:00-07:00",
+      "boundary": true,
+      "notes": "Return half of the same ticket. Invented flight."
+    },
+    {
+      "id": "maple-house",
+      "kind": "hotel",
+      "title": "Maple House Shibuya (sample hotel)",
+      "status": "booked",
+      "destination_id": "tokyo",
+      "amount": 72000,
+      "currency": "JPY",
+      "notes": "Four nights, double room. Invented hotel."
+    },
+    {
+      "id": "kamo-inn",
+      "kind": "hotel",
+      "title": "Kamo Riverside Inn (sample hotel)",
+      "status": "booked",
+      "destination_id": "kyoto",
+      "amount": 64000,
+      "currency": "JPY",
+      "notes": "Four nights, double room. Invented hotel."
+    },
+    {
+      "id": "hikari-west",
+      "kind": "train",
+      "title": "Tokyo – Kyoto Shinkansen (sample)",
+      "status": "booked",
+      "carrier": "Sample Tokaido Shinkansen",
+      "number": "Hikari 469",
+      "from": "Tokyo",
+      "to": "Kyoto",
+      "from_id": "tokyo",
+      "to_id": "kyoto",
+      "depart_at": "2027-05-19T09:33:00+09:00",
+      "arrive_at": "2027-05-19T11:46:00+09:00",
+      "amount": 28600,
+      "currency": "JPY",
+      "notes": "Two reserved ordinary-car seats. Invented train number. Local transit uses an IC card, not this ticket."
+    }
+  ],
+  "already_booked_notes": "Outbound and return flights, both stays, and the Tokyo–Kyoto Shinkansen are booked. Confirmations can be dropped into inbox/.",
+  "budget": {
+    "total": 5500,
+    "level": "mid",
+    "currency": "USD",
+    "notes": "Flights, hotels and the Shinkansen are already paid; remainder is food, local transit and tickets."
+  },
+  "preferences": {
+    "priorities": [
+      "food",
+      "culture",
+      "walking"
+    ],
+    "pace": {
+      "style": "few_in_depth",
+      "hotel_changes": "one hotel in each city",
+      "notes": "Four nights in Tokyo, then four in Kyoto. No day trips that need a third hotel."
+    },
+    "lodging": {
+      "types": [
+        "hotel",
+        "boutique"
+      ],
+      "bed": "double"
+    },
+    "transport": {
+      "rental_car": false,
+      "trains": true,
+      "taxis_only": false,
+      "notes": "Trains and an IC card (Suica, Pasmo or ICOCA) for local transit. No rental car."
+    }
+  }
+}
