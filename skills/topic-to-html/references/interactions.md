@@ -3,7 +3,7 @@ description: "Motion: spring easing, scroll reveal, hover/press micro-interactio
 ---
 # Interactions
 
-Use `--spring` `cubic-bezier(.34,1.56,.64,1)` for things that move (thumbs, panels, chevrons, press) and `--ease` for fades. Durations: 160 (color), 280 (hover/press), 520 (panels/reveal). Animate only `transform` and `opacity`.
+Use `--spring` `cubic-bezier(.34,1.56,.64,1)` for things that move (thumbs, panels, press) and `--ease` for fades. Durations: 160 (color), 280 (hover/press), 520 (panels/reveal). Animate only `transform` and `opacity`, except collapsible height (below).
 
 ```css
 .press{cursor:pointer;transition:transform var(--dur-2) var(--spring),box-shadow var(--dur-2) var(--ease)}
@@ -23,6 +23,20 @@ addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){chips.forEach(c=>c.classList.toggle('on',c.getAttribute('href')==='#'+e.target.id));
   chips.find(c=>c.classList.contains('on'))?.scrollIntoView({block:'nearest',inline:'center'})}}),{rootMargin:'-45% 0px -50% 0px'});
 ```
+## Collapsibles (L2, destination cards, any disclosure)
+Expand **downward in place**. Do not call `scrollIntoView` (or move `window.scrollY`) when a card opens — that is what makes the screen jump, especially on a phone. Keep the existing `scrollIntoView({block:'nearest',inline:'center'})` only for the sticky chip scroller.
+
+Use a grid-rows fold, not `display` or `max-height`:
+
+```css
+:root{--fold-ease:cubic-bezier(.22,1,.36,1);--fold-dur:280ms}
+.fold{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--fold-dur) var(--fold-ease)}
+.is-open>.fold,details.more[open] .fold{grid-template-rows:1fr}
+.fold-inner{overflow:hidden;min-height:0}
+```
+
+Markup: wrap the body in `<div class="fold"><div class="fold-inner">…</div></div>`. Native `<details>` removes `[open]` immediately on close, which would snap shut; the template's `bindFold` prevents the default, animates to `0fr`, then drops `[open]`. `prefers-reduced-motion` (already `transition-duration:1ms` on `*`) makes the fold instant. Printing leaves the fold at `1fr`.
+
 Rules:
 - Never hijack scrolling.
 - The end state is correct without JS or animation.

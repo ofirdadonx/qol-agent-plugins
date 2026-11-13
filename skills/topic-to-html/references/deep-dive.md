@@ -20,9 +20,9 @@ It opens on hover and on `:focus-visible` (keyboard/touch); dashed accent underl
 ## L2
 ```html
 <details class="more glass g-thin"><summary><i class="ph-duotone ph-magnifying-glass-plus ph"></i> איך חישבנו? <i class="ph-duotone ph-caret-down ph chev"></i></summary>
-  <div class="body">…</div></details>
+  <div class="fold"><div class="fold-inner"><div class="body">…</div></div></div></details>
 ```
-The chevron rotates with `--spring`; printing shows it open.
+The body opens downward in place (`grid-template-rows: 0fr → 1fr`, `--fold-ease` / `--fold-dur` ~280ms). Do not `scrollIntoView` on toggle. The chevron rotates with `--fold-ease`. Printing shows it open. See `interactions.md`.
 
 ## L3: panel and bottom sheet
 Trigger: `<button class="dd-btn press" data-dd="capacity"><i class="ph-duotone ph-arrow-circle-left ph"></i> צלילה לעומק: … <small>· 2 דק'</small></button>`
