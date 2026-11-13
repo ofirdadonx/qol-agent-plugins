@@ -339,8 +339,23 @@ def loc(obj, lang: str, fallback: str = "en") -> str:
     )
 
 
-# Whole LTR numeric atoms (amounts, times, dates). The thousands comma must
-# sit inside the first character class so "1,124.75" is one match, never "1," + "124.75".
+# Whole LTR numeric atoms (amounts, times, dates, and their units).
+# The thousands comma sits inside the first character class so "1,124.75"
+# is one match, never "1," + "124.75". Units and currency symbols stay in
+# the same match ("12.5°C", "20 °C", "30 min", "¥1,200") so RTL cannot
+# render "C°12.5". Longer unit names come first in the unit group.
+_UNIT = (
+    r"(?:"
+    r"°[CFK]|℃|℉|°|"
+    r"km(?:/h)?|kph|mph|"
+    r"min(?:ute)?s?|hours?|hrs?|sec(?:ond)?s?|"
+    r"cm|mm|kg|lbs?|"
+    r"USD|EUR|ILS|JPY|THB|GBP|CHF|"
+    r"[%$€£¥₪฿]|"
+    r"דקות|דק[\'׳]|שעות|"
+    r"ק[\"״]מ|מ[\"״]מ|מעלות"
+    r")"
+)
 _NUM_RE = re.compile(
     r"("
     r"[$€£¥₪฿]\s?\d{1,3}(?:,\d{3})+(?:\.\d+)?"
@@ -349,9 +364,12 @@ _NUM_RE = re.compile(
     r"|฿[\d,.\-–]+"
     r"|\$[\d,.\-–]+"
     r"|₪[\d,.\-–]+"
-    r"|\d{1,3}(?:,\d{3})+(?:\.\d+)?(?:\s?(?:USD|EUR|ILS|JPY|THB|GBP|CHF|[%$€£¥₪฿°]))?"
-    r"|\d+[.,]\d+\s?(?:USD|EUR|ILS|JPY|THB|GBP|CHF|[%$€£¥₪฿°])?"
-    r"|\d+\s?(?:USD|EUR|ILS|JPY|THB|GBP|CHF|[%$€£¥₪฿°])"
+    r"|\d{1,3}(?:,\d{3})+(?:\.\d+)?\s*" + _UNIT +
+    r"|\d+[.,]\d+\s*" + _UNIT +
+    r"|\d+\s*" + _UNIT +
+    r"|\d{1,2}\.\d{2}(?:\.\d{2,4})?[–-]\d{1,2}\.\d{2}(?:\.\d{2,4})?"
+    r"|\d{1,3}(?:,\d{3})+(?:\.\d+)?"
+    r"|\d+[.,]\d+"
     r"|\d{1,2}:\d{2}(?::\d{2})?"
     r"|\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}(?::\d{2})?)?"
     r"|\+?\d[\d,./:–-]{1,}\d"
@@ -374,6 +392,101 @@ def ltr(s: str) -> str:
 
 def raw_ltr(s) -> str:
     return ltr(esc(s))
+
+
+# A cluster of numeric LTR atoms joined by middots: "21.11 · 21:45".
+_LEG_CLUSTER = re.compile(
+    r"((?:\d[\d./:–-]*)(?:\s*[·•]\s*\d[\d./:–-]*)+)"
+)
+
+
+def xfer_leg_html(*parts: str) -> str:
+    """One nowrap date·time group. The middot is a .sep, never a bare flex text node."""
+    atoms = [p for p in parts if p]
+    if not atoms:
+        return ""
+    inner = []
+    for i, p in enumerate(atoms):
+        if i:
+            inner.append('<span class="sep" aria-hidden="true">·</span>')
+        inner.append(raw_ltr(p))
+    return f'<span class="xfer-leg">{"".join(inner)}</span>'
+
+
+def wrap_xfer_legs(text: str) -> str:
+    """Turn '21.11 · 21:45 landing 22.11 · 16:15' into two .xfer-leg groups.
+
+    Hebrew (or any non-numeric) words stay outside the nowrap group; each
+    date·time cluster becomes one flex item so a middot cannot wrap alone.
+    """
+    if not text:
+        return ""
+    if not _LEG_CLUSTER.search(text):
+        return xfer_leg_html(text)
+    out = []
+    last = 0
+    for m in _LEG_CLUSTER.finditer(text):
+        out.append(esc(text[last:m.start()]))
+        chunks = [c for c in re.split(r"\s*[·•]\s*", m.group(1)) if c]
+        out.append(xfer_leg_html(*chunks))
+        last = m.end()
+    out.append(esc(text[last:]))
+    return "".join(out)
+
+
+def parse_iso_dt(raw):
+    """Parse an ISO date or datetime. None if empty or unparseable."""
+    if not raw:
+        return None
+    s = str(raw).replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(s)
+    except ValueError:
+        d = parse_iso_date(raw)
+        if d:
+            return datetime(d.year, d.month, d.day)
+        return None
+
+
+def _short_dmy(dt) -> str:
+    return f"{dt.day:02d}.{dt.month:02d}"
+
+
+def _short_hm(dt, raw) -> str:
+    if not dt or not raw:
+        return ""
+    s = str(raw)
+    if "T" in s or " " in s.strip():
+        return f"{dt.hour:02d}:{dt.minute:02d}"
+    return ""
+
+
+def xfer_when_bits(x) -> list:
+    """Flex-safe date·time groups for a transfer's meta row."""
+    bits = []
+    dl = (x.get("date_label") or "").strip()
+    tl = (x.get("time_label") or "").strip()
+    if dl or tl:
+        if dl and tl:
+            if re.search(r"[·•]", dl):
+                bits.append(wrap_xfer_legs(dl))
+                if tl not in dl:
+                    bits.append(wrap_xfer_legs(tl) if re.search(r"[·•]", tl) else xfer_leg_html(tl))
+            else:
+                bits.append(xfer_leg_html(dl, tl))
+        elif dl:
+            bits.append(wrap_xfer_legs(dl) if re.search(r"[·•]", dl) else xfer_leg_html(dl))
+        else:
+            bits.append(wrap_xfer_legs(tl) if re.search(r"[·•]", tl) else xfer_leg_html(tl))
+        return bits
+    dep = parse_iso_dt(x.get("depart_at") or x.get("date"))
+    arr = parse_iso_dt(x.get("arrive_at"))
+    if dep:
+        bits.append(xfer_leg_html(*filter(None, [_short_dmy(dep), _short_hm(dep, x.get("depart_at") or x.get("date"))])))
+    if arr:
+        bits.append(xfer_leg_html(*filter(None, [_short_dmy(arr), _short_hm(arr, x.get("arrive_at"))])))
+    return bits
+
 
 
 def countdown_caption(trip, ui) -> str:
@@ -919,10 +1032,7 @@ def render_xfer(data, x, ui, lang) -> str:
     ic = x.get("icon") or MODE_ICON.get(x.get("mode") or "", "ph-path")
     route = x.get("route_label") or f'{x.get("from", "")} -> {x.get("to", "")}'
     meta_bits = []
-    if x.get("date_label"):
-        meta_bits.append(raw_ltr(x["date_label"]))
-    if x.get("time_label"):
-        meta_bits.append(raw_ltr(x["time_label"]))
+    meta_bits.extend(xfer_when_bits(x))
     carrier = " ".join(filter(None, [x.get("carrier") or "", x.get("number") or ""]))
     if carrier:
         meta_bits.append(f"<span>{raw_ltr(carrier)}</span>")

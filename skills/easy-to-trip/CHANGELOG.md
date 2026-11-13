@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.4
+
+- Folded the v10 page-review findings into the default template (see `references/template-pitfalls.md` items 13–20):
+  - Phosphor duotone layers stack absolutely in a 1em `overflow: hidden` box; our CSS no longer uses `margin-inline-start: -1em`. The timeline rail inset moves with the node column (49px desktop, 62px under 900px).
+  - `--header-h` is at least the real sticky header (128px under 900px, 104px from 900px) and `syncHeaderH()` can raise it. `#itinerary`, `#map` and other non-`.sec` jump targets get `scroll-margin-top`.
+  - Date·time groups in transfer meta are `.xfer-leg` nowrap clusters; the middot is a `.sep`, never a bare flex text node. Labels are derived from `depart_at` / `arrive_at` when `date_label` / `time_label` are absent.
+  - Deadline rows are a one-column start-aligned grid, not `space-between` plus a `flex: 1 1 100%` child.
+  - Budget summaries use `align-items: flex-start`, `text-align: start`, `margin-inline: 0` — they are not centred.
+  - Units and currency stay inside the same `<bdi class="tnum" dir="ltr">` as the number (`12.5°C`, `30 min`, `¥1,200`).
+  - The pocket FAB is hidden below 900px, where the dock already opens the same sheet; it stays on desktop.
+  - Open folds on small screens get `padding-bottom: dock height + 80px` on the article, without clipping, so the last line clears the dock.
+- Confirmed: no global `.sheet-close { display: none !important }`, and no `overflow-x: hidden` on `html` or `body` (clip only, overflowing children fixed at the source).
+
+
 ## v1.3
 
 - Folded the v9 page-review findings into the default template (see `references/template-pitfalls.md`):

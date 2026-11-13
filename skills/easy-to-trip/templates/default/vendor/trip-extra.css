@@ -2,10 +2,10 @@
 [hidden]{display:none!important}
 .today-banner[hidden],#todayBanner:empty,.today-banner:empty{display:none!important}
 
-/* Icon root-cause fix (also in inlined Phosphor CSS): duotone used margin-left:-1em,
-   which in RTL places the two layers side-by-side. Isolate LTR + margin-inline-start. */
-.ph-duotone{direction:ltr;unicode-bidi:isolate;display:inline-block;position:relative;letter-spacing:0;font-style:normal;line-height:1;vertical-align:-.15em}
-.ph-duotone:after{margin-inline-start:-1em}
+/* Phosphor duotone: vendor CSS uses :after { margin-inline-start:-1em } to
+   overlap layers. In RTL that push spills onto a neighbouring title. The
+   stacked-box override (1em overflow:hidden, both layers absolute, margin:0)
+   lives in v2.css — do not restore a -1em margin here. */
 
 /* Jump-to-today in topbar */
 .jump-today{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:38px;padding:6px 12px;border-radius:999px;border:1px solid var(--g-border);background:var(--g-thin);color:var(--accent-ink);font:700 13px var(--font);cursor:pointer;white-space:nowrap}
@@ -101,7 +101,7 @@ a.inline-ext .ph{font-size:.95em}
 .recs-empty{margin:0;color:var(--muted);font-size:14px}
 
 /* Budget hero */
-.bud-hero{padding:28px 22px 22px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.bud-hero{padding:28px 22px 22px;text-align:start;display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-inline:0}
 .bud-hero .lab{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
 .bud-hero .n{font-size:clamp(40px,9vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1;font-family:Inter,var(--font);font-variant-numeric:tabular-nums;color:var(--accent-ink)}
 .bud-hero .orig{font-size:15px;color:var(--text-2);max-width:36em;line-height:1.5}
@@ -193,7 +193,7 @@ body{padding-bottom:72px}
 
 
 /* Search: compact on a phone, clear of the top bar and of the pocket/TOC buttons */
-#recs-search{scroll-margin-top:76px;padding-bottom:96px}
+#recs-search{scroll-margin-top:var(--header-h,128px);padding-bottom:96px}
 @media(max-width:700px){
   #recs-search .sec-head{margin-bottom:8px}
   #recs-search .sec-head h2{font-size:22px;line-height:1.28;max-width:22ch}
@@ -322,16 +322,19 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
   margin:0!important;
   direction:ltr;unicode-bidi:isolate;
   position:relative;
+  overflow:hidden;
 }
 .xfer .pin .ph-duotone:before,
 .xfer .pin .ph-duotone:after{
-  margin-inline-start:0;
+  position:absolute;
+  left:0;
+  top:0;
+  margin:0 !important;
 }
-.xfer .pin .ph-duotone:after{margin-inline-start:-1em!important}
 
 .taxi-card.is-empty[hidden],.taxi-card.is-empty{display:none!important}
 
-.stop,.xfer,.sec{scroll-margin-top:84px}
+.stop,.xfer,.sec{scroll-margin-top:var(--header-h,128px)}
 
 .xfer.is-optional{border:1.5px dashed color-mix(in srgb,var(--region,var(--warn)) 55%,var(--g-border))}
 

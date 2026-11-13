@@ -16,9 +16,11 @@
     "items": []
   },
   "weather": {
-    "title": "",
-    "source": "",
-    "items": []
+    "title": "Weather",
+    "source": "sample",
+    "items": [
+      "Valley days around 12.5°C; the pass is 75 km, allow 30 min extra (sample)."
+    ]
   },
   "food_notes": {
     "title": "",

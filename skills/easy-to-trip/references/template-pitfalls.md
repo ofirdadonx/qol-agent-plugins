@@ -19,7 +19,7 @@ Never a bare `.is-open .fold`. That also opens any nested fold (a booked block i
 
 ## 2. Sticky nav and overflow
 
-`overflow-x: hidden` on `html` or `body` computes to `overflow: hidden auto`, which creates a scroll container and kills `position: sticky` on the nav. Use `overflow-x: clip` and set `scroll-padding-top` to the nav height (`var(--nav-h)`). If something sticks out, fix that child (for example `overflow-wrap: anywhere` on long URLs, or `width: auto` on the progress bar) rather than hiding overflow on the root. Mid-width (900–1279px) should stack the opening folio and the map so neither is squeezed.
+`overflow-x: hidden` on `html` or `body` computes to `overflow: hidden auto`, which creates a scroll container and kills `position: sticky` on the nav. Use `overflow-x: clip` and set `scroll-padding-top` to the real sticky header height (`var(--header-h)`; see item 14). A fixed 96px fails on mobile. If something sticks out, fix that child (for example `overflow-wrap: anywhere` on long URLs, or `width: auto` on the progress bar) rather than hiding overflow on the root. Mid-width (900–1279px) should stack the opening folio and the map so neither is squeezed.
 
 ## 3. Progress bar
 
@@ -83,3 +83,43 @@ On small screens, interactive targets are at least 44×44px (nav links, theme / 
 ## 12. Performance and fonts
 
 `backdrop-filter` is expensive. Keep it on floating chrome only (the sticky nav, the instrument panel, the dock, the pocket sheet). Section cards, tickets and country blocks keep the glass *look* (tint, hairline, static top-edge highlight) without a blur pass. The offline file is already around 1 MB because libraries and fonts are inlined — embed only the weights you use (Assistant 400/600/700, Inter 400). Do not author `font-weight: 800`; the 800 face is not embedded and the browser would synthesize it. Use 700.
+
+## 13. Phosphor duotone in RTL
+
+Phosphor's vendor stylesheet overlaps the two duotone layers with `:after { margin-inline-start: -1em }`. In a right-to-left page that push spills the second layer onto the neighbouring title. Do not copy that `-1em` rule into our CSS (and do not rewrite every vendor icon). Stack both pseudo-elements absolutely inside a 1em `overflow: hidden` box, with `direction: ltr`, `unicode-bidi: isolate`, and `margin: 0` (use `!important` only to beat the vendor). Give the title column a `column-gap`. If you change the node column width or the grid gap, move the timeline rail (` .tline::before` / `.tl::before` `inset-inline-start`) by the same amount so the line still runs through the node centre. Current default: desktop columns `46px 32px` with an 8px gap and rail at `49px`; below 900px, columns `40px 28px` and rail at `62px`.
+
+## 14. `--header-h` and jump targets
+
+`scroll-padding-top` must be a `--header-h` token that is at least the real sticky header height at every breakpoint. Measure it. This template uses 128px under 900px and 104px from 900px, and `syncHeaderH()` in `app.js` raises the token if the measured header plus a 4px buffer is taller. A fixed 96px is shorter than the mobile header and hides the target under the nav.
+
+Targets that are not `.sec` also need `scroll-margin-top: var(--header-h)`. The dock jumps to `#itinerary` and `#map`; those elements are a section and a figure, not `.sec`. After a dock jump, test with `scroll-behavior: auto` (smooth scrolling makes the assertion flaky) and check that the target's top is not hidden under `header.top`.
+
+## 15. No bare middot between flex children
+
+A bare `" · "` text node between flex children wraps onto its own line. Wrap each date·time group in an `inline-flex` nowrap `.xfer-leg`, and put the middot in a `<span class="sep" aria-hidden="true">·</span>`. The renderer does this in `xfer_when_bits`: combined labels such as `21.11 · 21:45` (with an optional landing group after a word) become two legs, and when `date_label` / `time_label` are absent it builds the same structure from `depart_at` / `arrive_at`. Do not `raw_ltr()` a string that contains a middot and then drop two `<bdi>` elements plus a text-node middot into `.xfer-meta`.
+
+## 16. Deadline rows: one-column grid
+
+`justify-content: space-between` plus `flex-wrap` plus a child with `flex: 1 1 100%` breaks the shared start edge across rows. The spilled child takes a full row, and the next items jump to the far edge. Use a one-column grid (`grid-template-columns: 1fr; justify-items: start; align-items: start`) and give children `justify-self: start; width: auto; max-width: 100%; flex: none; margin-inline: 0`.
+
+## 17. Do not centre budget summaries
+
+`margin-inline: auto` on a summary column (and `align-items: center; text-align: center` on `.bud-pairs` / `.bud-hero`) breaks page-wide start alignment. Use `align-items: flex-start`, `text-align: start`, and `margin-inline: 0`. Keep the label-over-value stack from item 6.
+
+## 18. Units stay inside the LTR isolate
+
+Wrap the unit or currency with the number in the same `<bdi class="tnum" dir="ltr">`, for example `12.5°C`, `20 °C`, `30 min`, `¥1,200`, `75 km`. If the regex consumes `12.5°` and leaves `C` outside, a right-to-left page renders `C°12.5`. The unit alternative in `_NUM_RE` must come before a bare decimal match, and `°C` / `°F` / `°[CFK]` must be longer than a lone `°`.
+
+## 19. Hide the pocket FAB below the dock breakpoint
+
+When the dock already opens the same pocket sheet (`#dockPocket`), hide `#pocketBtn` / `.pocket-toggle` at `max-width: 899px`. Keep the FAB on desktop, where there is no dock. Do not only nudge it up with `bottom: 76px` — hide it.
+
+## 20. Open folds clear the fixed dock
+
+On small screens an open stay or transfer can scroll its last line clear of the dock. Set `padding-bottom: calc(var(--dock-h, 72px) + 80px + env(safe-area-inset-bottom, 0px))` on the **article** (the open `.item`, `article.stay`, `article.xfer`), not on `.fold-inner` — that inner box must stay `overflow: hidden` for the 0fr/1fr fold animation. The article itself is `overflow: visible`. Verify in a 390-wide viewport: after opening the last fold and scrolling its last child with `block: "end"` and `scroll-behavior: auto`, `lastChild.getBoundingClientRect().bottom` is `<=` `dock.getBoundingClientRect().top`.
+
+## Leftovers to never restore
+
+- No global `.sheet-close { display: none !important }`. Scope a hide to fold close buttons (`.fold .sheet-close`) and keep the pocket close visible at 44px.
+- No `overflow-x: hidden` on `html` or `body` (see item 2). Fix the overflowing child at the source. Leaflet's own pane CSS may still use it; do not copy that onto the page root.
+- Do not add `.ph-duotone:after { margin-inline-start: -1em }` (see item 13), even with `!important` on a pin.

@@ -87,7 +87,7 @@ A **by location** button uses the phone's GPS **only on a user tap**, and only w
 
 ## Template pitfalls
 
-Patterns that have bitten this page — fold selectors, sticky nav vs `overflow-x`, the progress bar, the pocket sheet, dark-mode country tokens, bidi amounts, Hebrew plurals, narrow Chart.js, search ranking, badges, tap targets and contrast, and `backdrop-filter` — are in [`references/template-pitfalls.md`](references/template-pitfalls.md). Follow them when you change the default template or the renderer.
+Patterns that have bitten this page — fold selectors, sticky nav vs `overflow-x`, the progress bar, the pocket sheet, dark-mode country tokens, bidi amounts, Hebrew plurals, narrow Chart.js, search ranking, badges, tap targets and contrast, `backdrop-filter`, Phosphor duotone in RTL, `--header-h` jump targets, middot flex wraps, deadline-row grids, start-aligned budget summaries, units inside the LTR isolate, the pocket FAB vs the dock, and open folds above the dock — are in [`references/template-pitfalls.md`](references/template-pitfalls.md). Follow them when you change the default template or the renderer.
 
 - Sibling `topic-to-html` `qa_check.py` runs when present.
 

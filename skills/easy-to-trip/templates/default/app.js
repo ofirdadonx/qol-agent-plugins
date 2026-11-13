@@ -831,8 +831,23 @@ function initRecSearch(){
   if(js)js.addEventListener('click',()=>{const sec=$('#recs-search');sec&&sec.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});setTimeout(()=>{$('#rsq')&&$('#rsq').focus();closePocket();},200);});
   renderCityChips();runRecSearch();
 }
+function syncHeaderH(){
+  const h=document.querySelector('header.top');
+  if(!h)return;
+  const real=Math.ceil(h.getBoundingClientRect().height);
+  const floor=matchMedia('(min-width:900px)').matches?104:128;
+  const next=Math.max(real+4,floor);
+  root.style.setProperty('--header-h',next+'px');
+}
+syncHeaderH();
+addEventListener('resize',syncHeaderH);
+addEventListener('orientationchange',syncHeaderH);
+if(window.visualViewport)visualViewport.addEventListener('resize',syncHeaderH);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(syncHeaderH).catch(()=>{});
+
 initRecSearch();
 initLocate();
 updateDeadlines();
 updateTodayCard();
 })();
+
