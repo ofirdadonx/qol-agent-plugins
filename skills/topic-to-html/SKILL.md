@@ -25,8 +25,9 @@ Opening / middle / end is internal structure only. Never write "story / סיפו
 - **Real data only; cite sources subtly** (`.src` chip with document + page). Anything derived or modelled is labelled ("חישוב לפי…", "המחשה בלבד").
 - **Contrast is AA** (≥4.5:1 text) on every glass level in both themes. If it fails, make the surface more opaque or darken the token.
 - **Motion** is spring-like and subtle; `prefers-reduced-motion` gets a fully static, correct page.
-- **RTL:** `dir="rtl" lang="he"`, logical CSS properties only, Chart.js `x.reverse:true`, `rtl:true`.
+- **RTL:** `dir="rtl" lang="he"`, logical CSS properties only, Chart.js `x.reverse:true`, `rtl:true`. Isolate Phosphor duotone and wrap phones/codes/amounts in `.ltr.tnum` (`icons.md`, `tokens.md`).
 - **CDNs pinned:** Chart.js 4.4.1, Phosphor 2.1.1 (CSS).
+- **Hide with `[hidden]` only.** A global `:empty{display:none}` hides every icon. `[hidden]{display:none!important}` must win over component `display` rules.
 
 ## Workflow
 1. Extract the main message, the key numbers and what the reader must decide or understand.
@@ -47,5 +48,6 @@ Opening / middle / end is internal structure only. Never write "story / סיפו
 | `references/deep-dive.md` | Glossary, inline expand, side panel / bottom sheet |
 | `references/interactions.md` | Motion, reveal, hover/press, reduced motion |
 | `references/icons.md` | Icons |
+| `references/maps.md` | Any Leaflet / tile map |
 | `references/qa.md` | Before delivering, every time |
 | `assets/template.html` | Starting point (full working example) |

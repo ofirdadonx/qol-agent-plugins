@@ -11,4 +11,5 @@ description: "Map of topic-to-html references."
 - [[deep-dive]] — L1 glossary · L2 inline · L3 panel/sheet
 - [[interactions]] — spring motion, reveal, hover/press, reduced motion
 - [[icons]] — Phosphor duotone
+- [[maps]] — tile servers, attribution, SVG fallback
 - [[qa]] — checklist + scripts/qa_check.py

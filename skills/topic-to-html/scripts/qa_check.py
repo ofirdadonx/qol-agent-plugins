@@ -2,12 +2,19 @@
 """Static QA for topic-to-html pages.
 usage: qa_check.py page.html
 Checks: no white / near-white colors, no 'story' wording, WCAG contrast of
-text tokens over glass surfaces composited on the bg + every mesh color (both themes)."""
-import re, sys, itertools
+text tokens over glass surfaces composited on the bg + every mesh color (both
+themes), Phosphor 2.1.1 icon names, no global :empty{display:none}, and
+file size (Drive HTML upload cap of 1,000,000 characters, plus 3 MB)."""
+import re, sys
+from pathlib import Path
 src = open(sys.argv[1], encoding='utf-8').read()
+path = Path(sys.argv[1])
 fail = 0
+warns = 0
 def bad(msg):
     global fail; fail += 1; print('FAIL', msg)
+def warn(msg):
+    global warns; warns += 1; print('WARN', msg)
 
 # 1. no white
 css = re.sub(r'white-space', '', src)
@@ -57,5 +64,70 @@ for theme in ('light', 'dark'):
         status = 'ok' if r >= need else 'FAIL'
         if status == 'FAIL': bad(f'{theme}: --{k} on .{surf} = {r:.2f} (< {need})')
         else: print(f'ok   {theme}: --{k} on .{surf} = {r:.2f}')
-print('\nRESULT:', 'PASS' if not fail else f'{fail} problem(s)')
+
+# 4. file size: Drive HTML upload cap (characters) and 3 MB byte cap
+CHARS_CAP = 1_000_000
+BYTES_CAP = 3 * 1024 * 1024
+nchars = len(src)
+nbytes = path.stat().st_size
+if nchars > CHARS_CAP:
+    bad(f'{nchars:,} characters (Drive HTML upload cap is {CHARS_CAP:,})')
+else:
+    print(f'ok   size: {nchars:,} characters (Drive cap {CHARS_CAP:,})')
+if nbytes > BYTES_CAP:
+    bad(f'{nbytes:,} bytes (limit 3 MB / {BYTES_CAP:,})')
+else:
+    print(f'ok   size: {nbytes:,} bytes (limit 3 MB)')
+
+# 5. Phosphor 2.1.1 icon names
+HINTS = {
+    'ph-palm-tree': 'ph-tree-palm',
+    'ph-hot-springs': 'no icon of that name in 2.1.1 (a common stand-in is ph-bathtub)',
+    'ph-passport': 'ph-identification-card',
+    'ph-skyscraper': 'ph-city',
+}
+SKIP = {'ph-duotone'}
+names_file = Path(__file__).resolve().parent.parent / 'assets' / 'phosphor-2.1.1-names.txt'
+if not names_file.is_file():
+    bad(f'missing Phosphor name list: {names_file}')
+    valid = set()
+else:
+    valid = {'ph-' + line.strip() for line in names_file.read_text(encoding='utf-8').splitlines()
+             if line.strip() and not line.lstrip().startswith('#')}
+    found = {m.lower() for m in re.findall(r'(?<![\w-])(ph-[a-z0-9-]+)', src)}
+    icons = sorted(found - SKIP)
+    unknown = [i for i in icons if i not in valid]
+    if unknown:
+        for name in unknown:
+            hint = HINTS.get(name)
+            extra = f' (did you mean {hint}?)' if hint and hint.startswith('ph-') else (f' ({hint})' if hint else '')
+            bad(f'unknown Phosphor 2.1.1 icon: {name}{extra}')
+    else:
+        print(f'ok   icons: {len(icons)} Phosphor 2.1.1 name(s)')
+
+# 6. no global :empty{display:none} (hides empty <i> icons that paint via ::before/::after)
+def is_global_empty(selector):
+    for part in selector.split(','):
+        p = re.sub(r'/\*.*?\*/', '', part).strip()
+        if re.fullmatch(r'\*?:empty', p):
+            return True
+    return False
+for m in re.finditer(r'([^{}]+)\{([^}]+)\}', src):
+    sel, body = m.group(1), m.group(2)
+    if not re.search(r':empty', sel): continue
+    if not re.search(r'display\s*:\s*none', body, re.I): continue
+    # only the last line / last chunk is the actual selector list (ignore trailing CSS before it)
+    sel = sel.strip()
+    if '{' in sel: sel = sel.split('{')[-1]
+    # drop a leading @media ... leftover by taking from the last ; or } already excluded
+    sel = re.split(r'[\n;]', sel)[-1].strip()
+    if is_global_empty(sel):
+        warn('global :empty{display:none} hides Phosphor <i> icons and other empty elements that paint via ::before/::after; hide with [hidden] only'
+             f' (at {m.start()})')
+
+print('\nRESULT:', 'PASS' if not fail else f'{fail} problem(s)', end='')
+if warns:
+    print(f' ({warns} warning{"s" if warns != 1 else ""})')
+else:
+    print()
 sys.exit(1 if fail else 0)

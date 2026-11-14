@@ -8,7 +8,7 @@ with sync_playwright() as p:
   fails=0
   for w in (360,390,430):
     for th in ('light','dark'):
-      ctx=b.new_context(viewport={'width':w,'height':800},device_scale_factor=2,is_mobile=True,has_touch=True,user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1')
+      ctx=b.new_context(viewport={'width':w,'height':800},device_scale_factor=1,is_mobile=True,has_touch=True,user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1')
       pg=ctx.new_page();pg.goto('file://'+src+'?static&theme='+th);pg.wait_for_timeout(2500)
       r=pg.evaluate(JS);ok=r['sw']<=r['W'] and not r['bad'];fails+=not ok
       print(w,th,'scrollWidth',r['sw'],'OK' if ok else 'OVERFLOW',r['bad'][:8])

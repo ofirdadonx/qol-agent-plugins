@@ -6,6 +6,8 @@ description: "Fonts (Assistant + Inter) and type scale."
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 ```
 - **Hebrew/body:** Assistant. **Latin and numbers:** Inter (`.num`, `.tnum` → `font-family:'Inter',var(--font);font-variant-numeric:tabular-nums`).
+- **RTL numbers and codes:** wrap phone numbers, booking codes, amounts and date ranges in `<span class="ltr tnum">` (or `<bdi class="ltr tnum">`). `.ltr` is `direction:ltr;unicode-bidi:isolate;white-space:nowrap`, so `+81 75-672-0002` does not render as `75-672-0002 81+`.
+- **Self-contained / Drive:** a Google Drive HTML upload cannot exceed **1,000,000 characters**. If you embed fonts instead of the CDN, subset or embed only the weights the page actually uses (this skill's pages typically need Assistant 400/600/700/800 and Inter 400/600/700). `qa_check.py` also keeps a 3 MB byte cap.
 
 | Element | Size | Weight |
 |---|---|---|
