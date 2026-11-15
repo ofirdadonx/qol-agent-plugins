@@ -18,7 +18,8 @@ Asserts, at 390 and 1440 × light/dark (and optionally folds closed/open):
   - phones, booking codes, prices and times render on a single line (nowrap)
   - accordion 'open all' reproduces setFold (class + inert) or clicks one at a time
   - 0 console / page errors
-  - pocket FAB hidden below 900px, kept on desktop
+  - structure: no pocket or chart canvas, nav follows [data-nav], sprite icons resolve,
+    today pop-up and search dialog closed and labelled, budget hook present
 
 Usage:
   python3 qa_layout.py http://127.0.0.1:8766/japan-tokyo-kyoto.html
@@ -190,9 +191,9 @@ MEASURE = r"""() => {
     bodyOX: getComputedStyle(document.body).overflowX
   };
 
-  const allowRe = /(leaflet|map-live|map-tools|nav-bar|chips|table-wrap|pocket|dock|instruments|folio|sr-only|visually-hidden|ol-overlay|ol-tmp)/i;
+  const allowRe = /(leaflet|map-live|map-tools|nav-bar|chips|table-wrap|dock|instruments|folio|sr-only|visually-hidden|ol-overlay|ol-tmp)/i;
   for (const el of document.querySelectorAll('body *')) {
-    if (el.closest('.leaflet-container, .leaflet-pane, .leaflet-control-container, #mapLive, figure.map, .nav-bar, .chips, .table-wrap, .pocket, .dock, .sr-only')) {
+    if (el.closest('.leaflet-container, .leaflet-pane, .leaflet-control-container, #mapLive, figure.map, .nav-bar, .chips, .table-wrap, .dock, .sr-only')) {
       continue;
     }
     const p = el.parentElement;
@@ -307,6 +308,44 @@ WRAP_JS = r"""() => {
     counts: {phone: out.phone.length, code: out.code.length, price: out.price.length, time: out.time.length}
   };
 }"""
+
+
+
+# Generic structure checks for the current template (no trip-specific text).
+STRUCTURE_JS = r"""
+() => {
+  const bad = [];
+  const q = s => document.querySelector(s), qa = s => [...document.querySelectorAll(s)];
+  // no pocket sheet, no chart canvases or Chart.js
+  if (q('#pocket, .pocket, .pocket-toggle, #pocketBtn, #dockPocket')) bad.push('pocket-present');
+  if (q('canvas') || typeof window.Chart !== 'undefined') bad.push('chart-present');
+  // nav links follow [data-nav] in DOM order, and the panel lists the same links
+  const want = qa('[data-nav][id]').filter(e => e.dataset.nav).map(e => '#' + e.id);
+  const got = qa('.nav-bar a[href^="#"]').map(a => a.getAttribute('href'));
+  const uniq = got.filter((v, i, a) => a.indexOf(v) === i);
+  if (want.length && JSON.stringify(uniq) !== JSON.stringify(want)) bad.push({navOrder: {want, got: uniq}});
+  const panel = qa('#panel a[href^="#"]').map(a => a.getAttribute('href'));
+  if (want.length && panel.length && JSON.stringify(panel) !== JSON.stringify(want)) bad.push({panelOrder: panel});
+  // every sprite reference resolves
+  const ids = new Set(qa('svg symbol[id]').map(s => s.id));
+  const miss = [...new Set(qa('use').map(u => (u.getAttribute('href') || '').replace(/^#/, '')).filter(h => h && !ids.has(h)))];
+  if (miss.length) bad.push({spriteMissing: miss.slice(0, 8)});
+  // today pop-up and search dialog are accessible and closed at rest
+  const pop = q('#todayPop');
+  if (pop && !(pop.getAttribute('role') === 'dialog' && pop.hasAttribute('aria-labelledby') && pop.hidden)) bad.push('today-pop');
+  const dlg = q('#rsDialog');
+  if (q('#recs-search') && !(dlg && dlg.tagName === 'DIALOG' && !dlg.open && !dlg.closest('#recs-search'))) bad.push('rs-dialog');
+  // budget hook for a future expenses form
+  if (q('#budget') && !(typeof window.recalcBudget === 'function' && q('#budgetExtra[data-budget-hook]'))) bad.push('budget-hook');
+  // exactly one current nav chip
+  const cur = qa('.nav-bar a[aria-current="location"]');
+  if (cur.length > 1) bad.push({ariaCurrent: cur.length});
+  // carets point down when closed
+  const rot = qa('article.item:not(.is-open) .stop-toggle .car, article.item:not(.is-open) .stop-caret .car').map(e => getComputedStyle(e).transform).filter(t => t && t !== 'none' && t !== 'matrix(1, 0, 0, 1, 0, 0)');
+  if (rot.length) bad.push({caretRotated: rot.length});
+  return {bad, nav: uniq.length, sprite: ids.size};
+}
+"""
 
 
 def with_static(url: str) -> str:
@@ -668,17 +707,8 @@ class Runner:
                 )
 
             if folds == "closed" and theme == "light":
-                fab = page.evaluate(
-                    """() => {
-                      const el = document.querySelector('.pocket-toggle, #pocketBtn');
-                      if (!el) return {ok: true, missing: true};
-                      const s = getComputedStyle(el);
-                      const r = el.getBoundingClientRect();
-                      const hidden = s.display==='none' || s.visibility==='hidden' || r.width<1 || r.height<1;
-                      return {ok: (innerWidth<=899) ? hidden : !hidden, hidden, w: innerWidth, display:s.display};
-                    }"""
-                )
-                self.add("pocket-fab", "PASS" if fab.get("ok") else "FAIL", f"{fab}", w, theme, folds, name)
+                st13 = page.evaluate(STRUCTURE_JS)
+                self.add("structure", "PASS" if not st13["bad"] else "FAIL", f"{st13}", w, theme, folds, name)
 
             if folds == "closed" and (w == 390 or theme == "light"):
                 wrap = page.evaluate(WRAP_JS)
