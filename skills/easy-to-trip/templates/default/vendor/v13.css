@@ -644,3 +644,21 @@ article.stay.card-toggle:has(.stop-sum .stop-toggle[aria-expanded="true"]) .stop
 }
 #packEmpty{font-weight:600;color:var(--ink-2)}
 
+
+/* embassy email: never ellipsize. Shrink to stay on one 32px pill when the
+   value column is narrow (e.g. consular@bangkok.mfa.gov.il at 360px). Other
+   embassy pills stay a shared 32px height, so wrapping is not used here. */
+.emb-v:has(> a[href^="mailto:"]){
+  container-type:inline-size;
+  container-name:embmail;
+  min-width:0;
+}
+.emb .pill[href^="mailto:"]{min-width:0;max-width:100%}
+@container embmail (max-width: 240px){
+  .emb .pill[href^="mailto:"]{
+    gap:5px;
+    padding-inline:8px;
+    font-size:clamp(10.5px, 5.5cqi, 13px);
+    letter-spacing:-.015em;
+  }
+}
