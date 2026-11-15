@@ -212,6 +212,10 @@
               "null"
             ],
             "description": "Prose for the check-in deadline card. A checkin_url is also linked automatically."
+          },
+          "budget_title": {
+            "type": "string",
+            "description": "Optional short name for the budget card and lists (for example the hotel's short name)."
           }
         }
       }

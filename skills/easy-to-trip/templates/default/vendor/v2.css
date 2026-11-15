@@ -146,7 +146,6 @@ img,svg{display:block;max-width:100%}
 /* Backdrop-filter only on floating chrome — not every card. */
 header.top,
 #panel.toc-panel, aside#panel,
-.pocket.glass, .pocket,
 .instruments,
 .dock{
   -webkit-backdrop-filter:blur(24px) saturate(180%);
@@ -157,8 +156,8 @@ header.top,
   background:linear-gradient(180deg,var(--g-edge) 0,transparent 1.6px);z-index:1;
 }
 .g-thin{background:var(--g-thin)}
-/* Sheets and the pocket stay fixed even though .glass sets position:relative. */
-.pocket.glass,.pocket{position:fixed}
+/* Sheets stay fixed even though .glass sets position:relative. */
+
 .g-reg{background:var(--g-reg)}
 .g-thick{background:var(--g-thick)}
 .glass > *,.sec > *,.instruments > *{position:relative;z-index:2}
@@ -425,13 +424,13 @@ article.stay > .col, article.stop.stay > .col{
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
 }
-article.stay:hover, article.stay.is-hover{
+article.stay.x-nohover, article.stay.x-nohover{
   background:transparent;
   box-shadow:none;
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
 }
-article.stay:hover > .col, article.stay.is-hover > .col{
+article.stay.x-nohover > .col, article.stay.x-nohover > .col{
   background:var(--g-thin);
   border-radius:2px;
   -webkit-backdrop-filter:none;
@@ -494,8 +493,7 @@ article.ticket .xfer-route, article.ticket .kind{
 }
 
 /* ===== Rest sections ===== */
-.rest > .sec, .rest section.sec, .country-chunk, section.sec.glass,
-#nights, #recs-search, #budget, #fx, #docs, #pack, #tasks, #choose,
+.rest > .sec, .rest section.sec, .country-chunk, section.sec.glass, #recs-search, #budget, #fx, #docs, #pack, #tasks, #choose,
 [id$="-practical"], [id$="-docs"], [id$="-pack"], [id^="days-"], [id^="choose-"]{
   margin:0 0 36px;
   padding:28px 32px 32px;
@@ -508,15 +506,14 @@ article.ticket .xfer-route, article.ticket .kind{
   border:1px solid var(--g-border);
   box-shadow:0 1px 1px rgba(30,40,60,.04),0 10px 28px -12px rgba(30,40,60,.14);
 }
-.rest > .sec::after, .country-chunk::after, section.sec.glass::after,
-#nights::after, #recs-search::after, #budget::after, #fx::after,
+.rest > .sec::after, .country-chunk::after, section.sec.glass::after, #recs-search::after, #budget::after, #fx::after,
 #docs::after, #pack::after, #tasks::after, #choose::after,
 [id$="-practical"]::after, [id$="-docs"]::after, [id$="-pack"]::after,
 [id^="days-"]::after, [id^="choose-"]::after{
   content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background:linear-gradient(180deg,var(--g-edge) 0,transparent 1.6px);z-index:1;
 }
-.rest .sec > *, .country-chunk > *, #nights > *, #budget > *, #recs-search > *{position:relative;z-index:2}
+.rest .sec > *, .country-chunk > *, #budget > *, #recs-search > *{position:relative;z-index:2}
 
 .sec > .kicker, .rest .kicker{font:700 11.5px var(--font);letter-spacing:.12em;color:var(--muted);margin-bottom:4px}
 .sec-head .act{font:700 11.5px var(--font);letter-spacing:.12em;color:var(--muted)}
@@ -552,9 +549,6 @@ article.ticket .xfer-route, article.ticket .kind{
 /* Badges: meaning only, sharp corners at the v2 scale. */
 .badge{border-radius:2px}
 
-/* Pocket sheet stays glass. */
-.pocket{border-radius:20px 20px 0 0}
-
 /* ===== Mobile dock ===== */
 .dock{
   display:none;
@@ -574,7 +568,6 @@ article.ticket .xfer-route, article.ticket .kind{
 }
 .dock a .ph, .dock button .ph{font-size:20px}
 .dock a.on, .dock button.on, .dock a:active, .dock button:active{color:var(--ink);background:var(--g-thin)}
-.pocket-toggle{z-index:44}
 
 /* ===== Mobile ===== */
 @media (max-width:899px){
@@ -623,8 +616,7 @@ article.ticket .xfer-route, article.ticket .kind{
   .item .date{width:auto}
 
   .rest{padding:8px 16px 96px}
-  .rest > .sec, .rest section.sec, .country-chunk,
-  #nights, #recs-search, #budget, #fx, #docs, #pack, #tasks, #choose,
+  .rest > .sec, .rest section.sec, .country-chunk, #recs-search, #budget, #fx, #docs, #pack, #tasks, #choose,
   [id$="-practical"], [id$="-docs"], [id$="-pack"], [id^="days-"], [id^="choose-"]{
     padding:18px 16px 20px;margin-bottom:18px;border-radius:16px;
   }
@@ -633,10 +625,10 @@ article.ticket .xfer-route, article.ticket .kind{
 
   .dock{display:grid}
   body{padding-bottom:72px}
-  .pocket-toggle{bottom:76px}
+  
 }
 
-/* Desktop: no dock, pocket button lower-left / lower-right stays. */
+/* Desktop: no dock. */
 @media (min-width:900px){
   .dock{display:none}
 }
@@ -667,7 +659,6 @@ h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.025em;line-height:1.12}
 .folio .closed-line{max-width:46ch}
 .instruments .phone, .instruments .emer + .src{overflow-wrap:normal;word-break:normal;white-space:nowrap}
 #dockMap span{max-width:8em;text-align:center}
-
 
 /* ===== v9 review findings (generic) ===== */
 
@@ -721,11 +712,7 @@ html[data-theme="light"] .badge.closed,
   font:700 15px 'Inter',var(--font);
   font-variant-numeric:tabular-nums;
   color:var(--ink);
-}
-
-/* 8. Room for wrapped / horizontal-bar tick labels. min-height is overridden
-   together with height when the JS axis flip runs. */
-.chart, .viz .chart, [id$="Chart"], canvas.chart{
+} [id$="Chart"]{
   min-height:180px;
 }
 
@@ -749,7 +736,7 @@ html[data-theme="light"] .badge.closed,
     align-items:center;
     justify-content:center;
   }
-  .stop-toggle, .xfer-sum, .copybtn, .chk-list label, .pocket .pseg button,
+  .stop-toggle, .xfer-sum, .copybtn, .chk-list label,
   a.navbtn, a.maps, a.call, a.ext{
     min-height:44px;
   }
@@ -766,16 +753,15 @@ html[data-theme="dark"] .leaflet-tile-pane{
   filter:brightness(.78) saturate(.88) contrast(1.05);
 }
 
-/* 12. Backdrop-filter only on floating chrome (nav, dock, pocket, instruments).
+/* 12. Backdrop-filter only on floating chrome (nav, dock, instruments).
    Content sections keep the glass look (tint, edge, hairline) without a blur pass. */
-.rest > .sec, .rest section.sec, .country-chunk, section.sec.glass,
-#nights, #recs-search, #budget, #fx, #docs, #pack, #tasks, #choose,
+.rest > .sec, .rest section.sec, .country-chunk, section.sec.glass, #recs-search, #budget, #fx, #docs, #pack, #tasks, #choose,
 [id$="-practical"], [id$="-docs"], [id$="-pack"], [id^="days-"], [id^="choose-"],
 article.ticket, article.xfer.ticket,
 figure.map, .spread .map,
 .rest .card.glass, .country-chunk .card.glass,
 .day.glass, .book.glass, .blk, .recs.glass,
-article.stay:hover, article.stay.is-hover{
+article.stay.x-nohover, article.stay.x-nohover{
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
 }
@@ -792,33 +778,12 @@ article.stay:hover, article.stay.is-hover{
   .spread .map-live, .spread #mapLive{height:420px;max-width:100%;min-height:0}
 }
 
-/* Pocket close is a real button (44px). Fold close buttons stay hidden —
+/* Fold close buttons stay hidden —
    the toggle on the row closes the fold. No display:none !important. */
 .fold .sheet-close{display:none}
-.pocket .sheet-close,
-#pocketClose{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:44px;
-  min-height:44px;
-  border-radius:2px;
-}
-@media (max-width:899px){
-  .pocket{
-    inset-inline:0;
-    bottom:0;
-    max-width:none;
-    width:auto;
-    border-radius:20px 20px 0 0;
-    z-index:100;
-    max-height:min(90vh,720px);
-  }
-}
 
 /* Long external URLs wrap instead of overflowing (finding 2: fix the child). */
 a.ext, .ext{overflow-wrap:anywhere;word-break:break-word;max-width:100%}
-
 
 /* ===== v10 review findings (generic) ===== */
 
@@ -861,8 +826,8 @@ article.stay .stop-sum-top h3,
   :root{--header-h:104px}
 }
 html{scroll-padding-top:var(--header-h,128px)}
-#itinerary, #map, #overview, #budget, #nights, #recs-search, #fx, #docs,
-#pack, #tasks, #choose, #pocket,
+#itinerary, #map, #overview, #budget, #recs-search, #fx, #docs,
+#pack, #tasks, #choose,
 .sec, .stop, .xfer, .itinerary, .folio, .country-block, .spread,
 [id^="stop-"], [id^="xfer-"], [id^="days-"], [id^="choose-"],
 [id$="-practical"], [id$="-docs"], [id$="-pack"]{
@@ -889,12 +854,6 @@ html{scroll-padding-top:var(--header-h,128px)}
   margin-inline:0;
 }
 
-/* 7. The pocket FAB is redundant with the dock Access control below 900px.
-   Keep it on desktop, where there is no dock. */
-@media (max-width:899px){
-  .pocket-toggle, #pocketBtn{display:none}
-}
-
 /* 8. Open folds can scroll their last line clear of the fixed dock.
    Padding on the article (outside the fold), never clipping. */
 @media (max-width:899px){
@@ -907,7 +866,6 @@ html{scroll-padding-top:var(--header-h,128px)}
     overflow:visible;
   }
 }
-
 
 /* ===== v11 review findings (generic) ===== */
 

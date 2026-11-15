@@ -886,6 +886,31 @@
           ]
         }
       }
+    },
+    "home": {
+      "type": "object",
+      "description": "Optional. Home clock label and flag. Without it the home clock shows a house icon and the UI word for home.",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "flag": {
+          "type": "object",
+          "description": "Same shape as a country flag (inline SVG fields)."
+        }
+      }
+    },
+    "dietary_ok": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional short chips shown next to the dietary restrictions in the waiter card, for things that are fine (for example a food the party does eat)."
+    },
+    "budget_note": {
+      "type": "string",
+      "description": "Optional one-line note under the booked rows in the budget card."
     }
   }
 }

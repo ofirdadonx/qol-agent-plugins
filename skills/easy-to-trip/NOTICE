@@ -3,8 +3,7 @@
 The default template vendors the following libraries and fonts. They keep their own licenses, which are included here by name. Upstream copies live under `templates/default/vendor/`.
 
 - **Leaflet** 1.9.4 — BSD-2-Clause. https://leafletjs.com/
-- **Chart.js** 4.4.1 — MIT. https://www.chartjs.org/
-- **Phosphor Icons** 2.1.1 (Duotone subset) — MIT. https://phosphoricons.com/
+- **Phosphor Icons** 2.1.1 (Duotone subset as a web font, and a Regular subset as the inline SVG sprite `icons-sprite.svg`) — MIT. https://phosphoricons.com/
 - **Inter** — SIL Open Font License 1.1. https://rsms.me/inter/
 - **Assistant** — SIL Open Font License 1.1.
 

@@ -120,7 +120,7 @@ h2{font-size:clamp(24px,3vw,32px);font-weight:700;line-height:1.2;letter-spacing
 .viz{border-radius:var(--r-card);padding:var(--s6)}
 .viz-head{display:flex;justify-content:space-between;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s4)}
 .viz-head h3{font-size:16px;font-weight:700;color:var(--text-2)}
-.chart{position:relative;height:300px}
+
 .caption{font-size:14.5px;color:var(--text-2);margin-top:var(--s3);display:flex;gap:8px;align-items:flex-start}
 .caption .ph{color:var(--accent);margin-top:2px}
 
@@ -230,7 +230,7 @@ ol.steps{list-style:none}
   .wrap{padding:96px 16px 60px}
   .opts,.exit,.result{grid-template-columns:1fr}
   .kpi.hero-kpi .n{font-size:46px}
-  .chart{height:250px}
+  
   /* bottom sheet */
   .panel{top:auto;bottom:0;inset-inline:0;width:100%;max-height:86vh;border-radius:var(--r-panel) var(--r-panel) 0 0;transform:translateY(105%)}
   .panel::after{content:"";position:absolute;top:8px;inset-inline-start:50%;translate:50%;width:40px;height:5px;border-radius:5px;background:var(--muted);opacity:.5}

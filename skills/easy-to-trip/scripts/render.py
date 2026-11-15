@@ -418,6 +418,7 @@ _NUM_RE = re.compile(
     r"|\d+[.,]\d+\s*" + _UNIT +
     r"|\d+\s*" + _UNIT +
     r"|\d{1,2}\.\d{2}(?:\.\d{2,4})?[–-]\d{1,2}\.\d{2}(?:\.\d{2,4})?"
+    r"|\d{1,2}\.\d{1,2}\.\d{4}(?!\d)"
     r"|\d{1,3}(?:,\d{3})+(?:\.\d+)?"
     r"|\d+[.,]\d+"
     r"|\d{1,2}:\d{2}(?::\d{2})?"
@@ -523,7 +524,10 @@ def xfer_when_bits(x) -> list:
                 if tl not in dl:
                     bits.append(wrap_xfer_legs(tl) if re.search(r"[·•]", tl) else xfer_leg_html(tl))
             else:
-                bits.append(xfer_leg_html(dl, tl))
+                # "ferry 10:30, flight 14:05" is two legs: each can wrap as a unit
+                segs = [t for t in re.split(r",\s+", tl) if t]
+                bits.append(xfer_leg_html(dl, segs[0] if segs else tl))
+                bits.extend(xfer_leg_html(t) for t in segs[1:])
         elif dl:
             bits.append(wrap_xfer_legs(dl) if re.search(r"[·•]", dl) else xfer_leg_html(dl))
         else:
@@ -536,7 +540,6 @@ def xfer_when_bits(x) -> list:
     if arr:
         bits.append(xfer_leg_html(*filter(None, [_short_dmy(arr), _short_hm(arr, x.get("arrive_at"))])))
     return bits
-
 
 
 def countdown_caption(trip, ui) -> str:
@@ -623,6 +626,807 @@ def fold(inner: str, detail_id: str) -> str:
         f'<div class="xfer-detail" id="{esc(detail_id)}">{inner}</div>'
         f"</div></div>"
     )
+
+
+# ---- v13 building blocks: SVG sprite icons, isolated tokens, definition grids ----
+SPRITE_FILE = ROOT / "templates" / "default" / "vendor" / "icons-sprite.svg"
+_SPRITE_IDS = None
+
+
+def sprite_ids() -> set:
+    global _SPRITE_IDS
+    if _SPRITE_IDS is None:
+        txt = SPRITE_FILE.read_text(encoding="utf-8") if SPRITE_FILE.exists() else ""
+        _SPRITE_IDS = set(re.findall(r'<symbol id="i-([a-z0-9-]+)"', txt))
+    return _SPRITE_IDS
+
+
+def sprite_html() -> str:
+    if not SPRITE_FILE.exists():
+        return ""
+    txt = SPRITE_FILE.read_text(encoding="utf-8")
+    return re.sub(r"<!--.*?-->\s*", "", txt, flags=re.S).strip()
+
+
+def ic(name: str, cls: str = "ic") -> str:
+    """An icon from the inline SVG sprite (Phosphor regular subset)."""
+    name = (name or "").replace("ph-", "", 1) if (name or "").startswith("ph-") else (name or "")
+    if name not in sprite_ids():
+        name = "info"
+    return f'<svg class="{cls}" aria-hidden="true" focusable="false"><use href="#i-{esc(name)}"></use></svg>'
+
+
+def tchip(inner_escaped: str) -> str:
+    """A number/time/amount token that never wraps or reorders."""
+    return f'<bdi dir="ltr" class="tnum tchip">{inner_escaped}</bdi>'
+
+
+def tn(inner_escaped: str) -> str:
+    return f'<bdi dir="ltr" class="tnum">{inner_escaped}</bdi>'
+
+
+def chips_ltr(s) -> str:
+    """Escape prose and isolate each numeric atom as a tchip (definition-grid values)."""
+    if s is None or s == "":
+        return ""
+    return _NUM_RE.sub(lambda m: tchip(m.group(0)), esc(s))
+
+
+def dl_row(icon_name: str, label: str, value_html: str) -> str:
+    return (
+        f'<div class="dl-row"><span class="dl-ic">{ic(icon_name)}</span>'
+        f'<span class="dl-k">{esc(label)}</span><span class="dl-v">{value_html}</span></div>'
+    )
+
+
+def dl_grid(rows) -> str:
+    """Rows are (icon, label, value_html). Empty values and repeated values are dropped."""
+    seen, out = set(), []
+    for icon_name, label, value in rows:
+        if not value:
+            continue
+        key = re.sub(r"<[^>]+>", "", value).strip()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(dl_row(icon_name, label, value))
+    return f'<div class="dl">{"".join(out)}</div>' if out else ""
+
+
+_LABELED = re.compile(r"^\s*([^:：]{1,22})[:：]\s*(.+)$", re.S)
+
+
+def split_label(text: str):
+    """'Tip: ask for chicken broth' -> ('Tip', 'ask for chicken broth'); else (None, text)."""
+    m = _LABELED.match(text or "")
+    if m and not re.search(r"\d{1,2}$", m.group(1)):
+        return m.group(1).strip(), m.group(2).strip()
+    return None, text
+
+
+def item_rows(items, icon_name: str, label: str, ui: dict) -> list:
+    """Prose list items as definition rows. 'Label: value' items keep their own label."""
+    rows = []
+    for it in items or []:
+        if isinstance(it, dict):
+            rows.append((it.get("icon") or icon_name, it.get("label") or label, chips_ltr(it.get("value") or it.get("text") or "")))
+            continue
+        lab, val = split_label(str(it))
+        ic_name = icon_name
+        if lab and re.search(ui.get("tip_rx") or r"(?i)^tip", lab):
+            ic_name = "lightbulb"
+        rows.append((ic_name, lab or label, chips_ltr(val)))
+    return rows
+
+
+def act_btn(icon_name: str, label: str, href: str = "", copy: str = "", aria: str = "") -> str:
+    if copy:
+        return (
+            f'<button type="button" class="act-btn copybtn press" data-copy="{esc(copy)}" aria-label="{esc(aria or label)}">'
+            f'{ic(icon_name)}<span>{esc(label)}</span></button>'
+        )
+    return (
+        f'<a class="act-btn press" href="{esc(href)}" target="_blank" rel="noopener noreferrer" aria-label="{esc(aria or label)}">'
+        f'{ic(icon_name)}<span>{esc(label)}</span></a>'
+    )
+
+
+def booking_block(b: dict, ui: dict) -> str:
+    """Code line, then one row of 36px actions (copy, email, manage, check-in)."""
+    code = (b or {}).get("confirmation_code")
+    if not code:
+        return ""
+    acts = [act_btn("copy", ui["copy"], copy=code, aria=f'{ui["copy"]} {code}')]
+    if b.get("confirmation_link"):
+        acts.append(act_btn("envelope", ui["email"], href=b["confirmation_link"], aria=f'{ui["email"]} {code}'))
+    if b.get("manage_url"):
+        acts.append(act_btn("arrow-square-out", ui["manage"], href=b["manage_url"], aria=f'{ui["manage"]} {code}'))
+    if b.get("checkin_url"):
+        acts.append(act_btn("sign-in", ui["checkin"], href=b["checkin_url"], aria=f'{ui["checkin"]} {code}'))
+    return (
+        f'<div class="bk"><div class="bk-code"><span class="bk-k">{esc(ui.get("booking_code") or ui["code"])}</span>'
+        f'<bdi dir="ltr" class="tnum code">{esc(code)}</bdi></div>'
+        f'<div class="bk-actions">{"".join(acts)}</div></div>'
+    )
+
+
+def pill(href: str, inner_html: str, icon_name: str = "", cls: str = "pill", ext_link: bool = False, title: str = "") -> str:
+    tgt = ' target="_blank" rel="noopener noreferrer"' if ext_link else ""
+    ttl = f' title="{esc(title)}"' if title else ""
+    return f'<a class="{cls}" href="{esc(href)}"{tgt}{ttl}>{ic(icon_name) if icon_name else ""}{inner_html}</a>'
+
+
+def tel_pill(number: str, icon_name: str = "") -> str:
+    if not number:
+        return ""
+    href = re.sub(r"[^\d+]", "", number)
+    return pill("tel:" + href, f'<bdi dir="ltr" class="tnum">{esc(number)}</bdi>', icon_name)
+
+
+def mail_pill(addr: str, icon_name: str = "") -> str:
+    if not addr:
+        return ""
+    return pill("mailto:" + addr, f'<bdi dir="ltr">{esc(addr)}</bdi>', icon_name)
+
+
+def latin_or_text(s: str) -> str:
+    """A name with no RTL letters is isolated as LTR so it never reorders."""
+    if not s:
+        return ""
+    if re.search(r"[\u0590-\u08ff]", s):
+        return raw_ltr(s)
+    return f'<bdi dir="ltr">{esc(s)}</bdi>'
+
+
+def home_amount(price: dict, rates: dict):
+    if not price:
+        return None
+    amt = price.get("amount")
+    if amt is None:
+        return None
+    cur = price.get("currency")
+    r = rates.get(cur) if cur else 1
+    if r is None:
+        return None
+    return amt * float(r)
+
+
+def fmt_money_sym(n, code: str, decimals=None) -> str:
+    sym = symbol(code)
+    if n is None:
+        return ""
+    if decimals is None:
+        decimals = 0 if abs(n - round(n)) < 0.005 else 2
+    num = f"{n:,.{decimals}f}"
+    return f"{sym}{num}" if sym and len(sym) <= 2 else f"{num} {code}"
+
+
+_TAG_SPLIT = re.compile(r"(<[^>]+>)")
+_LATIN_RUN = re.compile(r"[A-Za-z][A-Za-z0-9'’+./-]{1,}(?:[ \u00a0]+[A-Za-z][A-Za-z0-9'’+./-]{1,})*")
+_SKIP_TAGS = {"bdi", "code", "script", "style", "a"}
+
+
+def wrap_latin(html: str) -> str:
+    """Isolate Latin runs inside RTL prose so a multi-word Latin name never reorders on wrap.
+
+    Text inside bdi/code/a stays as is. Only runs when the page text holds RTL letters."""
+    if not html or not re.search(r"[\u0590-\u08ff]", html):
+        return html
+    out, depth = [], []
+    for part in _TAG_SPLIT.split(html):
+        if not part:
+            continue
+        if part.startswith("<"):
+            m = re.match(r"<(/?)([a-zA-Z0-9]+)", part)
+            if m:
+                name = m.group(2).lower()
+                if name in _SKIP_TAGS and not part.endswith("/>"):
+                    if m.group(1):
+                        if name in depth:
+                            depth.remove(name)
+                    else:
+                        depth.append(name)
+            out.append(part)
+            continue
+        if depth or not _LATIN_RUN.search(part):
+            out.append(part)
+            continue
+        out.append(_LATIN_RUN.sub(lambda mm: f'<bdi dir="ltr">{mm.group(0)}</bdi>', part))
+    return "".join(out)
+
+
+_CJK = re.compile(r"[\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]")
+_THAI = re.compile(r"[\u0e00-\u0e7f]")
+
+
+def quote_iso(html: str) -> str:
+    """«local script» inside RTL text: isolate and keep the quote on one line."""
+    def one(m):
+        inner = m.group(1)
+        if _CJK.search(inner):
+            lang = ' lang="ja"' if re.search(r"[\u3040-\u30ff]", inner) else ""
+        elif _THAI.search(inner):
+            lang = ' lang="th"'
+        else:
+            return m.group(0)
+        return f'<span class="nw q-iso">«<bdi dir="ltr"{lang}>{inner}</bdi>»</span>'
+    return re.sub(r"«([^»<]*)»", one, html)
+
+
+def status_rx(ui: dict) -> list:
+    """Status words that data text sometimes repeats next to the real badge."""
+    booked = re.escape((ui.get("booked") or "").strip())
+    openw = re.escape((ui.get("open") or "").strip())
+    undecided = re.escape((ui.get("optional_undecided") or "").strip())
+    nouns = "|".join(re.escape(n) for n in (ui.get("status_nouns") or []) if n)
+    rx = []
+    if booked:
+        if nouns:
+            rx.append((re.compile(r"\s*" + booked + r"\s+(?:" + nouns + r")(?=[\s.,]|$)"), ""))
+        rx.append((re.compile(r"\s*[—–-]?\s*" + booked), ""))
+    if openw:
+        rx.append((re.compile(r"(\S+) " + openw + r" (?=\1)"), ""))
+        rx.append((re.compile(r"\s+" + openw + r"(?=\s*$|\s*[.,])"), ""))
+    if undecided:
+        rx.append((re.compile(r"\s*" + undecided), ""))
+    rx.append((re.compile(r"\s*\u2713"), ""))
+    return rx
+
+
+def clean_status(text: str, ui: dict) -> str:
+    for rx, rp in status_rx(ui):
+        text = rx.sub(rp, text)
+    return text
+
+
+_RTL_CH = re.compile(r"[\u0590-\u08ff]")
+
+
+def fix_rtl_in_ltr(html: str) -> str:
+    """An LTR isolate that holds RTL words ('4 שעות') renders reversed: let it follow its text."""
+    def one(m):
+        tag, attrs, txt = m.group(1), m.group(2), m.group(3)
+        if not _RTL_CH.search(txt):
+            return m.group(0)
+        attrs = re.sub(r'\sdir="ltr"', ' dir="auto"', attrs)
+        attrs = re.sub(r'class="([^"]*)"', lambda c: 'class="' + " ".join(x for x in c.group(1).split() if x != "ltr") + '"', attrs)
+        if "dir=" not in attrs:
+            attrs += ' dir="auto"'
+        return f"<{tag}{attrs}>{txt}</{tag}>"
+    return re.sub(r'<(bdi|span)((?:\s[^>]*)?(?:dir="ltr"|class="[^"]*\bltr\b[^"]*")[^>]*)>([^<]*)</\1>', one, html)
+
+
+def clock_tile(tz: str, name: str, flag_html: str, where: str, region_i, ui) -> str:
+    style = f' style="--region-c:var(--region-{region_i})"' if region_i is not None else ""
+    return (
+        f'<div class="clk" data-tz="{esc(tz)}" data-where="{esc(where)}"{style}>'
+        f'<div class="clk-top">{flag_html}<span class="clk-name">{esc(name)}</span>'
+        f'<span class="clk-here" aria-hidden="true">{esc(ui.get("here_now") or "")}</span></div>'
+        f'<div class="clk-time" dir="ltr"><span class="tnum">--:--</span></div>'
+        f'<div class="clk-meta"><span class="clk-date"></span><span class="clk-off" dir="auto"></span></div></div>'
+    )
+
+
+def home_flag(data, ui) -> str:
+    """Home flag from trip.home.flag (same shape format as a country), else a neutral house icon."""
+    home = data["trip"].get("home") or {}
+    if (home.get("flag") or {}).get("shapes"):
+        return render_flag({"flag": home["flag"], "name": home.get("name")}, "sm")
+    return f'<span class="flag flag-home" role="img" aria-label="{esc(ui.get("home_clock") or "")}">{ic("house")}</span>'
+
+
+def glance_units(data, ui):
+    """One unit per booking (a code shared by two transfers counts once), else per timeline item."""
+    units = {}
+    for i, c in enumerate(country_list(data)):
+        leading, after, trailing = transfers_in_country(data, c["id"])
+        items = []
+        for x in leading:
+            items.append(("x", x))
+        trailing_ids = {x.get("id") for x in trailing}
+        for d in [d for d in data["trip"]["destinations"] if d.get("country") == c["id"]]:
+            items.append(("s", d))
+            for x in after.get(d["id"], []):
+                if x.get("id") not in trailing_ids:
+                    items.append(("x", x))
+        for x in trailing:
+            items.append(("x", x))
+        for kind, it in items:
+            if kind == "x":
+                st = status_of_xfer(data, it)
+                if it.get("optional") or st == "optional":
+                    continue
+                b = booking_by_id(data, it.get("booking_id")) if it.get("booking_id") else None
+                key = (b or {}).get("confirmation_code") or ("xfer-" + str(it.get("id")))
+                closed = st == "booked"
+            else:
+                if it.get("optional"):
+                    continue
+                info = ((data.get("destinations") or {}).get(it["id"]) or {}).get("info") or {}
+                closed = (info.get("stay_status") or ("booked" if info.get("stay_booking_id") else "open")) == "booked"
+                key = "stop-" + it["id"]
+            if key in units:
+                units[key]["closed"] = units[key]["closed"] or closed
+            else:
+                units[key] = {"closed": closed, "region": i}
+    return list(units.values())
+
+
+def render_glance(data, ui, lang) -> str:
+    bud = derive_budget(data)
+    home = bud["home"] or data["trip"].get("currency") or ""
+    total = bud["booked_total_home"] or 0
+    sym = symbol(home)
+    budget_txt = f"≈ {sym}{round(total):,}" if sym and len(sym) <= 2 else f"≈ {home} {round(total):,}"
+    dests = [d for d in data["trip"]["destinations"] if not d.get("optional")]
+    nights = sum(int(g.get("nights") or 0) for g in nights_payload(data, lang)["groups"] if not g.get("optional"))
+    xfers = 0
+    for c in country_list(data):
+        leading, after, trailing = transfers_in_country(data, c["id"])
+        seen = set()
+        for x in leading + [y for v in after.values() for y in v] + trailing:
+            if x.get("id") in seen:
+                continue
+            seen.add(x.get("id"))
+            if not (x.get("optional") or status_of_xfer(data, x) == "optional"):
+                xfers += 1
+    units = glance_units(data, ui)
+    closed = sum(1 for u in units if u["closed"])
+    cells = [f'<i class="on r{u["region"]}"></i>' for u in units if u["closed"]] + ["<i></i>" for u in units if not u["closed"]]
+    aria = (ui.get("glance_budget_aria") or "{amount}").replace("{amount}", budget_txt)
+
+    def tile(icon_name, key, value, label, extra_cls="", ltr_v=False, tail=""):
+        d = ' dir="ltr"' if ltr_v else ""
+        return (
+            f'<div class="gl{extra_cls}" role="listitem"><span class="gl-ic">{ic(icon_name)}</span>'
+            f'<span class="gl-v"{d}><span class="tnum" data-gl="{key}">{esc(value)}</span></span>'
+            f'<span class="gl-k">{esc(label)}</span>{tail}</div>'
+        )
+    opt_names = [re.split(r"\s[—–-]\s", loc(d.get("name"), lang) or d["id"])[0]
+                 for d in data["trip"]["destinations"] if d.get("optional")]
+    note = ""
+    if opt_names:
+        note = f'<p class="glance-note">{esc((ui.get("glance_excludes") or "{names}").replace("{names}", ", ".join(opt_names)))}</p>'
+    return (
+        f'<div class="glance" role="list" aria-label="{esc(ui.get("at_a_glance") or "")}">'
+        f'<a class="gl gl-budget" role="listitem" href="#budget" aria-label="{esc(aria)}">'
+        f'<span class="gl-ic">{ic("wallet")}</span><span class="gl-v" dir="ltr"><span class="tnum" data-gl="budget">{esc(budget_txt)}</span></span>'
+        f'<span class="gl-k">{esc(ui.get("glance_budget") or "")}</span></a>'
+        + tile("moon", "nights", str(nights), ui.get("glance_nights") or "")
+        + tile("map-pin-area", "dests", str(len(dests)), ui.get("glance_dests") or "")
+        + tile("airplane-tilt", "xfers", str(xfers), ui.get("glance_xfers") or "")
+        + tile("check-circle", "booked", f"{closed}/{len(units)}", ui.get("glance_booked") or "", " gl-book", True,
+               f'<span class="gl-bar" aria-hidden="true">{"".join(cells)}</span>')
+        + "</div>" + note
+    )
+
+
+def _ymd(raw):
+    d = parse_iso_date(raw) if raw else None
+    return d.isoformat() if d else ""
+
+
+def price_value(price: dict, fx: dict, home: str) -> str:
+    """'$1,124.75 ≈ ₪3,599' (original first, home amount as a sub-line), or a range."""
+    if not price:
+        return ""
+    cur = price.get("currency") or home
+    rates = fx.get("rates_to_home") or {}
+    if price.get("amount") is not None:
+        main = tchip(esc(fmt_money_sym(price["amount"], cur)))
+        sub = ""
+        if cur != home:
+            h = home_amount(price, rates)
+            if h is not None:
+                sub = f'≈ {tn(esc(fmt_money_sym(h, home, 0)))}'
+        note = price.get("note") or ""
+        bits = " · ".join(x for x in [sub, raw_ltr(note) if note else ""] if x)
+        return main + (f' <span class="dl-sub">{bits}</span>' if bits else "")
+    lo, hi = price.get("amount_min"), price.get("amount_max")
+    if lo is not None:
+        rng = fmt_money_sym(lo, cur) + ("" if hi in (None, lo) else "–" + fmt_money_sym(hi, cur).lstrip(symbol(cur)))
+        note = price.get("note") or ""
+        return tchip(esc(rng)) + (f' <span class="dl-sub">{raw_ltr(note)}</span>' if note else "")
+    return ""
+
+
+def xfer_rows(data, x, b, ui) -> list:
+    fx = data["trip"].get("fx") or {}
+    home = fx.get("home") or data["trip"].get("currency") or ""
+    mode = x.get("mode") or ""
+    dep_ic = "airplane-takeoff" if mode == "flight" else ("boat" if mode in ("ferry", "boat") else "train")
+    rows = []
+    when = " ".join(filter(None, [x.get("date_label") or "", x.get("time_label") or ""]))
+    if when:
+        rows.append((dep_ic, ui.get("dl_when") or "", chips_ltr(when)))
+    if x.get("duration_label") and x.get("duration_label") not in when:
+        rows.append(("timer", ui.get("dl_duration") or "", chips_ltr(x["duration_label"])))
+    if b:
+        for d in b.get("details") or []:
+            if isinstance(d, dict) and d.get("value"):
+                rows.append((d.get("icon") or "path", d.get("label") or "", chips_ltr(d["value"])))
+        if b.get("cabin"):
+            rows.append(("seat", ui.get("dl_cabin") or "", chips_ltr(b["cabin"])))
+        if b.get("seats"):
+            rows.append(("seat", ui.get("dl_seats") or "", chips_ltr(b["seats"])))
+        pv = price_value(b.get("price") or {}, fx, home)
+        if pv:
+            rows.append(("wallet", ui.get("dl_price") or "", pv))
+        if b.get("checkin_at"):
+            dt = parse_iso_dt(b["checkin_at"])
+            if dt:
+                rows.append(("sign-in", ui.get("checkin") or "", tchip(esc(_short_dmy(dt)))))
+        if b.get("notes"):
+            rows.append(("note", ui.get("dl_notes") or "", note_value(clean_status(b["notes"], ui), ui)))
+    if x.get("notes"):
+        rows.append(("info", ui.get("dl_notes") or "", note_value(clean_status(x["notes"], ui), ui)))
+    for tip in x.get("tips") or []:
+        rows.append(("lightbulb", ui.get("dl_tip") or "", chips_ltr(tip)))
+    return rows
+
+
+def stay_rows(data, dest, info, b, ui, lang) -> list:
+    """The stay as a definition grid: name, check-in/out, nights, address, contacts, price, terms, code."""
+    fx = data["trip"].get("fx") or {}
+    home = fx.get("home") or data["trip"].get("currency") or ""
+    rows = []
+    name = info.get("stay_label") or (b or {}).get("title") or ""
+    if name:
+        rows.append(("bed", ui.get("dl_name") or "", latin_or_text(name)))
+    dates = dest.get("dates") or {}
+    ci = parse_iso_dt((b or {}).get("checkin_at")) if b else None
+    d_in = parse_iso_date(dates.get("start"))
+    d_out = parse_iso_date(dates.get("end"))
+    if d_in or info.get("checkin"):
+        bits = []
+        if d_in:
+            bits.append(tchip(esc(_short_dmy(d_in))))
+        t_in = info.get("checkin") or (f"{ci.hour:02d}:{ci.minute:02d}" if ci else "")
+        if t_in:
+            bits.append(tchip(esc(t_in)))
+        rows.append(("sign-in", ui.get("checkin") or "", "".join(bits)))
+    if d_out or info.get("checkout"):
+        bits = []
+        if d_out:
+            bits.append(tchip(esc(_short_dmy(d_out))))
+        if info.get("checkout"):
+            bits.append(tchip(esc(info["checkout"])))
+        rows.append(("sign-out", ui.get("checkout") or "", "".join(bits)))
+    if dest.get("nights") is not None:
+        n = int(dest["nights"])
+        rows.append(("moon", ui.get("nights") or "", esc(pluralize(n, ui.get("plural_night") or {"one": "1 night", "other": "{n} nights"})).replace(str(n), tn(str(n)), 1)))
+    if info.get("room"):
+        rows.append(("armchair", ui.get("dl_room") or "", latin_or_text(info["room"])))
+    addr = info.get("local_address_latin") or info.get("address") or ""
+    if addr:
+        rows.append(("map-pin", ui.get("dl_address") or "", latin_or_text(addr)))
+    if info.get("phone"):
+        rows.append(("phone", ui.get("dl_phone") or "", tel_pill(info["phone"])))
+    mail = info.get("email") or (b or {}).get("email")
+    if mail:
+        rows.append(("envelope", ui.get("email") or "", mail_pill(mail)))
+    if b:
+        pv = price_value(b.get("price") or {}, fx, home)
+        if pv:
+            rows.append(("wallet", ui.get("dl_price") or "", pv))
+        if b.get("charge_detail") or b.get("charge_at"):
+            txt = b.get("charge_detail")
+            if txt:
+                rows.append(("credit-card", ui.get("charge") or "", chips_ltr(txt)))
+            else:
+                dt = parse_iso_dt(b["charge_at"])
+                rows.append(("credit-card", ui.get("charge") or "", tchip(esc(_short_dmy(dt))) if dt else chips_ltr(b["charge_at"])))
+        if b.get("cancel_detail") or b.get("cancel_deadline"):
+            txt = b.get("cancel_detail")
+            if txt:
+                lab = ui.get("cancel_by") or ""
+                if lab and txt.startswith(lab):
+                    txt = txt[len(lab):].strip()  # the label already says it
+                rows.append(("calendar-x", lab, chips_ltr(txt)))
+            else:
+                dt = parse_iso_dt(b["cancel_deadline"])
+                rows.append(("calendar-x", ui.get("cancel_by") or "", tchip(esc(_short_dmy(dt))) if dt else chips_ltr(b["cancel_deadline"])))
+        for d in b.get("details") or []:
+            if isinstance(d, dict) and d.get("value"):
+                rows.append((d.get("icon") or "info", d.get("label") or "", chips_ltr(d["value"])))
+        if b.get("notes"):
+            rows.append(("note", ui.get("dl_notes") or "", note_value(clean_status(b["notes"], ui), ui)))
+        code = b.get("confirmation_code")
+        if code:
+            rows.append(("ticket", b.get("carrier") or ui.get("code") or "", tchip(esc(code))))
+    return rows
+
+
+def _tz_offset_label(tz: str, on) -> str:
+    """'UTC+9' for a zone on a given date (zoneinfo), '' when the zone is unknown."""
+    try:
+        from zoneinfo import ZoneInfo
+        off = datetime(on.year, on.month, on.day, 12, tzinfo=ZoneInfo(tz)).utcoffset()
+    except Exception:
+        return ""
+    mins = int(off.total_seconds() // 60)
+    sign = "+" if mins >= 0 else "−"
+    h, m = divmod(abs(mins), 60)
+    return f"UTC{sign}{h}" + (f":{m:02d}" if m else "")
+
+
+def _offset_text(ui, mins: int) -> str:
+    if mins == 0:
+        return ui.get("offset_same") or ""
+    sign = "+" if mins > 0 else "−"
+    h, m = divmod(abs(mins), 60)
+    if m:
+        return (ui.get("offset_hm") or "{sign}{h}:{m}").replace("{sign}", sign).replace("{h}", str(h)).replace("{m}", f"{m:02d}")
+    if h == 1:
+        return (ui.get("offset_one") or "{sign}1").replace("{sign}", sign)
+    return (ui.get("offset_n") or "{sign}{n}").replace("{sign}", sign).replace("{n}", str(h))
+
+
+def ptile(icon_name: str, label: str, value_html: str, line_html: str, more_html: str = "", ui=None) -> str:
+    m = ""
+    if more_html:
+        m = (f'<details class="p-more"><summary>{esc((ui or {}).get("more_short") or "")}{ic("caret-down", "ic car")}</summary>'
+             f'<div class="p-more-b">{more_html}</div></details>')
+    return (f'<div class="ptile"><div class="ptile-top"><span class="ptile-ic">{ic(icon_name)}</span>'
+            f'<span class="ptile-k">{esc(label)}</span></div>'
+            f'<div class="ptile-v">{value_html}</div><p class="ptile-l">{line_html}</p>{m}</div>')
+
+
+_PRACT_ICONS = [
+    (r"(?i)time|clock|שעון|שעות|zone", "clock"),
+    (r"(?i)curr|money|cash|מטבע|כסף", "currency-circle-dollar"),
+    (r"(?i)plug|power|socket|volt|תקע|חשמל", "plug"),
+    (r"(?i)transport|train|metro|bus|taxi|תחבורה|רכבת", "train"),
+    (r"(?i)phone|sim|esim|internet|טלפון", "phone"),
+    (r"(?i)tip|טיפ", "lightbulb"),
+    (r"(?i)water|מים", "info"),
+]
+
+
+def _pract_icon(item) -> str:
+    if item.get("icon"):
+        return item["icon"]
+    lab = item.get("label") or ""
+    for rx, name in _PRACT_ICONS:
+        if re.search(rx, lab):
+            return name
+    return "info"
+
+
+def _clauses(body: str):
+    first = re.split(r"(?<=[.!?])\s+", (body or "").strip(), maxsplit=1)[0].rstrip(".")
+    bits = [b.strip() for b in re.split(r"\s[—–]\s|,\s|;\s", first) if b.strip()]
+    return bits
+
+
+def practical_tiles(data, country, ui, lang) -> str:
+    trip = data["trip"]
+    fx = trip.get("fx") or {}
+    home = fx.get("home") or trip.get("currency") or ""
+    rates = fx.get("rates_to_home") or {}
+    tz = country.get("timezone")
+    home_tz = trip.get("home_tz")
+    start = parse_iso_date(((trip.get("dates") or {}).get("start"))) or date.today()
+    cname = loc(country.get("name"), lang) or country["id"]
+    hname = (trip.get("home") or {}).get("name") or ui.get("home_clock") or ""
+    time_rx = ui.get("pract_time_rx") or r"(?i)time"
+    cur_rx = ui.get("pract_currency_rx") or r"(?i)currenc"
+    tiles, time_done, cur_done = [], False, False
+    for it in country.get("practical") or []:
+        lab = it.get("label") or ""
+        kind = it.get("kind") or ("time" if re.search(time_rx, lab) else ("currency" if re.search(cur_rx, lab) else ""))
+        if kind == "time" and tz and home_tz and not time_done:
+            time_done = True
+            a, b = _tz_offset_label(tz, start), _tz_offset_label(home_tz, start)
+            try:
+                from zoneinfo import ZoneInfo
+                d0 = datetime(start.year, start.month, start.day, 12)
+                mins = int((d0.replace(tzinfo=ZoneInfo(tz)).utcoffset() - d0.replace(tzinfo=ZoneInfo(home_tz)).utcoffset()).total_seconds() // 60)
+                init = _offset_text(ui, mins)
+            except Exception:
+                init = ""
+            line = it.get("line") and raw_ltr(it["line"]) or f'{esc(cname)} {tn(esc(a))} · {esc(hname)} {tn(esc(b))}'
+            tiles.append(ptile("clock", ui.get("pract_time") or lab, f'<span data-offset-tz="{esc(tz)}">{esc(init)}</span>', line, ui=ui))
+            continue
+        cur = country.get("currency")
+        if kind == "currency" and cur and rates.get(cur) is not None and not cur_done:
+            cur_done = True
+            r = float(rates[cur])
+            amt = 1000 if r < 0.05 else (100 if r < 1 else 1)
+            hv = amt * r
+            hv_txt = f"{hv:,.2f}" if hv < 10 else f"{hv:,.1f}" if hv < 100 else f"{hv:,.0f}"
+            value = f'{tn(esc(symbol(cur) + f"{amt:,}"))} ≈ {tn(esc(symbol(home) + hv_txt))}'
+            line = raw_ltr(it.get("line") or (ui.get("fx_line") or "{date}").replace("{date}", fx.get("date_label") or _dmy(fx.get("date")) or ""))
+            rows = []
+            srcs = fx.get("sources") or {}
+            for pair, val in (fx.get("cross_rates") or {}).items():
+                if cur in pair:
+                    sub = srcs.get(pair) or ""
+                    sub = re.sub(r",?\s*\d{1,2}\.\d{1,2}\.\d{4}$", "", sub)
+                    rows.append(("currency-circle-dollar", f"{pair[:3]}/{pair[3:]}", tchip(esc(f"{val:.2f}")) + (f' <span class="dl-sub">{esc(sub)}</span>' if sub else "")))
+            if "USD" in rates and home != "USD":
+                sub = re.sub(r",?\s*\d{1,2}\.\d{1,2}\.\d{4}$", "", srcs.get("USD" + home) or "")
+                rows.append(("currency-circle-dollar", f"USD/{home}", tchip(esc(f"{float(rates['USD']):.2f}")) + (f' <span class="dl-sub">{esc(sub)}</span>' if sub else "")))
+            tiles.append(ptile("currency-circle-dollar", ui.get("pract_currency") or lab, value, line, dl_grid(rows), ui=ui))
+            continue
+        bits = _clauses(it.get("body") or "")
+        value = it.get("value") or (bits[0] if bits else "")
+        line = it.get("line") or (bits[1] if len(bits) > 1 else "")
+        more = ""
+        if it.get("more"):
+            more = dl_grid([(m.get("icon") or _pract_icon(it), m.get("label") or "", chips_ltr(m.get("value") or "")) for m in it["more"]])
+        elif it.get("body"):
+            more = dl_grid([(_pract_icon(it), ui.get("dl_details") or "", chips_ltr(it["body"]))])
+        tiles.append(ptile(_pract_icon(it), lab, wrap_latin(raw_ltr(value)), wrap_latin(raw_ltr(line)), more, ui=ui))
+    return f'<div class="ptiles">{"".join(tiles)}</div>' if tiles else ""
+
+
+def _dmy(raw) -> str:
+    d = parse_iso_date(raw) if raw else None
+    return f"{d.day}.{d.month}.{d.year}" if d else (raw or "")
+
+
+def callpill(e: dict) -> str:
+    number = e.get("number") or e.get("tel") or ""
+    tel = e.get("tel") or re.sub(r"[^\d+]", "", number)
+    return (f'<a class="callpill" href="tel:{esc(tel)}">{ic("phone")}'
+            f'<bdi dir="ltr" class="tnum n">{esc(number)}</bdi><span class="w">{esc(e.get("label") or "")}</span></a>')
+
+
+def embassy_card(emb: dict, ui) -> str:
+    rows = []
+    if emb.get("url"):
+        rows.append(("globe", ui.get("dl_site") or "", pill(emb["url"], f'<bdi dir="ltr">{esc(emb.get("source") or emb["url"])}</bdi>', "arrow-square-out", ext_link=True)))
+    if emb.get("address"):
+        parts = [p.strip() for p in emb["address"].split(",")]
+        inner = ", ".join(f'<span class="nw">{esc(p)}</span>' for p in parts)
+        href = emb.get("map_url") or ""
+        if href:
+            addr = pill(href, f'<bdi dir="auto">{inner}</bdi>', "map-pin", "pill pill-addr", ext_link=True, title=emb["address"])
+        else:
+            addr = (f'<button type="button" class="pill pill-addr copybtn press" data-copy="{esc(emb["address"])}" title="{esc(emb["address"])}" '
+                    f'aria-label="{esc(ui["copy"] + " " + emb["address"])}">{ic("map-pin")}<bdi dir="auto">{inner}</bdi></button>')
+        rows.append(("map-pin", ui.get("dl_address") or "", addr))
+    if emb.get("phone"):
+        rows.append(("phone", ui.get("dl_phone") or "", tel_pill(emb["phone"], "phone")))
+    if emb.get("phone_emergency"):
+        rows.append(("siren", ui.get("emergency") or "", tel_pill(emb["phone_emergency"], "phone")))
+    if emb.get("email"):
+        rows.append(("envelope", ui.get("email") or "", mail_pill(emb["email"], "envelope")))
+    body = "".join(f'<div class="emb-row"><span class="emb-k">{ic(i)}{esc(k)}</span><span class="emb-v">{v}</span></div>' for i, k, v in rows)
+    return f'<div class="emb"><h3 class="emb-h">{esc(emb.get("name") or ui["embassy"])}</h3><div class="emb-grid">{body}</div></div>'
+
+
+def _fmt_home_plain(n, home) -> str:
+    sym = symbol(home)
+    n = int(round(n))
+    return f"{sym}{n:,}" if sym and len(sym) <= 2 else f"{home} {n:,}"
+
+
+def _range_txt(lo, hi, cur) -> str:
+    sym = symbol(cur or "")
+    pre = sym if sym and len(sym) <= 2 else f"{cur} "
+    if lo is None:
+        return ""
+    if hi is None or int(round(hi)) == int(round(lo)):
+        return f"{pre}{int(round(lo)):,}"
+    return f"{pre}{int(round(lo)):,}–{int(round(hi)):,}"
+
+
+def nav_label(data, ui, key, country=None, lang=None) -> str:
+    """Short label for a section in the nav. Per-country chunks use a ui template with the
+    country name; singletons use trip.nav when it names the same href, else a ui default."""
+    lang = lang or (data["trip"].get("language") or "en")
+    if country is not None:
+        cname = loc(country.get("name"), lang) or country["id"]
+        kind = "practical" if key.endswith("-practical") else ("days" if key.startswith("days") else key)
+        tpl = ui.get("nav_" + kind) or "{country}"
+        return tpl.replace("{country}", cname)
+    for n in data["trip"].get("nav") or []:
+        if (n.get("href") or "") == "#" + key:
+            return n.get("label") or ""
+    return ui.get("nav_" + key.replace("-", "_")) or ""
+
+
+def _chk_list(list_id, items, ui, done=False) -> str:
+    lis = []
+    for k, it in enumerate(items or []):
+        if isinstance(it, dict):
+            text = it.get("text") or ""
+            val = it.get("id") or it.get("booking_id") or f"{list_id}-{k}"
+            opt = bool(it.get("optional"))
+        else:
+            text, val, opt = str(it), f"{list_id}-{k}", False
+        cls = ' class="is-optional"' if opt else ""
+        tag = badge("optional", ui) if opt else ""
+        dd = ' data-done="1"' if done else ""
+        lis.append(
+            f'<li{cls}><label><input type="checkbox" value="{esc(val)}"{dd}>'
+            f'<span class="chk-txt">{raw_ltr(clean_status(text, ui))}{(" " + tag) if tag else ""}</span></label></li>'
+        )
+    return f'<ul class="chk-list" id="{esc(list_id)}">{"".join(lis)}</ul>'
+
+
+def render_shared_pack(data, ui, lang) -> str:
+    pk = data["trip"].get("shared_packing") or {}
+    if not (pk.get("items") or pk.get("headline")):
+        return ""
+    items = pk.get("items") or []
+    note = f'<p class="src-note">{raw_ltr(pk.get("note") or "")}</p>' if pk.get("note") else ""
+    status = (f'<p class="pack-status"><bdi dir="ltr" class="tnum" id="packCount">0/{len(items)}</bdi>'
+              f'<span id="packEmpty">{esc(ui.get("pack_empty") or "")}</span></p>') if items else ""
+    lst = _chk_list("packList", [{"text": t, "id": f"pack-{i}"} if isinstance(t, str) else t for i, t in enumerate(items)], ui)
+    return (
+        f'<section id="pack" class="sec" data-nav="{esc(nav_label(data, ui, "pack"))}"><div class="sec-head rv">'
+        f'<div class="act">{icon("ph-suitcase-rolling")}{esc(ui["packing"])}</div>'
+        f'<h2>{raw_ltr(pk.get("headline") or "")}</h2>{status}<p>{raw_ltr(pk.get("lede") or "")}</p></div>'
+        f'<div class="card glass g-reg rv" style="margin-top:var(--s4)">{lst}{note}</div></section>'
+    )
+
+
+def render_shared_docs(data, ui, lang) -> str:
+    docs = data["trip"].get("shared_docs") or {}
+    if not (docs.get("items") or docs.get("headline")):
+        return ""
+    lis = "".join(f"<li><span>{raw_ltr(i)}</span></li>" for i in (docs.get("items") or []))
+    return (
+        f'<section id="docs" class="sec"><div class="sec-head rv">'
+        f'<div class="act">{icon("ph-identification-card")}{esc(ui["docs"])}</div>'
+        f'<h2>{raw_ltr(docs.get("headline") or "")}</h2><p>{raw_ltr(docs.get("lede") or "")}</p></div>'
+        f'<div class="card glass g-reg rv"><ul class="bul">{lis}</ul></div></section>'
+    )
+
+
+def render_tasks(data, ui, lang) -> str:
+    tasks = data.get("tasks") or {}
+    if not (tasks.get("done") or tasks.get("open")):
+        return ""
+    done, opn = tasks.get("done") or [], tasks.get("open") or []
+    n_all = len(done) + len(opn)
+    return (
+        f'<section id="tasks" class="sec" data-nav="{esc(nav_label(data, ui, "tasks"))}"><div class="sec-head rv">'
+        f'<div class="act">{icon("ph-list-checks")}{esc(ui.get("tasks") or ui["tasks_open"])}</div>'
+        f'<h2>{raw_ltr(tasks.get("headline") or "")}</h2>'
+        f'<p class="pack-status"><bdi dir="ltr" class="tnum" id="taskCount">{len(done)}/{n_all}</bdi></p>'
+        f'<p>{raw_ltr(tasks.get("lede") or "")}</p></div>'
+        f'<div class="grid2"><div class="card glass g-reg rv">'
+        f'<h3 style="font-size:16px;font-weight:700;margin-bottom:10px;color:var(--pos)">{icon("ph-check-circle")}{esc(ui["tasks_done"])}</h3>'
+        f'{_chk_list("taskListDone", done, ui, done=True)}</div>'
+        f'<div class="card glass g-reg rv">'
+        f'<h3 style="font-size:16px;font-weight:700;margin-bottom:10px;color:var(--ink-2)">{icon("ph-circle-dashed")}{esc(ui["tasks_open"])}</h3>'
+        f'{_chk_list("taskListOpen", opn, ui)}</div></div></section>'
+    )
+
+
+def pair(a: str, b: str) -> str:
+    if a and b:
+        return f'<div class="pair">{a}{b}</div>'
+    return a or b or ""
+
+
+_NAV_RX = re.compile(r'<(?:section|figure|div|article)\b[^>]*?\bid="([^"]+)"[^>]*?\bdata-nav="([^"]*)"|<(?:section|figure|div|article)\b[^>]*?\bdata-nav="([^"]*)"[^>]*?\bid="([^"]+)"')
+
+
+def nav_from_html(html: str) -> list:
+    out, seen = [], set()
+    for m in _NAV_RX.finditer(html):
+        i, lab = (m.group(1), m.group(2)) if m.group(1) else (m.group(4), m.group(3))
+        if lab and i not in seen:
+            seen.add(i)
+            out.append((i, htmlmod.unescape(lab)))
+    return out
+
+
+def note_value(text: str, ui: dict, limit: int = 160) -> str:
+    """A long free-text note shows its first sentence; the rest folds under 'more'."""
+    text = (text or "").strip()
+    if len(text) <= limit:
+        return chips_ltr(text)
+    parts = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)
+    if len(parts) < 2:
+        return chips_ltr(text)
+    return (f'{chips_ltr(parts[0])}<details class="p-more"><summary>{esc(ui.get("more_short") or "")}'
+            f'{ic("caret-down", "ic car")}</summary><div class="p-more-b">{chips_ltr(parts[1])}</div></details>')
 
 
 def money(amount, currency) -> str:
@@ -750,11 +1554,10 @@ def reservation_html(pl, ui, data) -> str:
         return ""
     return f'<div class="rec-res">{"".join(bits)}</div>'
 
-def render_header(data, ui, lang) -> str:
+
+def render_header(data, ui, lang, nav=None) -> str:
     trip = data["trip"]
-    chips = []
-    for n in trip.get("nav") or []:
-        chips.append(f'<a href="{esc(n["href"])}">{esc(n["label"])}</a>')
+    chips = [f'<a href="#{esc(sid)}">{esc(label)}</a>' for sid, label in (nav or [])]
     if not chips:
         chips = [
             f'<a href="#overview">{esc(ui.get("at_a_glance") or "Overview")}</a>',
@@ -777,9 +1580,9 @@ def render_header(data, ui, lang) -> str:
         f'      {who_h}\n'
         '    </div>\n'
         '    <div class="mast-actions">\n'
-        f'      <button type="button" class="jump-today press" id="jumpSearch" aria-label="{esc(ui["search_places"])}">{icon("ph-magnifying-glass")}<span> {esc(ui["search"])}</span></button>\n'
-        f'      <button type="button" class="jump-today press" id="jumpToday" aria-label="{esc(ui["today"])}">{icon("ph-calendar-check")}<span> {esc(ui["today"])}</span></button>\n'
-        f'      <button type="button" class="jump-today press" id="locateBtn" hidden aria-label="{esc(ui["locate_title"])}">{icon("ph-compass")}<span> {esc(ui["locate"])}</span></button>\n'
+        f'      <button type="button" class="jump-today press" id="jumpSearch" aria-label="{esc(ui["search_places"])}">{icon("ph-magnifying-glass")}<span>{esc(ui["search"])}</span></button>\n'
+        f'      <button type="button" class="jump-today press" id="jumpToday" aria-label="{esc(ui["today"])}">{icon("ph-calendar-check")}<span>{esc(ui["today"])}</span></button>\n'
+        f'      <button type="button" class="jump-today press" id="locateBtn" hidden aria-label="{esc(ui["locate_title"])}">{icon("ph-compass")}<span>{esc(ui["locate"])}</span></button>\n'
         f'      <button class="iconbtn press" id="themeBtn" aria-label="{esc(ui["theme"])}">{icon("ph-moon-stars")}</button>\n'
         "    </div>\n"
         "  </div>\n"
@@ -855,10 +1658,15 @@ def deadline_cards(data, ui, lang: str = "en") -> str:
 
 def render_overview(data, ui, lang) -> str:
     countries = country_list(data)
+    trip = data["trip"]
+    home = trip.get("home") or {}
+    home_tz = trip.get("home_tz") or "UTC"
+    clocks = [clock_tile(home_tz, home.get("name") or ui.get("home_clock") or "", home_flag(data, ui), "home", None, ui)]
     blocks = []
     for i, c in enumerate(countries):
+        if c.get("timezone"):
+            clocks.append(clock_tile(c["timezone"], loc(c.get("name"), lang) or c["id"], render_flag(c, "lg"), c["id"], i, ui))
         span, nights_h, _opt_h, dests = country_span_and_nights(data, c, lang, ui)
-        color = safe_css_color(region_color(c, i), REGION_COLORS[i % len(REGION_COLORS)])
         flag = render_flag(c, "lg")
         name = loc(c.get("name"), lang) or c["id"]
         stops = []
@@ -874,70 +1682,22 @@ def render_overview(data, ui, lang) -> str:
             else:
                 stops.append(f'<span>{esc(short)}</span>')
         blocks.append(
-            f'<div class="folio-block" style="--block-color:var(--region-{i})">'
+            f'<div class="folio-block ov-card" style="--block-color:var(--region-{i})">'
             f'<p class="kicker"><bdi class="tnum" dir="ltr">{esc(span)}</bdi></p>'
-            f'<div class="h-flag">{flag}<p class="display">{esc(name)}</p></div>'
+            f'<div class="h-flag"><p class="display">{esc(name)}</p>{flag}</div>'
             f'<p class="nights-line">{esc(nights_h)}</p>'
-            f'<p class="stops-line">{" · ".join(stops)}</p>'
+            f'<p class="stops-line">{wrap_latin("·".join(stops))}</p>'
             "</div>"
         )
-    booked = [b for b in data["bookings"].get("bookings") or [] if b.get("status") == "booked"]
-    closed = ""
-    if booked:
-        titles = ", ".join(booking_display_title(b) for b in booked)
-        closed = f'<p class="closed-line">{esc(ui.get("closed_booked") or "")}: {esc(titles)}.</p>'
-    diet_html = ""
-    phrase = diet_phrase(data, ui)
-    note = data["trip"].get("dietary_note") or ""
-    if phrase or note:
-        body = esc(phrase)
-        if note:
-            body = (body + " — " if body else "") + esc(note)
-        diet_html = (
-            f'<p class="closed-line"><strong>{esc(ui["dietary"])}:</strong> {body}</p>'
-        )
-    legend_items = data["trip"].get("status_legend") or []
-
-    def _legend_caption(item, kind, fallback):
-        """The checkmark phrase ('סגור ✓' / 'Booked ✓') lives only on the badge."""
-        badge_html = badge(kind, ui)
-        text = item if item else fallback
-        if not text:
-            return badge_html
-
-        def _norm(s):
-            return re.sub(r"[\s✓✔✔︎]+", "", re.sub(r"<[^>]+>", "", str(s))).casefold()
-
-        phrases = [
-            ui.get("booked") if kind == "booked" else "",
-            ui.get("open") if kind == "open" else "",
-            ui.get("optional") if kind == "optional" else "",
-            ui.get("closed_booked") if kind == "booked" else "",
-            ui.get("legend_booked") if kind == "booked" else "",
-            ui.get("legend_open") if kind == "open" else "",
-            ui.get("legend_optional") if kind == "optional" else "",
-            badge_html,
-        ]
-        ntext = _norm(text)
-        if any(p and ntext == _norm(p) for p in phrases):
-            return badge_html
-        return f"{badge_html} {esc(text)}"
-
-    legend = (
-        '<div class="status-legend" style="margin-top:12px">'
-        f'<span>{_legend_caption(legend_items[0] if legend_items else None, "booked", ui.get("legend_booked"))}</span> '
-        f'<span>{_legend_caption(legend_items[1] if len(legend_items) > 1 else None, "open", ui.get("legend_open"))}</span> '
-        f'<span>{_legend_caption(legend_items[2] if len(legend_items) > 2 else None, "optional", ui.get("legend_optional"))}</span>'
-        "</div>"
-    )
-    map_html = render_map_figure(data, ui, lang)
     return (
-        f'<section class="spread" id="overview" aria-label="{esc(ui.get("at_a_glance") or "")}">'
-        f'<div class="folio">{"".join(blocks)}{closed}{diet_html}{legend}'
+        f'<section class="ov13" id="overview" data-nav="{esc(nav_label(data, ui, "overview"))}" aria-label="{esc(ui.get("at_a_glance") or "")}">'
+        f'<div class="clocks" role="group" aria-label="{esc(ui.get("clocks_label") or "")}">{"".join(clocks)}</div>'
+        f'{render_glance(data, ui, lang)}'
+        f'<div class="ov-cards">{"".join(blocks)}</div>'
         '<div class="today-banner" id="todayBanner" hidden></div>'
         '<div class="today-card card glass g-thick" id="todayCard" hidden></div>'
         '<p class="locate-msg" id="locateMsg" hidden></p>'
-        f"</div>{map_html}</section>"
+        "</section>"
     )
 
 
@@ -958,41 +1718,16 @@ def render_map_figure(data, ui, lang) -> str:
     if cap or attr:
         cap_h = f'<figcaption>{raw_ltr(cap)}{" · " if cap and attr else ""}<span class="src">{raw_ltr(attr)}</span></figcaption>'
     return (
-        f'<figure class="map" id="map">'
+        f'<figure class="map map-band" id="map" data-nav="{esc(nav_label(data, ui, "map"))}">'
         f'<div class="map-tools">'
-        f'<button type="button" class="stop-toggle press" id="btnLiveMap" aria-pressed="true">{icon("ph-map-trifold")} {esc(ui["live_map"])}</button>'
-        f'<button type="button" class="stop-toggle press" id="btnSvgMap" aria-pressed="false">{icon("ph-path")} {esc(ui["overview_map"])}</button>'
+        f'<button type="button" class="stop-toggle press" id="btnLiveMap" aria-pressed="true">{icon("ph-map-trifold")}{esc(ui["live_map"])}</button>'
+        f'<button type="button" class="stop-toggle press" id="btnSvgMap" aria-pressed="false">{icon("ph-path")}{esc(ui["overview_map"])}</button>'
         f'<p class="map-offline-note" id="mapOfflineNote" hidden></p>'
         f"</div>"
         f'<div id="mapLive" class="map-live" dir="ltr" role="region" aria-label="{esc(ui["live_map"])}"></div>'
         f'<div id="mapFallback" class="map-fallback" hidden>{fallback}</div>'
         f"{cap_h}</figure>"
     )
-
-
-def render_nights(data, ui, lang) -> str:
-    trip = data["trip"]
-    cap = trip.get("nights_chart_caption") or ""
-    cap_html = f'<p class="caption">{icon("ph-info")}<span>{raw_ltr(cap)}</span></p>' if cap else ""
-    nights_h = (trip.get("nights_chart") or {}).get("headline") or ui.get("nights_chart") or ui["nights"]
-    groups = (trip.get("nights_chart") or {}).get("groups")
-    if groups is None:
-        groups = nights_payload(data, lang).get("groups") or []
-    if not groups:
-        body = f'<p class="empty"><strong>{esc(ui.get("nights_chart_empty") or ui.get("no_amount") or "")}</strong></p>'
-    else:
-        body = '<div class="chart" style="height:280px"><canvas id="nightsChart"></canvas></div>'
-    return (
-        f'<section id="nights" class="sec glass g-reg">'
-        f'<p class="kicker">{esc(ui.get("nights") or "")}</p>'
-        f"<h2>{esc(nights_h)}</h2>"
-        f"{body}{cap_html}</section>"
-    )
-
-
-def render_map(data, ui, lang) -> str:
-    """Kept for callers; the live map now lives in the opening spread."""
-    return render_nights(data, ui, lang)
 
 
 def as_item(it) -> str:
@@ -1078,10 +1813,11 @@ def render_place(pl, dest_id, ui, lang, data) -> str:
     hours = f'<p class="rec-hours">{raw_ltr(pl["hours"])}</p>' if pl.get("hours") else ""
     res = reservation_html(pl, ui, data)
     return (
-        f'<li class="rec" id="{esc(pid)}"><div class="rec-top"><b>{esc(name)}</b>{price_h}{caut}{opt}</div>'
+        f'<li class="rec" id="{esc(pid)}"><div class="rec-top"><b><bdi dir="auto">{esc(name)}</bdi></b>{price_h}{caut}{opt}</div>'
         f"{blurb}{order}{rec_caut}{hours}{res}"
         f'<div class="rec-links">{"".join(links)}</div></li>'
     )
+
 
 def render_xfer(data, x, ui, lang) -> str:
     st = status_of_xfer(data, x)
@@ -1092,7 +1828,7 @@ def render_xfer(data, x, ui, lang) -> str:
         cls += " is-optional"
     if x.get("boundary"):
         cls += " xfer-boundary"
-    ic = x.get("icon") or MODE_ICON.get(x.get("mode") or "", "ph-path")
+    icn = x.get("icon") or MODE_ICON.get(x.get("mode") or "", "ph-path")
     route = x.get("route_label") or f'{x.get("from", "")} -> {x.get("to", "")}'
     meta_bits = []
     meta_bits.extend(xfer_when_bits(x))
@@ -1101,57 +1837,26 @@ def render_xfer(data, x, ui, lang) -> str:
         meta_bits.append(f"<span>{raw_ltr(carrier)}</span>")
     meta_bits.append(badge(st, ui, optional=x.get("optional")))
     b = booking_by_id(data, x.get("booking_id")) if x.get("booking_id") else None
-    rows = []
-    heading = " ".join(filter(None, [x.get("carrier") or "", x.get("number") or ""]))
-    if not heading.strip():
-        heading = ui.get("transfer") or "Transfer"
-    items = []
+    parts = []
     if b:
-        if b.get("confirmation_code"):
-            extras = ""
-            if b.get("confirmation_link"):
-                extras += " " + ext(b["confirmation_link"], ui["email"])
-            if b.get("manage_url"):
-                extras += " " + ext(b.get("manage_url"), ui["manage"])
-            if b.get("checkin_url"):
-                extras += " " + ext(b.get("checkin_url"), ui["checkin"])
-            items.append(HTML(
-                f'{esc(ui["code"])}: <strong><bdi class="tnum">{esc(b["confirmation_code"])}</bdi></strong> '
-                + copybtn(b["confirmation_code"], ui)
-                + extras
-            ))
-        if b.get("cabin"):
-            items.append(b["cabin"])
-        if b.get("seats"):
-            items.append(b["seats"])
-        if b.get("notes"):
-            items.append(b["notes"])
-        price = b.get("price") or {}
-        if price.get("amount") is not None:
-            items.append(HTML(money(price["amount"], price.get("currency"))))
-        for d in b.get("details") or []:
-            if isinstance(d, dict):
-                items.append(HTML(f'{esc(d.get("label") or "")}: {raw_ltr(d.get("value") or "")}'))
-            else:
-                items.append(str(d))
-    if x.get("notes"):
-        items.append(x["notes"])
-    for tip in x.get("tips") or []:
-        items.append(tip)
+        parts.append(booking_block(b, ui))
+    parts.append(dl_grid(xfer_rows(data, x, b, ui)))
     for block in x.get("details_blocks") or []:
-        rows.append(blk(block.get("heading") or "", block.get("items") or [], ui=ui))
-    if items:
-        rows.insert(0, blk(heading, items, status=st, ui=ui))
-    inner = "".join(rows)
+        rows = item_rows(block.get("items") or [], "info", "", ui)
+        parts.append(f'<div class="blk"><h4 class="blk-h">{esc(block.get("heading") or "")}</h4>{dl_grid(rows)}</div>')
+    inner = "".join(p for p in parts if p)
     xid = x.get("id") or "xfer"
+    when = _ymd(transfer_date(data, x))
+    arr = parse_iso_dt(x.get("arrive_at"))
+    dates_attr = f' data-from="{esc(when)}" data-to="{esc(when)}"' if when else ""
     return (
-        f'<article class="{cls}" id="xfer-{esc(xid)}">'
+        f'<article class="{cls}" id="xfer-{esc(xid)}"{dates_attr}>'
         f'{date_col(transfer_date(data, x), lang)}'
         f'<div class="node" aria-hidden="true"><i class="dot"></i></div>'
         f'<div class="col">'
         f'<span class="pin" aria-hidden="true"></span>'
         f'<button type="button" class="xfer-sum" aria-expanded="false" aria-controls="xfer-{esc(xid)}-d">'
-        f'<span class="xfer-head">{xfer_chip(x.get("mode") or ic)}<span class="xfer-route">{raw_ltr(route)}</span></span>'
+        f'<span class="xfer-head">{xfer_chip(x.get("mode") or icn)}<span class="xfer-route">{raw_ltr(route)}</span></span>'
         f'<span class="xfer-meta">{"".join(meta_bits)}</span>'
         f'{icon("ph-caret-down")}</button>'
         f'{fold(inner, "xfer-" + str(xid) + "-d")}</div></article>'
@@ -1164,14 +1869,14 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
     info = files.get("info") or {"id": did}
     optional = bool(dest.get("optional"))
     stay_st = info.get("stay_status") or ("booked" if info.get("stay_booking_id") else "open")
-    stay_st_badge = "optional" if optional else ("booked" if stay_st == "booked" else "open")
     cls = "item stay stop rv"
     if stay_st == "booked":
         cls += " is-closed"
     if optional:
         cls += " is-optional"
+    cls += " card-toggle"
     name = loc(dest.get("name"), lang) or did
-    ic = dest.get("icon") or "ph-map-pin"
+    icn = dest.get("icon") or "ph-map-pin"
     dates = dest.get("dates") or {}
     date_lbl = ""
     if dates.get("start") and dates.get("end"):
@@ -1209,11 +1914,11 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
         _bn = re.sub(r"[\s✓✔]+", "", ui.get("booked") or "")
         _ln = re.sub(r"[\s✓✔]+", "", stay_label)
         if _ln.casefold() != _bn.casefold():
-            meta_bits.append(f"<span>{esc(stay_label)}</span>")
+            meta_bits.append(f"<span>{latin_or_text(stay_label)}</span>")
     elif stay_st != "booked" and not nights_undecided:
         meta_bits.append(f'<span class="badge wait">{esc(stay_label or ui["stay_open"])}</span>')
     meta = "".join(meta_bits)
-    xfer_line = f'<p class="stop-xfer">{raw_ltr(info["summary_transfer"])}</p>' if info.get("summary_transfer") else ""
+    xfer_line = f'<p class="stop-xfer">{wrap_latin(raw_ltr(info["summary_transfer"]))}</p>' if info.get("summary_transfer") else ""
     summary_note = dest.get("summary_note") or info.get("summary_note")
     note_line = f'<p class="opt-note">{raw_ltr(summary_note)}</p>' if summary_note else ""
     if info.get("local_address"):
@@ -1236,45 +1941,69 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
             f'<p class="recs-empty">{esc(ui["taxi_empty"])}</p></div>'
         )
     season = (
-        f'<div class="season-note glass g-thin">{icon("ph-warning-circle")} {raw_ltr(info["season_note"])}</div>'
+        f'<div class="season-note glass g-thin">{icon("ph-warning-circle")}{wrap_latin(raw_ltr(info["season_note"]))}</div>'
         if info.get("season_note") else ""
     )
+
+    def block(title, status, rows, extra_class="", source=""):
+        grid = dl_grid(rows)
+        if not grid:
+            return ""
+        src = f'<p class="src-note">{raw_ltr(source)}</p>' if source else ""
+        cls_ = f"blk {extra_class}".strip()
+        return f'<div class="{cls_}"><h4 class="blk-h">{esc(title)}{badge(status, ui) if status else ""}</h4>{grid}{src}</div>'
+
     blocks = []
+    b = booking_by_id(data, info.get("stay_booking_id")) if info.get("stay_booking_id") else None
+    if stay_st == "booked" or b:
+        blocks.append(block(ui.get("dl_stay") or "", "booked" if stay_st == "booked" else "", stay_rows(data, dest, info, b, ui, lang)))
+    elif not optional and dest.get("nights") is not None:
+        n = int(dest["nights"])
+        span = tchip(esc(date_lbl)) if date_lbl else ""
+        rows = [
+            ("moon", ui.get("nights") or "", esc(pluralize(n, ui.get("plural_night") or {"one": "1 night", "other": "{n} nights"})).replace(str(n), tn(str(n)), 1) + (", " + span if span else "")),
+            ("bed", ui.get("dl_hotel") or "", esc(stay_label or ui["stay_open"])),
+        ]
+        blocks.append(block(ui.get("dl_lodging") or "", "", rows))
     arr = info.get("arrival") or {}
-    if arr.get("items") or arr.get("title"):
-        blocks.append(blk(arr.get("title") or ui["arrival"], arr.get("items") or [], status=arr.get("status") or "", ui=ui))
-    for b in info.get("blocks") or []:
-        blocks.append(blk(b.get("heading") or "", b.get("items") or [], status=b.get("status") or "", ui=ui))
+    if arr.get("items"):
+        blocks.append(block(arr.get("title") or ui["arrival"], "", item_rows(arr.get("items"), "path", ui.get("dl_step") or "", ui)))
+    for bl in info.get("blocks") or []:
+        blocks.append(block(bl.get("heading") or "", "", item_rows(bl.get("items") or [], bl.get("icon") or "info", ui.get("dl_note") or "", ui)))
     wx = info.get("weather") or {}
     if wx.get("items"):
-        blocks.append(blk(wx.get("title") or ui["weather"], wx["items"], source=wx.get("source") or "", ui=ui, extra_class="wx"))
+        blocks.append(block(wx.get("title") or ui["weather"], "", item_rows(wx["items"], "thermometer", ui.get("dl_climate") or "", ui), "wx", wx.get("source") or ""))
     food = info.get("food_notes") or {}
     if food.get("items"):
-        blocks.append(blk(food.get("title") or ui["food"], food["items"], source=food.get("source") or "", ui=ui, extra_class="food"))
+        blocks.append(block(food.get("title") or ui["food"], "", item_rows(food["items"], "fork-knife", ui.get("dl_dishes") or "", ui), "food", food.get("source") or ""))
     recs = render_places(did, files, ui, lang, data, exclude_not_ok=exclude_not_ok)
     nav_btn = ""
     if info.get("nav_url"):
         nav_btn = (
-            f'<a class="navbtn press" href="{esc(info["nav_url"])}" target="_blank" rel="noopener noreferrer">'
-            f'{icon("ph-navigation-arrow")} {esc(ui.get("navigate_stay") or ui["navigate"])}</a>'
+            f'<div class="stop-actions"><a class="navbtn press" href="{esc(info["nav_url"])}" target="_blank" rel="noopener noreferrer">'
+            f'{icon("ph-navigation-arrow")}{esc(ui.get("navigate_stay") or ui["navigate"])}</a></div>'
         )
     opt_attr = ' data-optional="true"' if optional else ""
+    d_from, d_to = dates.get("start") or "", dates.get("end") or ""
+    dates_attr = (f' data-from="{esc(d_from)}"' if d_from else "") + (f' data-to="{esc(d_to)}"' if d_to else "")
+    hid = f"stop-{did}-title"
     return (
-        f'<article class="{cls}" id="stop-{esc(did)}" data-id="{esc(did)}"{opt_attr}>'
+        f'<article class="{cls}" id="stop-{esc(did)}" data-id="{esc(did)}"{opt_attr}{dates_attr}>'
         f'{date_col(dates.get("start"), lang)}'
         f'<div class="node" aria-hidden="true"><i class="dot"></i></div>'
         f'<div class="col">'
         f'<span class="pin">{index}</span>'
         f'<div class="stop-sum">'
-        f'<div class="stop-sum-top"><h3>{icon(ic)} {esc(name)}</h3></div>'
+        f'<span class="stop-ic" aria-hidden="true">{icon(icn)}</span>'
+        f'<div class="stop-sum-top"><h3 id="{esc(hid)}">{esc(name)}</h3></div>'
         f'<div class="stop-meta">{meta}</div>{xfer_line}{note_line}'
-        f'<div class="stop-actions">'
-        f'<button type="button" class="stop-toggle press" aria-expanded="false" aria-controls="{esc(did)}-detail">{esc(ui["more"])} {icon("ph-caret-down")}</button>'
-        f'{nav_btn}</div></div>'
+        f'{nav_btn}'
+        f'<button type="button" class="stop-toggle stop-caret" aria-expanded="false" aria-controls="{esc(did)}-detail" aria-labelledby="{esc(hid)}">{icon("ph-caret-down")}</button>'
+        f'</div>'
         f'<div class="fold"><div class="fold-inner" inert aria-hidden="true">'
         f'<div class="stop-detail" id="{esc(did)}-detail">'
-        f'<button type="button" class="sheet-close press" aria-label="{esc(ui["close"])}">{icon("ph-x")} {esc(ui["close"])}</button>'
-        f'{season}{taxi}<div class="rows">{"".join(blocks)}</div>{recs}'
+        f'<button type="button" class="sheet-close press" aria-label="{esc(ui["close"])}">{icon("ph-x")}{esc(ui["close"])}</button>'
+        f'{season}{taxi}<div class="rows">{"".join(x for x in blocks if x)}</div>{recs}'
         f'</div></div></div></div></article>'
     )
 
@@ -1283,7 +2012,6 @@ def render_country_axis(data, country, region_i, ui, lang, exclude_not_ok=False)
     cid = country["id"]
     dests = [d for d in data["trip"]["destinations"] if d.get("country") == cid]
     leading, after, trailing = transfers_in_country(data, cid)
-    color = safe_css_color(region_color(country, region_i), REGION_COLORS[region_i % len(REGION_COLORS)])
     parts = []
     for x in leading:
         parts.append(render_xfer(data, x, ui, lang))
@@ -1300,14 +2028,13 @@ def render_country_axis(data, country, region_i, ui, lang, exclude_not_ok=False)
         parts.append(render_xfer(data, x, ui, lang))
     span, nights_h, opt_h, _dests = country_span_and_nights(data, country, lang, ui)
     name = loc(country.get("name"), lang) or cid
-    meta = f'<bdi class="tnum" dir="ltr">{esc(span)}</bdi> · {esc(nights_h)}'
-    if opt_h:
-        meta += f' <span class="stop-opt">{esc(opt_h)}</span>'
+    meta = f'<bdi class="tnum" dir="ltr">{esc(span)}</bdi>· {esc(nights_h)}'
+    opt_line = f'<p class="ch-opt"><span class="stop-opt">{esc(opt_h)}</span></p>' if opt_h else ""
     flag = render_flag(country, "sm")
     return (
-        f'<section id="{esc(cid)}" class="country-block" data-region="{region_i}" style="--block-color:var(--region-{region_i});--region:var(--region-{region_i})">'
+        f'<section id="{esc(cid)}" class="country-block" data-nav="{esc(nav_label(data, ui, cid, country, lang))}" data-region="{region_i}" style="--block-color:var(--region-{region_i});--region:var(--region-{region_i})">'
         f'<div class="country-head"><span class="nm">{esc(name)}</span>'
-        f'<span class="meta">{meta}</span><span class="rule"></span>{flag}</div>'
+        f'<span class="meta">{meta}</span><span class="rule"></span>{flag}</div>{opt_line}'
         f'<div class="tline" data-region="{region_i}" style="--block-color:var(--region-{region_i});--region:var(--region-{region_i})">{"".join(parts)}</div>'
         "</section>"
     )
@@ -1315,13 +2042,17 @@ def render_country_axis(data, country, region_i, ui, lang, exclude_not_ok=False)
 
 def render_country_rest(data, country, region_i, ui, lang, exclude_not_ok=False) -> str:
     color = safe_css_color(region_color(country, region_i), REGION_COLORS[region_i % len(REGION_COLORS)])
+    cid = country["id"]
+    head = (
+        f'<div class="rest-country" data-region="{region_i}" style="--region:var(--region-{region_i})">'
+        f'<span class="rc-name">{esc(loc(country.get("name"), lang))}</span>{render_flag(country, "lg")}<span class="rc-rule"></span></div>'
+    )
     chunks = [
-        render_practical(country, ui, lang, region_i, color),
-        render_phrases(country, ui, lang),
-        render_entry(country, ui, lang),
-        render_packing_country(country, ui, lang),
-        render_decisions(data, country["id"], ui, lang),
-        render_days(data, country["id"], country, ui, lang, first=(region_i == 0)),
+        head,
+        render_days(data, cid, country, ui, lang, first=(region_i == 0)),
+        pair(render_practical(country, ui, lang, region_i, color, data=data), render_phrases(country, ui, lang, data=data)),
+        pair(render_packing_country(country, ui, lang), render_entry(country, ui, lang)),
+        render_decisions(data, cid, ui, lang),
     ]
     return "\n".join(c for c in chunks if c)
 
@@ -1337,49 +2068,54 @@ def kv_row(label, body) -> str:
     return f'<div class="row glass g-thin"><span class="k">{raw_ltr(label)}</span><span class="v">{body}</span></div>'
 
 
-def render_practical(country, ui, lang, region_i, color) -> str:
-    rows = [kv_row(p.get("label") or "", raw_ltr(p.get("body") or "")) for p in (country.get("practical") or [])]
+def render_practical(country, ui, lang, region_i, color, data=None) -> str:
+    tiles = practical_tiles(data, country, ui, lang) if data else ""
     em = country.get("emergency") or []
+    emer = ""
     if em:
-        bits = ", ".join(
-            f'{esc(e.get("label") or "")} {tel_link(e.get("number") or "", e.get("tel"))}'
-            for e in em
-        )
-        rows.append(
-            f'<div class="row glass g-thin"><span class="k">{esc(ui["emergency"])}</span><span class="v">{bits}</span></div>'
-        )
+        four = " four" if len(em) == 4 else ""
+        emer = (f'<div class="emer-row"><h3 class="emer-h">{ic("siren")}{esc(ui["emergency"])}</h3>'
+                f'<div class="callpills{four}">{"".join(callpill(e) for e in em)}</div></div>')
     emb = country.get("embassy") or {}
-    if emb.get("name") or emb.get("phone"):
-        body = "<br>".join(filter(None, [
-            f'<bdi class="ltr">{esc(emb.get("address") or "")}</bdi>' if emb.get("address") else "",
-            tel_link(emb.get("phone") or "") if emb.get("phone") else "",
-            (ui["emergency"] + " " + tel_link(emb.get("phone_emergency") or "")) if emb.get("phone_emergency") else "",
-            f'<bdi class="ltr">{esc(emb.get("email") or "")}</bdi>' if emb.get("email") else "",
-            ext(emb.get("url"), emb.get("source") or emb.get("url") or "") if emb.get("url") else "",
-        ]))
-        name = emb.get("name") or ui["embassy"]
-        name_h = ext(emb.get("url"), name) if emb.get("url") else esc(name)
-        rows.append(f'<div class="row glass g-thin"><span class="k">{name_h}</span><span class="v">{body}</span></div>')
-    if not rows:
+    emb_h = embassy_card(emb, ui) if (emb.get("name") or emb.get("phone")) else ""
+    if not (tiles or emer or emb_h):
         return ""
     cid = country["id"]
     h = country.get("practical_headline") or ui["practical"]
+    fx = ((data or {}).get("trip") or {}).get("fx") or {}
     lede = country.get("practical_lede") or ""
+    if tiles and fx.get("date") and ui.get("practical_note"):
+        lede_h = esc(ui["practical_note"]).replace("{date}", tn(esc(_dmy(fx.get("date")))))
+    else:
+        lede_h = raw_ltr(lede)
+    nav = nav_label(data, ui, f"{cid}-practical", country, lang) if data else ""
     return (
-        f'<section id="{esc(cid)}-practical" class="sec country-chunk" data-region="{region_i}" style="--region:var(--region-{region_i})">'
-        f'<div class="sec-head rv"><div class="act">{icon("ph-compass")} {esc(ui["practical"])} · {esc(loc(country.get("name"), lang))}</div>'
-        f'<h2>{raw_ltr(h)}</h2><p>{raw_ltr(lede)}</p></div>'
-        f'<div class="card glass g-reg rv"><h3 style="font-size:18px;font-weight:700;margin-bottom:12px">{esc(loc(country.get("name"), lang))}</h3>'
-        f'<div class="kv-stack">{"".join(rows)}</div></div></section>'
+        f'<section id="{esc(cid)}-practical" class="sec country-chunk pract" data-nav="{esc(nav)}" data-region="{region_i}" style="--region:var(--region-{region_i})">'
+        f'<div class="sec-head rv"><div class="act">{icon("ph-compass")}{esc(ui["practical"])} · {esc(loc(country.get("name"), lang))}</div>'
+        f'<h2>{raw_ltr(h)}</h2><p>{lede_h}</p></div>'
+        f'{tiles}{emer}{emb_h}</section>'
     )
 
 
-def render_phrases(country, ui, lang) -> str:
+def render_phrases(country, ui, lang, data=None) -> str:
     ph = country.get("phrases") or {}
     groups = ph.get("groups") or []
     if not groups and not ph.get("headline"):
         return ""
-    intro = "".join(f'<p class="note">{raw_ltr(x)}</p>' for x in (ph.get("intro") or []))
+    trip = (data or {}).get("trip") or {}
+    note = (trip.get("dietary_note") or "").strip()
+    diet_codes = party_dietary(data) if data else []
+    ok_items = trip.get("dietary_ok") or []
+    diet = ""
+    if diet_codes:
+        lis = [f'<li class="no">{ic("prohibit")}{esc(ui.get("diet_" + c) or c.replace("-", " "))}</li>' for c in diet_codes]
+        lis += [f'<li class="ok">{ic("check")}{esc(x)}</li>' for x in ok_items]
+        diet = f'<ul class="diet" aria-label="{esc(ui.get("diet_aria") or ui.get("dietary") or "")}">{"".join(lis)}</ul>'
+    intro_items = ph.get("intro") or []
+    if diet and ok_items and note:
+        # the chips now say it; drop the intro line that only repeats the party's dietary note
+        intro_items = [x for x in intro_items if note not in x]
+    intro = "".join(f'<p class="note">{quote_iso(raw_ltr(x))}</p>' for x in intro_items)
     cols = []
     for g in groups:
         items = []
@@ -1396,9 +2132,9 @@ def render_phrases(country, ui, lang) -> str:
         )
     cid = country["id"]
     return (
-        f'<aside class="waiter phrases card glass g-thick rv" id="phrases-{esc(cid)}">'
-        f'<h3>{icon("ph-identification-card")} {esc(ph.get("headline") or ui.get("dietary") or "")}</h3>'
-        f'{intro}{"".join(cols)}</aside>'
+        f'<aside class="waiter phrases glass sec" id="phrases-{esc(cid)}">'
+        f'<h3>{icon("ph-identification-card")}{esc(ph.get("headline") or ui.get("dietary") or "")}</h3>'
+        f'{diet}{intro}{"".join(cols)}</aside>'
     )
 
 
@@ -1437,6 +2173,7 @@ def render_packing_country(country, ui, lang) -> str:
         f'{callout}<div class="card glass g-reg rv"><ul class="bul">{lis}</ul></div></section>'
     )
 
+
 def render_decisions(data, cid, ui, lang) -> str:
     decs = data.get("decisions") or {}
     all_dec = list(decs.get("decisions") if isinstance(decs, dict) else [])
@@ -1463,13 +2200,22 @@ def render_decisions(data, cid, ui, lang) -> str:
             f'<button type="button" aria-pressed="{"true" if i == 0 else "false"}" data-s="{i}">{esc(o.get("name") or "")}</button>'
             for i, o in enumerate(opts)
         )
-        chart = ""
-        if opts and any("k" in o or "o" in o for o in opts):
-            chart = (
+        bars = ""
+        if opts and any(o.get("k") is not None or o.get("o") is not None for o in opts):
+            mx = max(max(o.get("k") or 0, o.get("o") or 0) for o in opts) or 1
+            cols = "".join(
+                f'<div class="ob"><div class="ob-bars"><span class="r0" style="--h:{(o.get("k") or 0) / mx:.3f}"><b class="tnum">{esc(o.get("k") or 0)}</b></span>'
+                f'<span class="r1" style="--h:{(o.get("o") or 0) / mx:.3f}"><b class="tnum">{esc(o.get("o") or 0)}</b></span></div>'
+                f'<div class="ob-l">{esc(o.get("name") or "")}</div></div>'
+                for o in opts
+            )
+            labels = d.get("series_labels") or [ui.get("series_a") or "A", ui.get("series_b") or "B"]
+            legend = (f'<div class="ob-legend"><span class="r0">{esc(labels[0])}</span>'
+                      f'<span class="r1">{esc(labels[1] if len(labels) > 1 else "")}</span></div>')
+            bars = (
                 '<div class="viz glass g-reg rv" style="margin-top:var(--s4)">'
                 f'<div class="viz-head"><h3>{esc(d.get("chart_caption") or "")}</h3></div>'
-                f'<div class="chart" style="height:240px"><canvas id="optChart-{esc(d["id"])}"></canvas></div>'
-                f'<p class="caption">{icon("ph-info")}<span>{raw_ltr(d.get("chart_caption") or "")}</span></p></div>'
+                f'<div class="optbars" role="img" aria-label="{esc(d.get("chart_caption") or "")}">{cols}</div>{legend}</div>'
             )
         steps = ""
         if opts:
@@ -1488,14 +2234,16 @@ def render_decisions(data, cid, ui, lang) -> str:
                 f'<h3>{raw_ltr(d.get("card_html_note") or "")}</h3>'
                 f'<p>{raw_ltr(d.get("lede") or "")}</p></div>'
             )
-        sid = "choose" if all_dec and d is all_dec[0] else f'choose-{d["id"]}'
+        first = bool(all_dec) and d is all_dec[0]
+        sid = "choose" if first else f'choose-{d["id"]}'
+        nav = f' data-nav="{esc(nav_label(data, ui, "choose"))}"' if first else ""
         out.append(
-            f'<section id="{esc(sid)}" class="sec">'
-            f'<div class="sec-head rv"><div class="act">{icon("ph-path")} {esc(ui["choose"])}</div>'
+            f'<section id="{esc(sid)}" class="sec"{nav}>'
+            f'<div class="sec-head rv"><div class="act">{icon("ph-path")}{esc(ui["choose"])}</div>'
             f'<h2>{raw_ltr(d.get("headline") or d.get("title") or "")}</h2>'
             f'<p>{raw_ltr(d.get("lede") or "")}</p></div>'
             f'<div class="opts" id="optCards-{esc(d["id"])}">{"".join(cards)}</div>'
-            f'{steps}{chart}{note}</section>'
+            f'{steps}{bars}{note}</section>'
         )
     return "\n".join(out)
 
@@ -1529,19 +2277,22 @@ def render_days(data, cid, country, ui, lang, first=False) -> str:
             key = dt
         opt = badge("optional", ui) if day.get("optional") else ""
         st = badge(day.get("status") or "", ui) if day.get("status") in ("booked", "open") else ""
+        title = clean_status(day.get("title") or "", ui)
+        body = clean_status(day.get("body") or "", ui)
         rows.append(
             f'<div class="{cls}" data-day="{esc(key)}" data-iso="{esc(dt)}">'
             f'<div><span class="d ltr tnum">{esc(short)}</span> <span class="w">{esc(day.get("weekday") or "")}</span></div>'
-            f'<div><strong>{raw_ltr(day.get("title") or "")}</strong> {opt}{st}</div>'
-            f'<div>{raw_ltr(day.get("body") or "")}</div></div>'
+            f'<div><strong>{wrap_latin(raw_ltr(title))}</strong> {opt}{st}</div>'
+            f'<div>{wrap_latin(raw_ltr(body))}</div></div>'
         )
     act = country.get("journal_act") or ui["journal"]
     head = country.get("journal_headline") or ""
     lede = country.get("journal_lede") or ""
     sid = "days" if first else f"days-{cid}"
+    nav = nav_label(data, ui, "days", country, lang)
     return (
-        f'<section id="{esc(sid)}" class="sec country-chunk">'
-        f'<div class="sec-head rv"><div class="act">{icon("ph-calendar-blank")} {esc(act)}</div>'
+        f'<section id="{esc(sid)}" class="sec country-chunk" data-nav="{esc(nav)}">'
+        f'<div class="sec-head rv"><div class="act">{icon("ph-calendar-blank")}{esc(act)}</div>'
         f'<h2>{raw_ltr(head)}</h2><p>{raw_ltr(lede)}</p></div>'
         f'<details class="more glass g-thin rv" open>'
         f'<summary>{icon("ph-calendar-blank")} {esc(loc(country.get("name"), lang))} {icon("ph-caret-down","chev")}</summary>'
@@ -1563,23 +2314,26 @@ def render_search(data, ui, lang) -> str:
                 if t not in seen:
                     seen.add(t)
                     types.append((t, pl.get("type_label") or t))
+    icons = {"restaurants": "fork-knife", "food": "fork-knife", "cafes": "coffee", "attractions": "camera",
+             "sights": "camera", "shopping": "shopping-bag", "daytrip": "mountains", "daytrips": "mountains"}
+    icons.update(ui.get("type_icons") or {})
     chips = "".join(
-        f'<button type="button" class="press" aria-pressed="false" data-t="{esc(t)}">{esc(lab)}</button>'
+        f'<button type="button" class="press rs-t t-{esc(t)}" aria-pressed="false" data-t="{esc(t)}">{ic(icons.get(t, "map-pin"))}{esc(lab)}</button>'
         for t, lab in types
     )
     return (
-        f'<section id="recs-search" class="sec">'
-        f'<div class="sec-head rv"><div class="act">{icon("ph-magnifying-glass")} {esc(ui["search_places"])}</div>'
+        f'<section id="recs-search" class="sec" data-nav="{esc(nav_label(data, ui, "recs-search"))}">'
+        f'<div class="sec-head rv"><div class="act">{icon("ph-magnifying-glass")}{esc(ui.get("recs") or ui["search_places"])}</div>'
         f'<h2>{esc(ui["search_places"])}</h2><p>{esc(ui["search_lede"])}</p></div>'
-        f'<div class="rsearch card glass g-reg rv" role="search">'
+        f'<div class="rsearch rv rs13" role="search"><div class="rs-main">'
         f'<div class="seg rseg" id="rsCountry" role="group">{segs}</div>'
-        f'<div class="rs-field"><label for="rsq">{esc(ui["search_places"])}</label>'
-        f'<input id="rsq" type="search" placeholder="{esc(ui["search_placeholder"])}" autocomplete="off" enterkeyhint="search" spellcheck="false"></div>'
+        f'<div class="rs-field">'
+        f'<input id="rsq" type="search" aria-label="{esc(ui.get("search_in_recs") or ui["search_places"])}" placeholder="{esc(ui["search_placeholder"])}" autocomplete="off" enterkeyhint="search" spellcheck="false"></div>'
         f'<div class="rs-chips" id="rsTypes" role="group">{chips}</div>'
         f'<div class="rs-chips" id="rsCities" role="group"></div>'
         f'<p class="rs-count" id="rsCount" aria-live="polite"></p>'
         f'<ul class="rs-list" id="rsList"></ul>'
-        f'<p class="rs-empty" id="rsEmpty" hidden>{esc(ui["search_empty"])}</p></div></section>'
+        f'<p class="rs-empty" id="rsEmpty" hidden>{esc(ui["search_empty"])}</p></div></div></section>'
     )
 
 
@@ -1596,72 +2350,110 @@ def fmt_home(n, home):
 def render_budget(data, ui, lang) -> str:
     bud = derive_budget(data)
     home = bud["home"] or data["trip"].get("currency") or ""
-    total = bud["booked_total_home"]
-    total_disp = int(round(total)) if total else 0
+    total = bud["booked_total_home"] or 0
     fx = data["trip"].get("fx") or {}
-    hero_orig, booked_cards = [], []
-    for r in bud["booked_rows"]:
-        amt = money(r["amount"], r["currency"])
-        home_amt = fmt_home(r["home_amount"], home)
-        hero_orig.append(
-            f'<span class="bud-pair"><span class="bud-lab">{esc(r["title"] or "")}</span>{amt}</span>'
-        )
-        code = r.get("confirmation_code")
-        booked_cards.append(
-            f'<div class="book glass g-thin"><div class="k">{esc(r["title"] or "")} '
-            f'{badge("booked", ui)}</div><div class="d">{amt}'
-            f'{" (" + raw_ltr(home_amt) + ")" if home_amt else ""}'
-            f'{" · " + raw_ltr(r.get("notes") or "") if r.get("notes") else ""}'
-            + (copybtn(code, ui) if code else "")
-            + "</div></div>"
-        )
-    open_cards = []
+    total_txt = "≈ " + _fmt_home_plain(total, home)
+    # open estimate range in home currency
+    lo = hi = 0.0
+    have_open = False
     for e in bud["estimates"]:
-        rng = ""
-        if e.get("amount_min") is not None:
-            rng = money(e["amount_min"], e.get("currency")) + "-" + money(e.get("amount_max"), e.get("currency"))
-        elif e.get("amount") is not None:
-            rng = money(e["amount"], e.get("currency"))
-        open_cards.append(
-            f'<div class="book glass g-thin"><div class="k">{esc(e.get("title") or "")} '
-            f'<span class="badge wait">{esc(e.get("label") or ui["open"])}</span></div>'
-            f'<div class="d">{rng} {raw_ltr(e.get("notes") or "")}</div></div>'
+        a = e.get("home_min") if e.get("home_min") is not None else e.get("home_amount")
+        b = e.get("home_max") if e.get("home_max") is not None else e.get("home_amount")
+        if a is None:
+            continue
+        have_open = True
+        lo += a
+        hi += b if b is not None else a
+    circ = 2 * 3.14159265 * 34
+    frac = total / (total + (lo + hi) / 2) if (total + (lo + hi) / 2) > 0 else 0
+    pct = int(round(frac * 100))
+    open_txt = _range_txt(lo, hi, home) if have_open else ""
+    aria = (ui.get("budget_ring_aria") or "{closed} / {open}").replace("{closed}", _fmt_home_plain(total, home)).replace(
+        "{open}", open_txt or "0")
+    donut = (
+        f'<svg class="donut" viewBox="0 0 84 84" role="img" aria-label="{esc(aria)}">'
+        '<circle class="d-open" cx="42" cy="42" r="34"></circle>'
+        f'<circle class="d-closed" cx="42" cy="42" r="34" stroke-dasharray="{frac * circ:.2f} {circ:.2f}" transform="rotate(-90 42 42)"></circle>'
+        f'<text class="d-pct" x="42" y="47" text-anchor="middle">{pct}%</text></svg>'
+    )
+    key = f'<ul class="ring-key"><li class="k-closed">{esc(ui.get("closed_short") or ui["booked"])}</li>'
+    if open_txt:
+        key += f'<li class="k-open">{esc(ui.get("open_estimate") or ui["open"])} {tn(esc(open_txt))}</li>'
+    key += "</ul>"
+    fx_date = _dmy(fx.get("date")) if fx.get("date") else ""
+    sub = f'<div class="sub">{raw_ltr(fx.get("label") or ui["fx"])}{(" · " + tn(esc(fx_date))) if fx_date else ""}</div>'
+    budget_titles = {b.get("id"): b.get("budget_title") for b in data["bookings"].get("bookings") or [] if b.get("budget_title")}
+    rows = []
+    for r in bud["booked_rows"]:
+        code = r.get("confirmation_code") or ""
+        name = (r.get("title") or "").replace(code, "").strip(" ·—-()") if code else (r.get("title") or "")
+        name = budget_titles.get(r["id"]) or name
+        amt = _fmt_home_plain(r["home_amount"], home) if r.get("home_amount") is not None else ""
+        rows.append(
+            f'<li><span class="br-n">{latin_or_text(name)}</span>'
+            + (f'<bdi dir="ltr" class="tnum br-c">{esc(code)}</bdi>' if code else "")
+            + (f'<bdi dir="ltr" class="tnum br-a">{esc(amt)}</bdi>' if amt else "")
+            + "</li>"
         )
+    note = data["trip"].get("budget_note") or ui.get("budget_note") or ""
+    card = (
+        f'<div class="bud13 rv"><div class="bud13-top"><div class="bud13-sum">'
+        f'<div class="lab">{esc(ui.get("budget_card_lab") or ui["budget_hero"])}</div>'
+        f'<div class="bud-total" dir="ltr"><span class="tnum" data-budget-total>{esc(total_txt)}</span></div>{sub}</div>'
+        f'<div class="bud13-ring">{donut}{key}</div></div>'
+        f'<ul class="bud13-rows">{"".join(rows)}</ul>'
+        + (f'<p class="bud13-note">{raw_ltr(note)}</p>' if note else "")
+        + '<div id="budgetExtra" data-budget-hook="expenses" hidden></div></div>'
+    )
+
+    btitle = budget_titles
+    bmap = {b.get("id"): b for b in data["bookings"].get("bookings") or []}
+
+    def lr(name_html, badge_html, amt_txt, detail_html, code=""):
+        act = ""
+        if code:
+            act = f'<div class="bk-actions">{act_btn("copy", ui["copy"], copy=code, aria=ui["copy"] + " " + code)}</div>'
+        return (
+            f'<li class="lr"><details><summary><span class="lr-n">{name_html}</span>{badge_html}'
+            + (f'<bdi dir="ltr" class="tnum lr-a">{esc(amt_txt)}</bdi>' if amt_txt else "")
+            + f'{ic("caret-down", "ic car")}</summary><div class="lr-d">{detail_html}{act}</div></details></li>'
+        )
+
+    closed = []
+    for r in bud["booked_rows"]:
+        code = r.get("confirmation_code") or ""
+        amt = _fmt_home_plain(r["home_amount"], home) if r.get("home_amount") is not None else ""
+        orig = money(r["amount"], r["currency"]) if r.get("amount") is not None else ""
+        bk = bmap.get(r["id"]) or {}
+        facts = [bk.get("charge_detail"), bk.get("cancel_detail")]
+        if any(facts):
+            # structured facts read better than the free-text note in a one-line list
+            body = [chips_ltr(clean_status(f, ui)) for f in facts if f]
+        else:
+            body = [note_value(clean_status(r.get("notes") or "", ui), ui)] if r.get("notes") else []
+        det = " · ".join(x for x in [orig] + body if x)
+        closed.append(lr(latin_or_text(btitle.get(r["id"]) or r.get("title") or ""), badge("booked", ui), amt, det, code))
+    opened = []
+    for e in bud["estimates"]:
+        rng = _range_txt(e.get("amount_min") if e.get("amount_min") is not None else e.get("amount"),
+                         e.get("amount_max"), e.get("currency"))
+        opened.append(lr(latin_or_text(e.get("title") or ""), f'<span class="badge wait">{esc(e.get("label") or ui["open"])}</span>',
+                         rng, raw_ltr(e.get("notes") or "")))
     for r in bud["open_rows"]:
         if any(e.get("id") == r["id"] or e.get("booking_id") == r["id"] for e in bud["estimates"]):
             continue
-        open_cards.append(
-            f'<div class="book glass g-thin"><div class="k">{esc(r.get("title") or "")} {badge("open", ui)}</div>'
-            f'<div class="d">{raw_ltr(r.get("notes") or "")}</div></div>'
-        )
-    est_chart = ""
-    if any(e.get("chart_series") for e in bud["estimates"]):
-        est_chart = (
-            '<div class="viz glass g-reg rv" style="margin-top:var(--s4)">'
-            f'<div class="viz-head"><h3>{esc(ui["budget_open"])}</h3></div>'
-            f'<div class="chart" style="height:260px"><canvas id="xferChart"></canvas></div></div>'
-        )
-    fx_date = fx.get("date") or ""
-    sym = symbol(home)
-    empty_booked = "".join(booked_cards) or ('<p class="src-note">' + esc(ui["open"]) + "</p>")
-    total_txt = f"≈ {sym}{total_disp:,}" if sym and len(sym) <= 2 else f"≈ {home} {total_disp:,}"
+        amt = _range_txt(r.get("amount"), None, r.get("currency")) if r.get("amount") is not None else "—"
+        opened.append(lr(latin_or_text(r.get("title") or ""), badge("open", ui), amt, raw_ltr(clean_status(r.get("notes") or "", ui))))
+    lists = (
+        '<div class="bud-lists">'
+        f'<div class="blist"><h3>{ic("check-circle")}{esc(ui["budget_booked"])}</h3><ul>{"".join(closed)}</ul></div>'
+        f'<div class="blist"><h3>{ic("hourglass")}{esc(ui["budget_open"])}</h3><ul>{"".join(opened)}</ul></div></div>'
+    )
     return (
-        f'<section id="budget" class="sec">'
-        f'<div class="sec-head rv"><div class="act">{icon("ph-wallet")} {esc(ui["budget"])}</div>'
-        f'<h2>{esc(ui["budget"])}</h2>'
-        f'<p>{raw_ltr(fx.get("label") or ui["fx"])}{(" · " + raw_ltr(fx_date)) if fx_date else ""}</p></div>'
-        f'<div class="bud-hero card glass g-thick rv"><div class="lab">{esc(ui["budget_hero"])}</div>'
-        f'<div class="n num">{bdi(esc(total_txt))}</div>'
-        f'<p class="orig bud-pairs">{"".join(hero_orig)}</p></div>'
-        f'<div class="bud-break"><div class="viz glass g-reg rv">'
-        f'<div class="viz-head"><h3>{esc(ui["budget_booked"])}</h3><span class="src">{esc(fx.get("label") or "")}</span></div>'
-        + (f'<div class="chart" style="height:220px"><canvas id="bookedChart"></canvas></div>' if booked_cards and total else f'<p class="empty"><strong>{esc(ui.get("no_amount") or "")}</strong></p>')
-        + '</div>'
-        f'<div class="grid2" style="margin-top:var(--s4)">'
-        f'<div class="card glass g-reg rv"><h3 style="font-size:16px;font-weight:700;margin-bottom:12px">{icon("ph-check-circle")} {esc(ui["budget_booked"])}</h3>'
-        f'{empty_booked}</div>'
-        f'<div class="card glass g-reg rv bud-open"><h3 style="font-size:16px;font-weight:700;margin-bottom:12px">{icon("ph-hourglass")} {esc(ui["budget_open"])}</h3>'
-        f'{"".join(open_cards)}</div></div></div>{est_chart}</section>'
+        f'<section id="budget" class="sec" data-nav="{esc(nav_label(data, ui, "budget"))}">'
+        f'<div class="sec-head rv"><div class="act">{icon("ph-wallet")}{esc(ui["budget"])}</div>'
+        f'<h2>{esc(ui.get("budget_h2") or ui["budget"])}</h2></div>'
+        f'{card}{lists}</section>'
     )
 
 
@@ -1673,9 +2465,9 @@ def render_fx(data, ui) -> str:
     home = fx.get("home") or data["trip"].get("currency") or ""
     opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in rates)
     return (
-        f'<section id="fx" class="sec">'
-        f'<div class="sec-head rv"><div class="act">{icon("ph-currency-circle-dollar")} {esc(ui["fx"])}</div>'
-        f'<h2>{esc(ui["fx"])}{(" · " + raw_ltr(fx.get("date") or "")) if fx.get("date") else ""}</h2>'
+        f'<section id="fx" class="sec" data-nav="{esc(nav_label(data, ui, "fx"))}">'
+        f'<div class="sec-head rv"><div class="act">{icon("ph-currency-circle-dollar")}{esc(ui["fx"])}</div>'
+        f'<h2>{esc(ui["fx"])}{(" · " + tn(esc(_dmy(fx.get("date"))))) if fx.get("date") else ""}</h2>'
         f'<p>{raw_ltr(fx.get("label") or "")}</p></div>'
         f'<div class="card glass g-reg rv" style="margin-top:var(--s4)"><div class="convert">'
         f'<input id="fxAmt" type="number" inputmode="decimal" value="100" min="0" aria-label="{esc(ui["fx_amount"])}">'
@@ -1683,144 +2475,6 @@ def render_fx(data, ui) -> str:
         f'<span class="muted">~</span>'
         f'<output id="fxOut" for="fxAmt fxFrom">{esc(symbol(home) or home)}</output>'
         f'</div></div></section>'
-    )
-
-
-def render_shared(data, ui, lang) -> str:
-    trip = data["trip"]
-    out = []
-    docs = trip.get("shared_docs") or {}
-    if docs.get("items") or docs.get("headline"):
-        lis = "".join(f"<li><span>{raw_ltr(i)}</span></li>" for i in (docs.get("items") or []))
-        out.append(
-            f'<section id="docs" class="sec"><div class="sec-head rv">'
-            f'<div class="act">{icon("ph-identification-card")} {esc(ui["docs"])}</div>'
-            f'<h2>{raw_ltr(docs.get("headline") or "")}</h2><p>{raw_ltr(docs.get("lede") or "")}</p></div>'
-            f'<div class="card glass g-reg rv"><ul class="bul">{lis}</ul></div></section>'
-        )
-    pk = trip.get("shared_packing") or {}
-    if pk.get("items") or pk.get("headline"):
-        lis = "".join(f"<li><span>{raw_ltr(i)}</span></li>" for i in (pk.get("items") or []))
-        note = f'<p class="src-note">{raw_ltr(pk.get("note") or "")}</p>' if pk.get("note") else ""
-        out.append(
-            f'<section id="pack" class="sec"><div class="sec-head rv">'
-            f'<div class="act">{icon("ph-suitcase-rolling")} {esc(ui["packing"])}</div>'
-            f'<h2>{raw_ltr(pk.get("headline") or "")}</h2><p>{raw_ltr(pk.get("lede") or "")}</p></div>'
-            f'<div class="card glass g-reg rv" style="margin-top:var(--s4)"><ul class="bul">{lis}</ul>{note}</div></section>'
-        )
-    tasks = data.get("tasks") or {}
-    if tasks and (tasks.get("done") or tasks.get("open")):
-        def lis_t(items, done=False):
-            bits = []
-            for it in items or []:
-                text = it.get("text") if isinstance(it, dict) else str(it)
-                opt = it.get("optional") if isinstance(it, dict) else False
-                cls = ' class="is-optional"' if opt else ""
-                b = badge("optional", ui) if opt else (badge("booked", ui) if done else "")
-                bits.append(f"<li{cls}><span>{b} {raw_ltr(text)}</span></li>")
-            return "".join(bits)
-        out.append(
-            f'<section id="tasks" class="sec"><div class="sec-head rv">'
-            f'<div class="act">{icon("ph-list-checks")} {esc(ui["tasks_open"])}</div>'
-            f'<h2>{raw_ltr(tasks.get("headline") or "")}</h2><p>{raw_ltr(tasks.get("lede") or "")}</p></div>'
-            f'<div class="grid2"><div class="card glass g-reg rv">'
-            f'<h3 style="font-size:16px;font-weight:700;margin-bottom:10px;color:var(--pos)">{icon("ph-check-circle")} {esc(ui["tasks_done"])}</h3>'
-            f'<ul class="bul">{lis_t(tasks.get("done"), done=True)}</ul></div>'
-            f'<div class="card glass g-reg rv">'
-            f'<h3 style="font-size:16px;font-weight:700;margin-bottom:10px;color:var(--warn)">{icon("ph-circle-dashed")} {esc(ui["tasks_open"])}</h3>'
-            f'<ul class="bul">{lis_t(tasks.get("open"))}</ul></div></div></section>'
-        )
-    pack_i = next((i for i, s in enumerate(out) if 'id="pack"' in s), None)
-    task_i = next((i for i, s in enumerate(out) if 'id="tasks"' in s), None)
-    if pack_i is not None and task_i is not None:
-        wrapped = f'<div class="duo">{out[pack_i]}{out[task_i]}</div>'
-        kept, done = [], False
-        for k, s in enumerate(out):
-            if k in (pack_i, task_i):
-                if not done:
-                    kept.append(wrapped)
-                    done = True
-                continue
-            kept.append(s)
-        out = kept
-    return "\n".join(out)
-
-
-def render_pocket(data, ui, lang) -> str:
-    countries = country_list(data)
-    tabs = [f'<button type="button" data-tab="trip" aria-pressed="true">{esc(ui["general"])}</button>']
-    for c in countries:
-        tabs.append(
-            f'<button type="button" data-tab="{esc(c["id"])}" aria-pressed="false">{esc(loc(c.get("name"), lang))}</button>'
-        )
-    booked = [b for b in data["bookings"].get("bookings") or [] if b.get("status") == "booked"]
-
-    def booking_row(b):
-        code = b.get("confirmation_code") or ""
-        return (
-            f'<div class="pk-row"><span>{esc(b.get("title") or "")} {badge("booked", ui)}</span>'
-            + (f'<span class="code">{esc(code)}</span>{copybtn(code, ui)}' if code else "")
-            + (ext(b.get("confirmation_link"), ui["email"]) if b.get("confirmation_link") else "")
-            + (ext(b.get("manage_url"), ui["manage"]) if b.get("manage_url") else "")
-            + "</div>"
-        )
-
-    trip_booked = [b for b in booked if not b.get("destination_id")]
-    dest_booked = [b for b in booked if b.get("destination_id")]
-    trip_pane = (
-        f'<div data-pane="trip" class="on"><div class="p-inner"><div class="block"><h4>{esc(ui["bookings"])}</h4>'
-        + "".join(booking_row(b) for b in trip_booked)
-        + "</div></div></div>"
-    )
-    panes = [trip_pane]
-    dest_of = {d["id"]: d.get("country") for d in data["trip"]["destinations"]}
-    for c in countries:
-        cid = c["id"]
-        blocks = []
-        local_b = [b for b in dest_booked if dest_of.get(b.get("destination_id")) == cid]
-        if local_b:
-            blocks.append(f'<div class="block"><h4>{esc(ui["bookings"])}</h4>' + "".join(booking_row(b) for b in local_b) + "</div>")
-        em = c.get("emergency") or []
-        if em:
-            rows = "".join(
-                f'<div class="pk-row"><span>{esc(e.get("label") or "")}</span> {tel_link(e.get("number") or "", e.get("tel"))}</div>'
-                for e in em
-            )
-            blocks.append(f'<div class="block"><h4>{esc(ui["emergency"])} - {esc(loc(c.get("name"), lang))}</h4>{rows}</div>')
-        emb = c.get("embassy") or {}
-        if emb.get("phone") or emb.get("name"):
-            blocks.append(
-                f'<div class="block"><h4>{esc(ui["embassy"])}</h4><div class="pk-row"><span>{esc(emb.get("name") or "")}</span> '
-                + (tel_link(emb.get("phone") or "") if emb.get("phone") else "")
-                + (" · " + tel_link(emb.get("phone_emergency") or "") if emb.get("phone_emergency") else "")
-                + (ext(emb.get("url"), ui["embassy"]) if emb.get("url") else "")
-                + "</div></div>"
-            )
-        groups = (c.get("phrases") or {}).get("groups") or []
-        if groups:
-            texts = []
-            for g in groups:
-                for it in (g.get("items") or [])[:2]:
-                    if it.get("text"):
-                        texts.append(f'<p class="phrase" style="font-size:22px">{esc(it["text"])}</p>')
-            if texts:
-                blocks.append(
-                    f'<div class="block"><h4>{esc((c.get("phrases") or {}).get("headline") or "")}</h4>'
-                    + "".join(texts)
-                    + f'<a class="ext" href="#phrases-{esc(cid)}">{esc(ui["phrases_link"])}</a></div>'
-                )
-        panes.append(f'<div data-pane="{esc(cid)}"><div class="p-inner">{"".join(blocks)}</div></div>')
-    return (
-        f'<button type="button" class="pocket-toggle press" id="pocketBtn" aria-controls="pocket" aria-expanded="false" aria-label="{esc(ui["pocket"])}">{icon("ph-identification-card")} {esc(ui["pocket"])}</button>'
-        f'<aside class="pocket glass g-thick" id="pocket" role="dialog" aria-label="{esc(ui["pocket"])}" aria-hidden="true" inert>'
-        f'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
-        f'<h3>{icon("ph-identification-card")} {esc(ui["pocket_title"])}</h3>'
-        f'<button type="button" class="sheet-close press" id="pocketClose" aria-label="{esc(ui["close"])}">{icon("ph-x")}</button></div>'
-        f'<div class="block"><h4>{esc(ui["search"])}</h4>'
-        f'<div class="pk-row"><a class="ext" href="#recs-search" id="pocketSearch">{icon("ph-magnifying-glass")} {esc(ui["pocket_search"])}</a></div></div>'
-        f'<div class="pseg" id="pocketSeg" role="tablist">{"".join(tabs)}</div>'
-        f'{"".join(panes)}</aside>'
-        f'<div class="scrim" id="sheetScrim" hidden></div><div class="scrim" id="scrim" hidden></div>'
     )
 
 
@@ -1835,52 +2489,36 @@ def render_instruments(data, ui, lang) -> str:
         title = booking_display_title(b)
         code = b["confirmation_code"]
         codes.append(
-            f'<div class="code-row"><div class="code-meta"><span class="who">{esc(title)}</span>'
-            f'<span class="code tnum">{esc(code)}</span></div>'
+            f'<div class="code-row ins-dup"><div class="code-meta"><span class="who">{esc(title)}</span>'
+            f'<bdi dir="ltr" class="code tnum">{esc(code)}</bdi></div>'
             f'<div class="code-actions">{badge("booked", ui)}{copybtn(code, ui)}</div></div>'
-        )
-    emer_blocks = []
-    for c in country_list(data):
-        em = c.get("emergency") or []
-        if not em:
-            continue
-        name = loc(c.get("name"), lang)
-        links = "".join(_emer_link(e) for e in em)
-        emer_blocks.append(
-            f'<h2>{esc(ui["emergency"])}'
-            + (f", {esc(name)}" if name else "")
-            + f'</h2><div class="emer">{links}</div>'
         )
     fx = trip.get("fx") or {}
     rates = fx.get("rates_to_home") or {}
     home = fx.get("home") or trip.get("currency") or ""
     snap = []
-    for cur, rate in list(rates.items())[:3]:
+    for cur, rate in [(c, r) for c, r in rates.items() if c != home][:3]:
         try:
             r = float(rate)
         except (TypeError, ValueError):
             continue
         amt = 1000 if r < 0.05 else (100 if r < 1 else 1)
-        home_amt = amt * r
-        home_txt = f"{home_amt:.2f}".rstrip("0").rstrip(".")
+        home_txt = f"{amt * r:.2f}".rstrip("0").rstrip(".")
         snap.append(
             f'<div class="cell"><span class="a">{esc(symbol(cur))}{amt:,}</span>'
             f'<span class="b">{esc(symbol(home))}{esc(home_txt)}</span></div>'
         )
     fx_html = ""
     if snap:
-        fx_date = fx.get("date") or ""
+        fx_date = _dmy(fx.get("date")) if fx.get("date") else ""
         fx_html = (
-            f'<hr class="hr"><h2>{esc(ui["fx"])}</h2>'
-            f'<div class="fx-snap">{"".join(snap)}</div>'
-            f'<div class="src">{raw_ltr(fx.get("label") or "")}'
+            f'<hr class="hr ins-dup"><h2 class="ins-dup">{esc(ui["fx"])}</h2>'
+            f'<div class="fx-snap ins-dup">{"".join(snap)}</div>'
+            f'<div class="src ins-dup">{raw_ltr(fx.get("label") or "")}'
             + (f' · <bdi class="tnum" dir="ltr">{esc(fx_date)}</bdi>' if fx_date else "")
             + "</div>"
         )
-    codes_h = (
-        f'<hr class="hr"><h2>{esc(ui["bookings"])}</h2>{"".join(codes)}' if codes else ""
-    )
-    emer_h = "".join(f'<hr class="hr">{e}' for e in emer_blocks)
+    codes_h = f'<hr class="hr ins-dup"><h2 class="ins-dup">{esc(ui["bookings"])}</h2>{"".join(codes)}' if codes else ""
     return (
         f'<aside class="instruments glass g-thick" id="instruments" aria-label="{esc(ui.get("instruments") or "")}">'
         f'<h2>{esc(ui.get("before_depart") or "")}</h2>'
@@ -1888,7 +2526,7 @@ def render_instruments(data, ui, lang) -> str:
         f'<div class="sub" id="countL">{esc(ui["countdown_label"])}</div>'
         f'<div class="stack"><div class="k">{dep_h}</div></div>'
         f'<hr class="hr"><h2>{esc(ui["deadlines"])}</h2>'
-        f"{deadlines}{codes_h}{emer_h}{fx_html}"
+        f"{deadlines}{codes_h}{fx_html}"
         "</aside>"
     )
 
@@ -1899,57 +2537,68 @@ def render_dock(data, ui, lang) -> str:
         f'<button type="button" id="dockToday">{icon("ph-calendar-check")}<span>{esc(ui["today"])}</span></button>'
         f'<a href="#itinerary" id="dockItin">{icon("ph-path")}<span>{esc(ui.get("dock_itinerary") or ui.get("axis") or "")}</span></a>'
         f'<a href="#map" id="dockMap">{icon("ph-map-trifold")}<span>{esc(ui.get("dock_map") or ui["live_map"])}</span></a>'
-        f'<button type="button" id="dockPocket" aria-controls="pocket" aria-expanded="false">{icon("ph-identification-card")}<span>{esc(ui.get("dock_access") or ui["pocket"])}</span></button>'
         "</nav>"
     )
 
 
-def render_panel(data, ui, lang) -> str:
-    links = []
-    for n in data["trip"].get("nav") or []:
-        links.append(f'<a href="{esc(n["href"])}">{esc(n["label"])}</a>')
+def render_panel(data, ui, lang, nav=None) -> str:
+    links = "".join(f'<a href="#{esc(i)}">{esc(lab)}</a>' for i, lab in (nav or []))
     return (
         f'<button class="panel-toggle press" id="panelBtn" aria-controls="panel" aria-expanded="false">{icon("ph-list")} {esc(ui["contents"])}</button>'
         f'<aside class="toc-panel glass g-thick" id="panel" role="dialog" aria-label="{esc(ui["contents"])}">'
-        f'<h3>{esc(ui["contents"])}</h3>{"".join(links)}'
+        f'<h3>{esc(ui["contents"])}</h3>{links}'
         f'<button class="close press" id="panelClose">{esc(ui["close"])}</button></aside>'
     )
 
 
 def render_body(data, ui, lang, exclude_not_ok=False) -> str:
     countries = country_list(data)
-    axis, rest_c = [], []
+    axis, rest = [], []
     for i, c in enumerate(countries):
         axis.append(render_country_axis(data, c, i, ui, lang, exclude_not_ok=exclude_not_ok))
-        rest_c.append(render_country_rest(data, c, i, ui, lang, exclude_not_ok=exclude_not_ok))
+        rest.append(render_country_rest(data, c, i, ui, lang, exclude_not_ok=exclude_not_ok))
     footer = data["trip"].get("footer") or ui["footer_default"]
+    main = [
+        render_overview(data, ui, lang),
+        render_map_figure(data, ui, lang),
+        f'<section class="itinerary" id="itinerary" data-nav="{esc(nav_label(data, ui, "itinerary"))}" aria-label="{esc(ui.get("axis") or "")}">'
+        f'<h2>{esc(ui.get("axis") or "")}</h2>{"".join(axis)}</section>',
+    ]
+    rest_html = [
+        "\n".join(s for s in rest if s),
+        render_search(data, ui, lang),
+        render_budget(data, ui, lang),
+        render_fx(data, ui),
+        pair(render_shared_pack(data, ui, lang), render_shared_docs(data, ui, lang)),
+        render_tasks(data, ui, lang),
+        f'<p class="foot rv">{raw_ltr(footer)}</p>',
+    ]
+    page = "\n".join(s for s in main + rest_html if s)
+    nav = nav_from_html(page)
     sections = [
+        sprite_html(),
         theme_style(data),
         '<div class="mesh" aria-hidden="true"></div>',
         '<div class="grain" aria-hidden="true"></div>',
-        render_header(data, ui, lang),
+        render_header(data, ui, lang, nav=nav),
         '<div class="shell">',
         '<div class="shell-main">',
-        render_overview(data, ui, lang),
-        f'<section class="itinerary" id="itinerary" aria-label="{esc(ui.get("axis") or "")}">'
-        f'<h2>{esc(ui.get("axis") or "")}</h2>{"".join(axis)}</section>',
+        "\n".join(s for s in main if s),
         "</div>",
         render_instruments(data, ui, lang),
         "</div>",
         '<div class="rest">',
-        render_nights(data, ui, lang),
-        "\n".join(s for s in rest_c if s),
-        render_search(data, ui, lang),
-        render_budget(data, ui, lang),
-        render_fx(data, ui),
-        render_shared(data, ui, lang),
-        f'<p class="foot rv">{raw_ltr(footer)}</p>',
+        "\n".join(s for s in rest_html if s),
         "</div>",
-        render_panel(data, ui, lang),
-        render_pocket(data, ui, lang),
+        render_panel(data, ui, lang, nav=nav),
         render_dock(data, ui, lang),
+        f'<div class="today-pop glass g-thick" id="todayPop" role="dialog" aria-modal="false" aria-labelledby="todayPopT" hidden>'
+        f'<span class="tp-ic">{ic("calendar-check")}</span><p id="todayPopT"></p>'
+        f'<button type="button" class="tp-go press" id="todayPopGo">{esc(ui.get("today_go_first") or "")}</button>'
+        f'<button type="button" class="tp-x press" id="todayPopX" aria-label="{esc(ui["close"])}">{ic("x")}</button></div>',
+        '<dialog class="rs-dlg" id="rsDialog" aria-labelledby="rsdTitle"><div class="rs-detail" id="rsDetail" tabindex="-1"></div></dialog>',
     ]
-    return "\n".join(s for s in sections if s)
+    return fix_rtl_in_ltr("\n".join(s for s in sections if s))
 
 
 def nights_payload(data, lang):
@@ -2087,7 +2736,7 @@ def runtime_payload(data, ui, lang, exclude_not_ok=False) -> dict:
         "recs": recs,
         "today": today,
         "decisions": decisions,
-        "countries": [{"id": c["id"], "name": loc(c.get("name"), lang), "region_i": i} for i, c in enumerate(country_list(data))],
+        "countries": [{"id": c["id"], "name": loc(c.get("name"), lang), "region_i": i, "tz": c.get("timezone")} for i, c in enumerate(country_list(data))],
         "map": {
             "tile_url": (trip.get("map") or {}).get("tile_url") or "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
             "attribution": (trip.get("map") or {}).get("attribution") or "&copy; OpenStreetMap",

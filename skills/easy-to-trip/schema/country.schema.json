@@ -64,6 +64,45 @@
           },
           "html": {
             "type": "boolean"
+          },
+          "value": {
+            "type": "string",
+            "description": "Optional short value shown large on the tile, on one line."
+          },
+          "line": {
+            "type": "string",
+            "description": "Optional supporting line under the value."
+          },
+          "icon": {
+            "type": "string",
+            "description": "Optional Phosphor regular icon name from the sprite."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "time",
+              "currency",
+              "other"
+            ],
+            "description": "Optional. 'time' and 'currency' tiles are computed from the time zone and FX rates."
+          },
+          "more": {
+            "type": "array",
+            "description": "Optional rows for the tile's 'more' fold.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -112,6 +151,10 @@
         },
         "source": {
           "type": "string"
+        },
+        "map_url": {
+          "type": "string",
+          "description": "Optional map link for the embassy address. Without it the address pill copies the address."
         }
       }
     },

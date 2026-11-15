@@ -45,6 +45,14 @@
           },
           "card_html_note": {
             "type": "string"
+          },
+          "series_labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "description": "Optional legend labels for the two bars per option (k and o)."
           }
         }
       }
