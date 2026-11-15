@@ -1,0 +1,36 @@
+{
+  "group_heading": "To see",
+  "places": [
+    {
+      "id": "aiguille-sample",
+      "name": {
+        "en": "Valley lookout (sample)"
+      },
+      "type": "viewpoint",
+      "type_label": "Viewpoint",
+      "note": "Invented walk-in lookout.",
+      "url": "https://example.invalid/valley-lookout",
+      "maps_url": "https://maps.google.com/?q=45.93,6.87",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=45.93,6.87"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Daylight hours",
+      "price_range": "Free",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Not a restaurant."
+      },
+      "reservation": {
+        "need": "walk_in",
+        "how": {
+          "method": "at_door"
+        },
+        "booked": false
+      }
+    }
+  ]
+}

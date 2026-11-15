@@ -1,0 +1,34 @@
+{
+  "id": "chamonix",
+  "stay_booking_id": null,
+  "stay_label": null,
+  "stay_status": "open",
+  "summary_transfer": null,
+  "local_address": null,
+  "local_address_latin": null,
+  "phone": null,
+  "nav_url": null,
+  "checkin": null,
+  "checkout": null,
+  "arrival": {
+    "title": "",
+    "status": "open",
+    "items": []
+  },
+  "weather": {
+    "title": "Weather",
+    "source": "sample",
+    "items": [
+      "Valley days around 12.5°C; the pass is 75 km, allow 30 min extra (sample)."
+    ]
+  },
+  "food_notes": {
+    "title": "",
+    "source": "",
+    "items": []
+  },
+  "season_note": null,
+  "notes": [],
+  "blocks": [],
+  "recs_intro": ""
+}

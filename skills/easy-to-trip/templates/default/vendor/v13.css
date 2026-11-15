@@ -1,0 +1,646 @@
+/* v13 layer: clocks, glance, map band, pairs, definition grids, booking actions,
+   practical tiles, search dialog, budget card. Loaded last. No trip-specific selectors. */
+@media (max-width:899px){.nav-bar a{min-width:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}}
+/* v13 — visual-first round. Later than v12-fixes. Logical properties only. */
+:root{--gap:24px;--tile-r:16px}
+.ic{width:1em;height:1em;display:inline-block;flex:none;vertical-align:-.14em;fill:currentColor}
+
+/* One glass recipe for every new tile: tint, hairline, static top highlight only. */
+.clk,.gl,.ptile,.callpill,.ov-card,.bud13,.blist,.emb,.emer-row,.map-band,.rs-detail,.today-pop{
+  position:relative;background:var(--g-reg);border:1px solid var(--g-border);border-radius:var(--tile-r);
+  box-shadow:0 1px 1px rgba(30,40,60,.04),0 8px 22px -14px rgba(30,40,60,.18);
+}
+.clk::after,.gl::after,.ptile::after,.callpill::after,.ov-card::after,.bud13::after,.blist::after,.emb::after,
+.emer-row::after,.map-band::after,.rs-detail::after,.today-pop::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,var(--g-edge) 0,transparent 1.6px);
+}
+.clk > *,.gl > *,.ptile > *,.callpill > *,.ov-card > *,.bud13 > *,.blist > *,.emb > *,.emer-row > *,.rs-detail > *,.today-pop > *{position:relative;z-index:1}
+
+/* ===== Layout rhythm: one 24px gap everywhere ===== */
+.shell-main{gap:var(--gap)}
+.rest > *{margin:0 0 var(--gap)!important}
+.rest > p.foot{margin-top:0!important}
+@media (max-width:899px){.shell{gap:var(--gap)}}
+
+/* ===== Overview (items 1, 16, 17, 18) ===== */
+#overview.ov13{display:flex;flex-direction:column;gap:16px;min-width:0;width:100%;box-sizing:border-box;align-self:stretch;direction:rtl;container-type:inline-size;container-name:ov}
+.clocks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.clk{padding:14px 16px 12px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.clk-top{display:flex;align-items:center;gap:8px;min-width:0;font:700 13px var(--font);color:var(--ink-2)}
+.clk-top .flag{width:22px;height:15px;flex:none}
+.clk-top .flag svg{width:100%;height:100%;display:block}
+.clk-name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clk-here{margin-inline-start:auto;font:700 10.5px var(--font);letter-spacing:.04em;padding:2px 8px;border-radius:999px;
+  background:var(--pos-tint);color:var(--pos);visibility:hidden;white-space:nowrap}
+.clk.is-here{background:color-mix(in srgb,var(--region-c,var(--pos)) 9%,var(--g-reg));border-color:color-mix(in srgb,var(--region-c,var(--pos)) 45%,var(--g-border))}
+.clk.is-here .clk-here{visibility:visible}
+.clk[data-where="home"]{--region-c:var(--ink-2)}
+.clk-time{font:600 44px/1.05 'Inter',var(--font);letter-spacing:-.03em;color:var(--ink);white-space:nowrap;text-align:start;direction:ltr;unicode-bidi:isolate}
+.clk-time .tnum{font-variant-numeric:tabular-nums;display:inline-block;min-width:4.6ch}
+html[dir="rtl"] .clk-time{text-align:right}
+.clk-meta{display:flex;justify-content:space-between;gap:8px;font:600 12.5px var(--font);color:var(--muted);white-space:nowrap;min-width:0}
+.clk-off{color:var(--ink-2)}
+
+.glance{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-rows:1fr;gap:12px}
+.gl{padding:14px 14px 12px;display:flex;flex-direction:column;gap:4px;min-width:0;color:var(--ink);text-decoration:none}
+.gl-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:17px;
+  background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--ink-2)}
+.gl-v{font:600 26px/1.1 'Inter',var(--font);letter-spacing:-.02em;white-space:nowrap;font-variant-numeric:tabular-nums}
+html[dir="rtl"] .gl-v[dir="ltr"]{text-align:right}
+.gl-k{font:700 12.5px var(--font);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+a.gl-budget{cursor:pointer}
+a.gl-budget .gl-ic{background:var(--region-0-tint);color:var(--region-0)}
+a.gl-budget:hover{border-color:color-mix(in srgb,var(--region-0) 40%,var(--g-border))}
+a.gl-budget:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.gl-book .gl-ic{background:var(--pos-tint);color:var(--pos)}
+.gl-bar{display:flex;gap:2px;margin-top:auto;padding-top:6px;height:10px}
+.gl-bar i{flex:1;height:4px;border-radius:2px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
+.gl-bar i.on.r0{background:var(--region-0)}
+.gl-bar i.on.r1{background:var(--region-1)}
+.glance-note{margin:-6px 0 0;font:600 12px var(--font);color:var(--muted)}
+@container ov (max-width:760px){
+  .glance{gap:10px}
+  .gl{padding:12px 10px 10px}
+  .gl-v{font-size:21px}
+  .gl-k{font-size:11px;letter-spacing:0}
+  .gl-ic{width:26px;height:26px;font-size:15px}
+}
+@container ov (max-width:560px){
+  .glance{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .gl-budget{grid-column:1 / -1}
+  .glance .gl{padding:12px 14px 11px;padding-inline-end:48px}
+  .glance .gl > .gl-ic{position:absolute;inset-block-start:12px;inset-inline-end:12px}
+  .gl-v{font-size:24px}
+  .gl-k{font-size:12px}
+}
+
+.ov-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ov-cards .ov-card{margin:0;padding:18px 20px 16px;background:color-mix(in srgb,var(--block-color) 6%,var(--g-reg))}
+.ov-card .kicker{margin:0 0 2px}
+.ov-card .h-flag{display:flex;align-items:center;gap:12px;justify-content:flex-start}
+.ov-card .h-flag .display{margin:0;font-size:44px;line-height:1.05}
+.ov-card .h-flag .flag.lg{width:33px;height:22px}
+.ov-card .nights-line{margin:4px 0 2px;font-size:17px}
+.ov-card .stops-line{margin:0}
+@container ov (max-width:560px){
+  .ov-cards{grid-template-columns:1fr}
+  .ov-card .h-flag .display{font-size:38px}
+}
+#overview .today-banner:not([hidden]),#overview .today-card:not([hidden]){margin:0}
+
+@media (max-width:899px){
+  .clocks{gap:8px}
+  .clk{padding:10px 10px 9px;border-radius:14px}
+  .clk-time{font-size:32px}
+  .clk-time .tnum{min-width:0}
+  .clk-meta{flex-direction:column;gap:0;font-size:11.5px}
+  .clk-top{font-size:12px;gap:6px}
+  .clk-here{font-size:0;width:8px;height:8px;padding:0;flex:none;border-radius:50%;background:var(--region-c,var(--pos))}
+}
+@media (max-width:374px){
+  .clk-time{font-size:28px}
+}
+
+/* Map: its own band above the timeline (item 1) */
+.shell-main > figure.map.map-band, figure.map.map-band{margin:0;padding:12px;border-radius:20px;width:auto;max-width:none;align-self:stretch;justify-self:stretch;direction:rtl;min-width:0;background:var(--g-reg)}
+.map-band .map-live,.map-band #mapLive,#mapLive.map-live{height:420px;min-height:0;max-height:none;border-radius:12px;width:100%}
+.map-band .map-tools{margin-bottom:10px}
+@media (max-width:899px){
+  .shell .map-band{order:3;width:auto}
+  .shell .itinerary{order:4}
+  .map-band .map-live,.map-band #mapLive,#mapLive.map-live{height:280px;max-height:280px}
+}
+
+/* ===== Timeline cards (items 7, 8, 9, 10) ===== */
+article.stay > .col, article.stop.stay > .col{
+  background:color-mix(in srgb,var(--block-color,var(--region-0)) 6%,var(--g-reg));
+  border:1px solid color-mix(in srgb,var(--block-color,var(--region-0)) 22%,var(--g-border));
+  border-radius:14px;padding:14px 16px 14px;margin-block:4px;
+  box-shadow:inset 0 1px 0 var(--g-edge);
+}
+article.stay.x-nohover > .col, article.stay.x-nohover > .col{
+  background:color-mix(in srgb,var(--block-color,var(--region-0)) 10%,var(--g-reg));
+  border-radius:14px;box-shadow:inset 0 1px 0 var(--g-edge);
+}
+html[dir="ltr"] article.stay.x-nohover > .col{box-shadow:inset 0 1px 0 var(--g-edge)}
+/* icon outside the text block: heading and meta share one inline-start edge */
+.stop-sum{position:relative;padding-inline-start:40px}
+.stop-sum .stop-ic{position:absolute;inset-inline-start:0;inset-block-start:0;width:30px;height:30px;border-radius:9px;
+  display:grid;place-items:center;background:color-mix(in srgb,var(--block-color,var(--region-0)) 13%,transparent);color:var(--block-color,var(--region-0))}
+.stop-sum .stop-ic i{font-size:18px;line-height:1;margin:0}
+.stop-sum .stop-sum-top h3{line-height:30px}
+.stop-sum .stop-pin, .col > .pin{display:none}
+
+/* Definition grid */
+.dl{display:grid;gap:0;margin:0}
+.dl-row{display:grid;grid-template-columns:22px minmax(70px,max-content) minmax(0,1fr);column-gap:10px;align-items:baseline;
+  padding:8px 0;border-top:1px solid var(--rule)}
+.dl-row:first-child{border-top:0}
+.dl-ic{color:var(--muted);font-size:16px;align-self:center;display:grid;place-items:center}
+.dl-k{font:700 12px var(--font);letter-spacing:.02em;color:var(--muted);white-space:nowrap}
+.dl-v{font:650 15px/1.5 var(--font);color:var(--ink);min-width:0;overflow-wrap:break-word}
+.dl-v .dl-sub{font-weight:500;color:var(--ink-2);font-size:13.5px}
+.tchip,.dl-v .ltr.tnum{display:inline-block;padding:1px 7px;border-radius:6px;background:color-mix(in srgb,var(--ink) 7%,transparent);
+  font:600 13.5px/1.5 'Inter',var(--font);font-variant-numeric:tabular-nums;white-space:nowrap;unicode-bidi:isolate}
+.chips{display:inline-flex;flex-wrap:wrap;gap:6px}
+.tchip-l{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.tchip-l small{font:700 11.5px var(--font);color:var(--muted)}
+.src-note{font:500 12px var(--font);color:var(--muted);margin:6px 0 0}
+.blk-h{align-items:baseline}
+.blk-h .badge{align-self:baseline}
+.xfer-detail .blk,.stop-detail .blk{margin-bottom:14px}
+.todo-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.todo-chips li{padding:6px 12px;border-radius:999px;background:var(--g-thin);border:1px solid var(--g-border);font:600 14px var(--font)}
+.todo-chips li.opt{border-style:dashed;color:var(--ink-2)}
+@media (max-width:560px){
+  .dl-row{grid-template-columns:20px minmax(0,1fr);row-gap:2px}
+  .dl-row .dl-k{grid-column:2}
+  .dl-row .dl-v{grid-column:2}
+}
+
+/* Booking: code line, then one action row below it (item 7) */
+.bk{display:flex;flex-direction:column;gap:10px;margin:4px 0 12px}
+.bk-code{display:flex;align-items:baseline;gap:10px}
+.bk-k{font:700 12px var(--font);color:var(--muted)}
+.bk-code .code{font:650 18px 'Inter',var(--font);letter-spacing:.02em;color:var(--ink)}
+.bk-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.act-btn,.bk-actions .copybtn{box-sizing:border-box;height:36px;min-height:36px;padding:0 14px;margin:0;border-radius:10px;
+  display:inline-flex;align-items:center;gap:6px;font:700 13px var(--font);color:var(--accent-ink);
+  background:var(--g-thin);border:1px solid var(--g-border);text-decoration:none;white-space:nowrap;line-height:1;cursor:pointer}
+.act-btn .ic{font-size:16px}
+.act-btn:hover{background:var(--g-reg)}
+.bk-actions + .copied,.bk-actions .copied{margin-inline-start:4px}
+
+/* Pulse for 'Today' */
+.tline > .item.is-pulse > .col{outline:2px solid var(--block-color,var(--accent));outline-offset:3px;animation:v13pulse 1.2s var(--ease-out,ease-out) 2}
+@keyframes v13pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--block-color,var(--accent)) 45%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+
+.today-pop{position:fixed;z-index:120;inset-block-start:calc(var(--header-h) + 10px);inset-inline-end:16px;width:min(340px,calc(100vw - 32px));
+  padding:16px 16px 14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:center;
+  background:var(--g-thick);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
+  box-shadow:var(--shadow);opacity:0;transform:translateY(-6px);transition:opacity 200ms var(--ease-out,ease-out),transform 200ms var(--ease-out,ease-out)}
+.today-pop.on{opacity:1;transform:none}
+.today-pop[hidden]{display:none}
+.tp-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:19px;background:var(--region-0-tint);color:var(--region-0)}
+.today-pop p{margin:0;font:700 16px/1.35 var(--font);color:var(--ink)}
+.tp-go{grid-column:2 / 4;justify-self:start;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--g-border);background:var(--g-reg);
+  font:700 13.5px var(--font);color:var(--accent-ink);cursor:pointer}
+.tp-x{grid-column:3;grid-row:1;width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;font-size:16px;cursor:pointer}
+
+/* ===== Rest: country headers, pairs (items 3, 4) ===== */
+.rest-country{display:flex;align-items:center;gap:12px;padding:4px 4px 0}
+.rest-country .rc-name{font:700 30px/1.1 var(--font);color:var(--region);letter-spacing:-.02em}
+.rest-country .flag{width:30px;height:20px}
+.rest-country .rc-rule{flex:1;height:1px;background:color-mix(in srgb,var(--region) 35%,transparent)}
+.pair{display:grid;grid-template-columns:1fr;gap:var(--gap);align-items:stretch}
+.pair > *{margin:0!important;min-width:0}
+@media (min-width:1024px){.pair{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rest .pair > .sec, .rest .pair > aside.sec{padding:24px 24px 26px}
+aside.phrases.sec{border-radius:20px;background:var(--g-reg);border:1px solid var(--g-border);position:relative;
+  box-shadow:0 1px 1px rgba(30,40,60,.04),0 10px 28px -12px rgba(30,40,60,.14)}
+aside.phrases.sec::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,var(--g-edge) 0,transparent 1.6px);z-index:1}
+aside.phrases.sec > *{position:relative;z-index:2}
+.sec-head .act .ph,.sec-head .act i{margin:0}
+
+/* Diet chips in the waiter card (item 16) */
+.diet{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.diet li{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;font:700 14px var(--font);white-space:nowrap}
+.diet li .ic{font-size:16px}
+.diet li.no{background:color-mix(in srgb,var(--region-0) 14%,transparent);color:var(--region-0);border:1px solid color-mix(in srgb,var(--region-0) 40%,transparent)}
+.diet li.ok{background:var(--pos-tint);color:var(--pos);border:1px solid color-mix(in srgb,var(--pos) 35%,transparent)}
+.phrases .waiter-col{display:grid;gap:4px}
+.phrases .phrase{margin:10px 0 0}
+.phrases .copybtn{justify-self:start;height:36px;min-height:36px;padding:0 14px;border-radius:10px;width:auto}
+
+/* Practical tiles (items 11, 12) */
+.ptiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ptile{padding:14px 16px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ptile-top{display:flex;align-items:center;gap:8px}
+.ptile-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:21px;
+  background:color-mix(in srgb,var(--region,var(--region-0)) 12%,transparent);color:var(--region,var(--region-0))}
+.ptile-k{font:700 12.5px var(--font);color:var(--muted)}
+.ptile{container-type:inline-size}
+.ptile-v{font:650 clamp(15px,13cqi,24px)/1.2 'Inter',var(--font);letter-spacing:-.02em;color:var(--ink);white-space:nowrap;margin-top:4px}
+.ptile-l{margin:0;font:500 13.5px/1.4 var(--font);color:var(--ink-2)}
+.p-more{margin-top:auto;padding-top:6px}
+.p-more summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font:700 12.5px var(--font);color:var(--accent-ink);min-height:28px}
+.p-more summary::-webkit-details-marker{display:none}
+.p-more[open] .car{transform:rotate(180deg)}
+.p-more-b{padding-top:4px}
+.p-more-b .dl-row{grid-template-columns:18px minmax(0,1fr)}
+.p-more-b .dl-k{grid-column:2}.p-more-b .dl-v{grid-column:2;font-size:14px}
+.emer-row{margin-top:12px;padding:14px 16px}
+.emer-h,.emb-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;font:700 15px var(--font);color:var(--ink)}
+.emer-h .ic{color:var(--region-0);font-size:18px}
+.callpills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.callpills.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.callpill{box-sizing:border-box;min-height:64px;padding:8px 10px;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;
+  column-gap:8px;align-items:center;text-decoration:none;color:var(--ink);background:var(--g-thin);border-radius:12px}
+.callpill .ic{grid-row:1 / 3;font-size:18px;color:var(--region-0)}
+.callpill .n{font:700 clamp(14px,1.2vw + 8px,19px)/1.15 'Inter',var(--font);letter-spacing:-.01em;white-space:nowrap}
+.callpill .w{font:600 11.5px/1.2 var(--font);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emb{margin-top:12px;padding:14px 16px}
+.emb-grid{display:grid;gap:6px}
+.emb-row{display:grid;grid-template-columns:minmax(80px,auto) minmax(0,1fr);align-items:center;gap:12px;min-height:36px}
+.emb-k{display:inline-flex;align-items:center;gap:6px;font:700 12.5px var(--font);color:var(--muted);white-space:nowrap}
+.emb-v{display:flex;justify-content:flex-end;min-width:0}
+.pill{box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;max-width:100%;
+  background:var(--g-thin);border:1px solid var(--g-border);font:650 13px var(--font);color:var(--accent-ink);text-decoration:none;
+  white-space:nowrap;overflow:hidden}
+.pill bdi{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pill .ic{font-size:14px;flex:none}
+.pill-static{color:var(--ink-2)}
+@media (max-width:560px){
+  .ptiles{grid-template-columns:1fr 1fr;gap:8px}
+  .ptile{padding:12px}
+  .ptile-v{font-size:clamp(15px,13cqi,19px)}
+  .callpills,.callpills.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .callpills > :last-child:nth-child(odd){grid-column:1 / -1}
+  .emb-row{grid-template-columns:20px minmax(0,1fr);gap:8px;min-height:34px}
+  .emb-k{font-size:0;gap:0}
+  .emb-k .ic{font-size:15px}
+  .emb-v{justify-content:flex-start}
+  .emb .pill{font-size:12.5px;padding:0 10px}
+}
+@media (max-width:374px){.ptiles{grid-template-columns:1fr}}
+
+/* Decision bars (pure CSS) */
+.optbars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end;height:170px;padding:8px 4px 0}
+.ob{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.ob-bars{display:flex;gap:6px;align-items:flex-end;height:120px}
+.ob-bars span{width:26px;height:calc(var(--h) * 100%);border-radius:6px 6px 2px 2px;position:relative;display:flex;justify-content:center}
+.ob-bars .r0{background:var(--region-0)}.ob-bars .r1{background:var(--region-1)}
+.ob-bars b{position:absolute;inset-block-start:-20px;font:700 12.5px 'Inter',var(--font);color:var(--ink)}
+.ob-l{font:600 12.5px/1.25 var(--font);color:var(--ink-2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ob-legend{display:flex;gap:14px;font:600 12.5px var(--font);color:var(--ink-2);margin-top:8px}
+.ob-legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:6px;vertical-align:-1px}
+.ob-legend .r0::before{background:var(--region-0)}.ob-legend .r1::before{background:var(--region-1)}
+
+/* ===== Budget (items 5, 6, 22) ===== */
+.bud13{max-width:560px;margin:0 auto;padding:20px 22px 16px;box-sizing:border-box}
+.bud13-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bud13 .lab{font:700 12.5px var(--font);color:var(--muted)}
+.bud-total{font:700 40px/1.1 'Inter',var(--font);letter-spacing:-.03em;color:var(--region-0);white-space:nowrap}
+html[dir="rtl"] .bud-total{text-align:right}
+.bud13 .sub{font:500 12.5px var(--font);color:var(--muted)}
+.bud13-ring{display:flex;align-items:center;gap:10px}
+.donut{width:84px;height:84px;flex:none}
+.donut circle{fill:none;stroke-width:9}
+.donut .d-open{stroke:color-mix(in srgb,var(--ink) 14%,transparent);stroke-dasharray:3 2.2}
+.donut .d-closed{stroke:var(--pos);stroke-linecap:butt}
+.donut .d-pct{font:700 15px 'Inter',sans-serif;fill:var(--ink)}
+.ring-key{list-style:none;margin:0;padding:0;display:grid;gap:4px;font:600 12px var(--font);color:var(--ink-2)}
+.ring-key li::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-inline-end:6px;vertical-align:0}
+.ring-key .k-closed::before{background:var(--pos)}
+.ring-key .k-open::before{background:color-mix(in srgb,var(--ink) 22%,transparent)}
+.bud13-rows{list-style:none;margin:14px 0 0;padding:0}
+.bud13-rows li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:baseline;padding:9px 0;border-top:1px solid var(--rule)}
+.br-n{font:700 15px var(--font);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.br-c{font:500 13px 'Inter',var(--font);color:var(--muted)}
+.br-a{font:650 15px 'Inter',var(--font);color:var(--ink);min-width:9ch;text-align:end}
+.bud13-note{margin:8px 0 0;font:500 12px var(--font);color:var(--muted)}
+.bud-lists{display:grid;grid-template-columns:1fr;gap:var(--gap);margin-top:var(--gap);align-items:stretch}
+@media (min-width:1024px){.bud-lists{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.blist{padding:16px 18px;margin:0}
+.blist h3{display:flex;align-items:center;gap:8px;margin:0 0 6px;font:700 16px var(--font);height:28px}
+.blist ul{list-style:none;margin:0;padding:0}
+.lr{border-top:1px solid var(--rule)}
+.lr:first-child{border-top:0}
+.lr summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(8ch,auto) 16px;gap:10px;align-items:center;height:48px}
+.lr summary::-webkit-details-marker{display:none}
+.lr-n{font:700 14.5px var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.lr .badge{white-space:nowrap}
+.lr-a{font:650 14.5px 'Inter',var(--font);text-align:end;white-space:nowrap}
+.lr .car{font-size:14px;color:var(--muted);transition:transform 200ms}
+.lr details[open] .car{transform:rotate(180deg)}
+.lr-d{padding:0 0 12px;font:500 13.5px/1.55 var(--font);color:var(--ink-2)}
+.lr-d .bk-actions{margin-top:8px}
+@media (max-width:420px){
+  .bud13-top{flex-direction:column;align-items:flex-start}
+  .bud-total{font-size:34px}
+  .lr summary{grid-template-columns:minmax(0,1fr) auto 16px}
+  .lr .badge{display:none}
+}
+
+/* ===== Search (items 13, 21) ===== */
+#recs-search .rs13{display:grid;grid-template-columns:1fr;gap:var(--gap);align-items:start;max-width:880px;margin-inline:auto;background:transparent;border:0;box-shadow:none;padding:0}
+#recs-search .sec-head{max-width:880px;margin-inline:auto}
+@media (min-width:1024px){
+  #recs-search .rs13,#recs-search .sec-head{max-width:none}
+  #recs-search .rs13{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  #recs-search .rs-detail{position:sticky;top:calc(var(--header-h) + 12px)}
+  #recs-search .rs-detail[hidden]{display:block!important;visibility:visible}
+}
+.rs-main{min-width:0}
+.rs-t .ic{font-size:15px;margin-inline-end:4px;vertical-align:-.16em}
+.rs-hit{--cat:var(--ink-2)}
+.rs-hit,.rs-dlg,.rs-detail,.rs-t{--cat:var(--accent)}
+.t-restaurants,.t-food{--cat:#a2452f}.t-cafes{--cat:#7a5230}.t-attractions,.t-sights{--cat:#343a7a}.t-shopping{--cat:#7a5810}.t-daytrip,.t-daytrips{--cat:#0d5a4c}
+[data-theme="dark"] .t-restaurants,[data-theme="dark"] .t-food{--cat:#e8957f}[data-theme="dark"] .t-cafes{--cat:#d6ac84}[data-theme="dark"] .t-attractions,[data-theme="dark"] .t-sights{--cat:#a8b0f0}
+[data-theme="dark"] .t-shopping{--cat:#e0c56a}[data-theme="dark"] .t-daytrip,[data-theme="dark"] .t-daytrips{--cat:#7dceb8}
+#rsList .rs-hit{background:color-mix(in srgb,var(--cat) 7%,var(--g-thin));border-color:color-mix(in srgb,var(--cat) 22%,var(--g-border))}
+#rsList .rs-hit.is-sel{outline:2px solid color-mix(in srgb,var(--cat) 60%,transparent);outline-offset:1px}
+.rs-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rs-ic{width:28px;height:28px;border-radius:8px;display:inline-grid;place-items:center;flex:none;font-size:16px;
+  background:color-mix(in srgb,var(--cat) 15%,transparent);color:var(--cat)}
+.rs-ic.big{width:40px;height:40px;font-size:22px;border-radius:11px}
+.rs-item{cursor:pointer}
+.rs-detail{padding:18px 18px 14px;min-width:0;background:color-mix(in srgb,var(--cat,var(--ink)) 5%,var(--g-reg))}
+.rs-detail:focus{outline:none}
+.rs-detail:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#rsList .rs-detail{margin-top:10px;box-shadow:none}
+.rsd-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start;margin-bottom:8px}
+.rsd-t h3{margin:0;font:700 19px/1.25 var(--font)}
+.rsd-t p{margin:2px 0 0;font:600 13px var(--font);color:var(--muted)}
+.rsd-x{width:32px;height:32px;border-radius:8px;border:1px solid var(--g-border);background:var(--g-thin);color:var(--ink-2);display:grid;place-items:center;cursor:pointer}
+.rsd-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.rs-detail .dl-row{grid-template-columns:20px minmax(64px,max-content) minmax(0,1fr)}
+#rsList .rs-detail .dl-row{grid-template-columns:20px minmax(0,1fr)}
+#rsList .rs-detail .dl-k,#rsList .rs-detail .dl-v{grid-column:2}
+
+/* ===== item 19: no FAB, no bottom reserve ===== */
+#recs-search{padding-bottom:28px}
+.dock{grid-template-columns:repeat(3,1fr)}
+
+/* booking actions: always one row; on phones equal widths, text only */
+.bk-actions{flex-wrap:nowrap}
+@media (max-width:479px){
+  .bk-actions .act-btn{flex:1 1 0;min-width:0;padding:0 6px;justify-content:center;font-size:12.5px}
+  .bk-actions .act-btn .ic{display:none}
+  .bk-actions .act-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@media (max-width:899px){ body .rest{padding-bottom:24px} }
+#recs-search,[data-nav]{scroll-margin-top:0}
+
+/* search on phones: one-line scrolling chip rows; the expanded card does not repeat the hit */
+@media (max-width:899px){
+  #recs-search .rs-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-block:2px;margin-inline:-2px;padding-inline:2px}
+  #recs-search .rs-chips::-webkit-scrollbar{display:none}
+  #recs-search .rs-chips > *{flex:none}
+}
+#rsList .rs-detail{border:0;border-block-start:1px solid var(--g-border);border-radius:0;background:transparent;padding:12px 0 0;margin-top:12px}
+#rsList .rs-detail::after{display:none}
+#rsList .rs-detail .rsd-head{position:absolute;inset-block-start:8px;inset-inline-end:0;margin:0}
+#rsList .rs-detail .rsd-t,#rsList .rs-detail .rsd-head .rs-ic,#rsList .rs-detail .dl-blurb{display:none}
+#rsList .rs-detail .dl{padding-inline-end:44px}
+/* the nav never wraps (a wrapped bar made the header taller than --header-h at 1024) */
+.nav-bar{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+.nav-bar::-webkit-scrollbar{display:none}
+.nav-bar > *{flex:none}
+/* glance: budget tile gets the room its number needs; numbers scale with the tile */
+.gl{container-type:inline-size}
+.gl-v{font-size:clamp(17px,19cqi,26px)}
+.glance{grid-template-columns:minmax(0,1.45fr) repeat(4,minmax(0,1fr))}
+@container ov (max-width:560px){ .glance{grid-template-columns:repeat(2,minmax(0,1fr))} .gl-v{font-size:24px} }
+.gl:not(.gl-budget) .gl-v{font-size:clamp(20px,24cqi,26px)}
+@container ov (max-width:560px){ .glance .gl .gl-v{font-size:24px} }
+
+/* embassy address: the one pill allowed to wrap (never truncated) */
+.emb .pill-addr{height:auto;min-height:32px;padding-block:6px;border-radius:14px;line-height:1.3;white-space:normal}
+.emb .pill-addr bdi{white-space:normal;overflow:visible}
+
+/* fixed bottom bar never covers controls (item 23 bug): focus / scrollIntoView keep clear of it,
+   and the page ends a full bar-height + gap above it */
+html{scroll-padding-bottom:calc(var(--dock-h,0px) + 12px)}
+@media (max-width:899px){ body{padding-bottom:calc(var(--dock-h,72px) + 16px)} }
+/* a wrapped (two-line) address pill keeps its label on the first line */
+.emb-row{align-items:start}
+.emb-k{min-height:32px}
+.emb-v{min-height:32px;display:flex;align-items:center}
+/* ===== v13b ===== */
+/* 2. mobile: "before departure" panel after the main content, full width, no repeats */
+@media (max-width:899px){
+  .shell .instruments{order:9!important;width:100%!important;max-width:none!important;align-self:stretch!important;box-sizing:border-box;margin-inline:0}
+  .shell .instruments .ins-dup{display:none!important}
+}
+/* 3. country header: one line; the optional tag sits on its own line below */
+.country-head{flex-wrap:nowrap!important;align-items:center}
+.country-head .nm,.country-head .meta{white-space:nowrap}
+.country-head .rule{min-width:12px}
+.country-head .flag{flex:none}
+.ch-opt{margin:-8px 0 14px;padding-inline-start:calc(var(--date-w) + var(--rail-w))}
+@media (max-width:899px){.ch-opt{padding-inline-start:0}}
+.ch-opt .stop-opt{display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:999px;font:700 12px var(--font);color:var(--warn);background:var(--warn-tint);border:1px dashed color-mix(in srgb,var(--warn) 45%,transparent)}
+.country-head{min-width:0;max-width:100%;box-sizing:border-box}
+.country-head .meta{overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* 4. waiter card: isolated, unbroken Japanese; the pair is top-aligned (no stretched empty half) */
+.q-iso{white-space:nowrap;unicode-bidi:isolate}
+.pair:has(> aside.phrases){align-items:start}
+/* 5. search: soft selected state */
+#rsList .rs-hit.is-sel{outline:0!important;background:color-mix(in srgb,var(--cat) 13%,var(--g-thin))!important}
+[dir="rtl"] #rsList .rs-hit.is-sel{box-shadow:inset -3px 0 0 var(--cat)}
+[dir="ltr"] #rsList .rs-hit.is-sel{box-shadow:inset 3px 0 0 var(--cat)}
+#recs-search .rs-detail[hidden]::before{content:none!important}
+@media (min-width:1024px){#recs-search .rs-detail[hidden]{display:none!important}}
+/* 7. embassy address: a clean two-line block, breaks only between address parts */
+.emb .pill-addr{border-radius:12px}
+.emb .pill-addr .nw{white-space:nowrap}
+/* practical tiles: 1-up on narrow phones, every line a single line */
+@media (max-width:419px){.ptiles{grid-template-columns:1fr!important}}
+.ptile-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* countries after the first: the "more details" control takes the region colour */
+.country-block:not([data-region="0"]) article.item .stop-toggle:not(.stop-caret){color:var(--region);border-color:color-mix(in srgb,var(--region) 30%,var(--g-border));background:color-mix(in srgb,var(--region) 8%,var(--g-thin))}
+/* carets: collapsed points down everywhere; open turns up. details are always [open] (animated folds) so use .is-open */
+details > summary .car,details > summary .chev{transform:none!important;transition:transform 200ms}
+details.is-open > summary .car,details.is-open > summary .chev{transform:rotate(180deg)!important}
+/* today popup on mobile: just above the bottom bar */
+@media (max-width:899px){
+  .today-pop{inset-block-start:auto!important;inset-block-end:calc(var(--dock-h,64px) + 12px)!important;inset-inline:16px!important;width:auto!important}
+}
+/* map: offset pins (fanned groups) with a leader to the real spot */
+.trip-pin{overflow:visible}
+.trip-pin > span{transition:translate 160ms}
+.trip-pin .pin-lead{position:absolute;left:14px;top:28px;height:1.5px;transform-origin:0 50%;background:currentColor;opacity:.7;pointer-events:none;color:var(--ink-2)}
+.trip-pin .pin-dot{position:absolute;left:11px;top:25px;width:6px;height:6px;border-radius:50%;background:var(--ink-2);opacity:.85;pointer-events:none}
+@media (min-width:1024px){.pair > aside.phrases{position:sticky;top:calc(var(--header-h,104px) + 16px)}}
+/* address: at most two lines, the full text stays in the link + title */
+.emb .pill-addr > bdi{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-width:0}
+/* practical tiles: 1-up whenever the practical card itself is narrow (phones, and the 2-col pair at ~1024) */
+.sec.pract{container-type:inline-size;container-name:pract}
+@container pract (max-width:560px){.ptiles{grid-template-columns:1fr!important}}
+@media (max-width:899px){.shell .instruments .dead-strip > :last-child{border-bottom:0!important;box-shadow:none}}
+/* ===== v13c ===== */
+/* 1. dark map: same keyless tiles, dimmed with a filter on the tile pane only (markers, routes, labels untouched) */
+html[data-theme="dark"] #map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.82) saturate(.55)}
+html[data-theme="dark"] #map .leaflet-container{background:#2a2e35}
+/* 2. emergency pills: never overflow — 2-up (last one full width) whenever the practical card is narrow */
+.sec.pract .callpills{min-width:0}
+@container pract (max-width:620px){
+  .callpills,.callpills.four{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .callpills > :last-child:nth-child(odd){grid-column:1 / -1}
+}
+.callpill{min-width:0;container-type:inline-size}
+.callpill .n{min-width:0;font-size:clamp(14px,11.5cqi,19px)}
+/* 3. clocks: each tile sizes its own type; narrow tiles drop the "here" chip to a dot */
+.clk{container-type:inline-size;container-name:clk}
+.clk-time{font-size:clamp(24px,33cqi,44px)}
+.clk-time .tnum{min-width:0}
+@container clk (max-width:170px){
+  .clk-here{font-size:0!important;width:8px;height:8px;padding:0!important;flex:none;border-radius:50%;background:var(--region-c,var(--pos))}
+  .clk-meta{flex-direction:column;gap:0;font-size:11.5px}
+}
+@container clk (max-width:120px){
+  .clk-top .flag{width:18px;height:12px}
+  .clk-top{gap:5px;font-size:12px}
+}
+.clk-name{text-overflow:clip}
+/* 6. sticky waiter card only when it fits in the viewport */
+.pair > aside.phrases.no-sticky{position:static!important}
+/* budget lists side by side from 900px (the 900–1023 range was stacked) */
+@media (min-width:900px){.bud-lists{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* booking actions: compact equal buttons whenever the booking block is narrow (not only on phones) */
+.bk{container-type:inline-size;container-name:bk}
+@container bk (max-width:400px){
+  .bk-actions .act-btn{flex:1 1 0;min-width:0;padding:0 6px;justify-content:center;font-size:12.5px}
+  .bk-actions .act-btn .ic{display:none}
+  .bk-actions .act-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@media (max-width:899px){.clk-time{font-size:clamp(24px,33cqi,34px)}}
+
+/* ===== v13c-B: search = one centred list + modal details ===== */
+html.sb-classic{scrollbar-gutter:stable}
+html.dlg-open{overflow:hidden}
+#recs-search .rs13{grid-template-columns:minmax(0,1fr)!important;max-width:880px!important;margin-inline:auto!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#recs-search .rs13 > .rs-main{min-width:0}
+/* rows: neutral at rest, soft category tint on hover / selected — no bars, no rings */
+#rsList .rs-hit{background:var(--g-thin)!important;border-color:var(--g-border)!important;box-shadow:none!important;outline:0!important;transition:background-color .18s ease}
+#rsList .rs-hit:hover{background:color-mix(in srgb,var(--cat) 7%,var(--g-thin))!important}
+#rsList .rs-hit.is-sel,[dir] #rsList .rs-hit.is-sel{background:color-mix(in srgb,var(--cat) 12%,var(--g-thin))!important;box-shadow:none!important;outline:0!important}
+#rsList .rs-item:hover,#rsList .rs-item:focus{background:transparent;outline:none}
+#rsList .rs-item:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:12px}
+
+.rs-dlg{position:fixed;inset:0;margin:auto;padding:0;width:min(560px,calc(100vw - 32px));max-width:560px;max-height:min(82vh,720px);
+  box-sizing:border-box;overflow:hidden;color:var(--ink);border:1px solid var(--g-border);border-radius:20px;
+  background:linear-gradient(var(--g-reg),var(--g-reg)),color-mix(in srgb,var(--bg) 72%,transparent);-webkit-backdrop-filter:blur(28px) saturate(1.6);backdrop-filter:blur(28px) saturate(1.6);
+  box-shadow:inset 0 1px 0 var(--g-edge),0 24px 60px -20px rgba(16,20,30,.45)}
+.rs-dlg:not([open]){display:none}
+.rs-dlg[open]{display:flex;flex-direction:column}
+.rs-dlg::backdrop{background:rgba(14,17,24,.46)}
+html[data-theme="dark"] .rs-dlg::backdrop{background:rgba(6,8,12,.6)}
+.rs-dlg .rs-detail{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;margin:0;
+  background:transparent!important;border:0!important;border-radius:0;box-shadow:none!important;padding:20px 22px 22px}
+.rs-dlg .rs-detail::after{display:none}
+.rs-dlg .rs-detail:focus,.rs-dlg .rs-detail:focus-visible{outline:none}
+.rs-dlg .rsd-head{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}
+.rs-dlg .rsd-t h3{font:700 20px/1.25 var(--font)}
+.rs-dlg .rsd-x{width:36px;height:36px;border-radius:10px}
+.rs-dlg .rsd-x:hover{background:var(--g-reg)}
+.rs-dlg .rsd-x:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rs-dlg .dl-row{grid-template-columns:20px minmax(72px,max-content) minmax(0,1fr)}
+.rsd-grip{display:none}
+@keyframes rsdIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes rsdOut{to{opacity:0;transform:translateY(8px) scale(.985)}}
+@keyframes rsdUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes rsdDown{to{transform:translateY(100%)}}
+@keyframes rsdFade{from{opacity:0}}
+.rs-dlg[open]{animation:rsdIn .2s cubic-bezier(.2,.8,.2,1)}
+.rs-dlg[open]::backdrop{animation:rsdFade .2s ease}
+.rs-dlg.is-closing{animation:rsdOut .16s ease forwards}
+/* phones: bottom sheet */
+@media (max-width:640px){
+  .rs-dlg{inset:auto 0 0 0;margin:0;width:100%;max-width:100%;max-height:86vh;border-radius:20px 20px 0 0;border-block-end:0;
+    padding-bottom:env(safe-area-inset-bottom)}
+  .rs-dlg[open]{animation:rsdUp .24s cubic-bezier(.2,.8,.2,1)}
+  .rs-dlg.is-closing{animation:rsdDown .16s ease forwards}
+  .rsd-grip{display:block;width:40px;height:4px;border-radius:4px;background:var(--g-border);margin:-8px auto 12px}
+  .rs-dlg .rs-detail{padding:18px 16px 20px}
+  .rs-dlg .dl-row{grid-template-columns:20px minmax(0,1fr)}
+  .rs-dlg .dl-k,.rs-dlg .dl-v{grid-column:2}
+}
+@media (prefers-reduced-motion:reduce){.rs-dlg[open],.rs-dlg.is-closing,.rs-dlg[open]::backdrop{animation:none}}
+/* v13c-A: destination cards have no hover state — not the card, not its controls (focus-visible ring stays) */
+article.stay .press:hover,.ov-card .press:hover{transform:none}
+
+/* ===== v13d (clock markup): three identical clock cards ===== */
+.clocks{align-items:stretch}
+.clk{display:flex;flex-direction:column;justify-content:flex-start;gap:0;box-sizing:border-box}
+/* label row: fixed height, same flag for all three; the "here" pill sits in a reserved slot so it never moves anything */
+.clk-top{position:relative;display:flex;align-items:center;block-size:22px;min-block-size:22px;margin:0;padding-inline-end:72px;box-sizing:border-box;flex:none}
+.clk-top .flag,.clk-top .flag.lg{width:22px;height:15px;margin:0;flex:none;align-self:center;border-radius:2px}
+.clk-here{position:absolute;inset-inline-end:0;inset-block-start:50%;translate:0 -50%;margin:0;line-height:16px}
+.clk-time{flex:none;margin:6px 0 0;line-height:1.05}
+.clk-meta{flex:none;margin-block-start:auto;padding-block-start:6px}
+@container clk (max-width:170px){ .clk-top{padding-inline-end:14px} }
+@container clk (max-width:120px){ .clk-top .flag,.clk-top .flag.lg{width:18px;height:12px} .clk-top{padding-inline-end:12px} }
+/* v13d: whole destination card toggles; caret-only button at the header's inline-end */
+article.stay.card-toggle{cursor:pointer}
+article.stay.card-toggle .fold-inner{cursor:auto}
+article.stay.card-toggle .stop-sum{padding-inline-end:44px}
+article.stay.card-toggle .stop-sum > .stop-caret{position:absolute;inset-block-start:0;inset-inline-end:0;margin:0;z-index:2}
+article.stay .stop-toggle.stop-caret{min-height:0;width:36px;height:36px;padding:0;gap:0;justify-content:center;border-radius:10px;
+  border:0;background:transparent;box-shadow:none;color:var(--muted);font-size:18px;transform:none}
+article.stay .stop-toggle.stop-caret:hover{background:transparent;transform:none}
+article.stay .stop-toggle.stop-caret .ph-caret-down{transition:transform var(--fold-dur,.3s) var(--fold-ease,ease)}
+.country-block:not([data-region="0"]) article.stay .stop-toggle.stop-caret{color:var(--region);background:transparent;border:0}
+/* keyboard focus: ring around the card column, not just the small caret */
+article.stay .stop-toggle.stop-caret:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+article.stay:has(.stop-toggle.stop-caret:focus-visible) > .col{outline:2px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:3px;border-radius:14px}
+@media (max-width:700px){article.stay .stop-toggle.stop-caret{min-height:0;width:40px;height:40px}}
+/* v13e: an open card's details are not a toggle target — normal cursor there; the header keeps the pointer */
+article.stay.card-toggle:has(.stop-sum .stop-toggle[aria-expanded="true"]){cursor:auto}
+article.stay.card-toggle:has(.stop-sum .stop-toggle[aria-expanded="true"]) .stop-sum{cursor:pointer}
+/* v13f: Latin isolates in RTL copy wrap as a unit, so a phrase
+   like a multi-word Latin train name never splits mid-name onto the next line. */
+.stop-xfer bdi[dir="ltr"],
+.season-note bdi[dir="ltr"],
+.day bdi[dir="ltr"]:not(.tnum),
+.stops-line bdi[dir="ltr"] {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: baseline;
+}
+
+/* checklists: packing and tasks (state saved in localStorage) */
+.chk-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.chk-list li{margin:0;padding:0}
+.chk-list label{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  min-height:44px;
+  padding:10px 12px;
+  border-radius:2px;
+  cursor:pointer;
+  font:600 15px var(--font);
+  color:var(--ink);
+  line-height:1.4;
+}
+.chk-list label:hover{background:var(--g-thin)}
+.chk-list input[type=checkbox]{
+  flex:none;
+  width:22px;
+  height:22px;
+  margin-block:2px;
+  accent-color:var(--pos);
+}
+.chk-list label.is-done .chk-txt{
+  color:var(--ink-2);
+}
+.chk-txt{min-width:0;overflow-wrap:anywhere}
+.pack-status{
+  font:700 14.5px var(--font);
+  color:var(--ink);
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:8px 12px;
+  margin:4px 0 8px;
+}
+.pack-status .tnum{
+  font-family:'Inter',var(--font);
+  font-variant-numeric:tabular-nums;
+  font-weight:700;
+  font-size:16px;
+  letter-spacing:-.02em;
+}
+#packEmpty{font-weight:600;color:var(--ink-2)}
+

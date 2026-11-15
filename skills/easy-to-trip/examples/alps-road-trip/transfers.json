@@ -1,0 +1,24 @@
+{
+  "transfers": [
+    {
+      "id": "flight-ba-outbound",
+      "from": "LHR",
+      "to": "GVA",
+      "from_id": "home",
+      "to_id": "chamonix",
+      "depart_at": null,
+      "arrive_at": null,
+      "mode": "flight",
+      "icon": "ph-airplane-tilt",
+      "carrier": "British Airways",
+      "number": "BA722",
+      "route_label": "London – Geneva (British Airways)",
+      "booking_id": "ba-outbound",
+      "optional": false,
+      "boundary": true,
+      "tips": [],
+      "details_blocks": [],
+      "notes": null
+    }
+  ]
+}

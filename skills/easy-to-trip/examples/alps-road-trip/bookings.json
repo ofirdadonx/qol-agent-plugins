@@ -1,0 +1,35 @@
+{
+  "bookings": [
+    {
+      "id": "ba-outbound",
+      "type": "flight",
+      "title": "London – Geneva (British Airways)",
+      "status": "booked",
+      "price": {
+        "amount": 480,
+        "currency": "GBP",
+        "note": null
+      },
+      "notes": "Sample outbound. Confirmation in inbox/.",
+      "destination_id": null,
+      "confirmation_code": null,
+      "confirmation_link": null,
+      "carrier": "British Airways",
+      "number": "BA722"
+    },
+    {
+      "id": "geneva-car",
+      "type": "car",
+      "title": "Rental car, Geneva (not yet booked)",
+      "status": "open",
+      "price": {
+        "amount_min": 400,
+        "amount_max": 650,
+        "currency": "EUR",
+        "note": "Sample range, compact automatic, child seat."
+      },
+      "notes": "Collect at GVA, drop at GVA. International driving permit still to confirm.",
+      "destination_id": "chamonix"
+    }
+  ]
+}

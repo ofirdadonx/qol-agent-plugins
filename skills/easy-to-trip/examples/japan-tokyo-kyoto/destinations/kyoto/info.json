@@ -1,0 +1,41 @@
+{
+  "id": "kyoto",
+  "stay_booking_id": "kamo-inn",
+  "stay_label": "Kamo Riverside Inn (sample hotel)",
+  "stay_status": "booked",
+  "summary_transfer": "Return flight from Kansai (KIX) on 23 May (already booked).",
+  "local_address": "4-5-6 Sample Dori, Higashiyama, Kyoto",
+  "local_address_latin": "4-5-6 Sample Dori, Higashiyama, Kyoto",
+  "phone": "+81 75 000 0000",
+  "nav_url": "https://maps.google.com/?q=35.0116+135.7681",
+  "checkin": "15:00",
+  "checkout": "11:00",
+  "arrival": {
+    "title": "Arrival",
+    "status": "booked",
+    "items": [
+      "Sample Hikari 469 arrives at Kyoto Station at 11:46 on 19 May.",
+      "A short taxi or bus to the inn. Rooms may not be ready until 15:00."
+    ]
+  },
+  "weather": {
+    "title": "Weather",
+    "source": "sample",
+    "items": [
+      "Mild May days, possible showers."
+    ]
+  },
+  "food_notes": {
+    "title": "Food",
+    "source": "",
+    "items": [
+      "The party's combined restriction is vegetarian. Kamo Shojin is a booked shojin-style dinner through the Omakase app."
+    ]
+  },
+  "season_note": null,
+  "notes": [
+    "This entire destination is fictional and for documentation only."
+  ],
+  "blocks": [],
+  "recs_intro": "Invented sample places, to show an Omakase reservation and an attraction with timed tickets."
+}

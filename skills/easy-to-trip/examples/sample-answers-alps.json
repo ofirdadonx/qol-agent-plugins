@@ -1,0 +1,60 @@
+{
+  "title": "Alps road trip",
+  "subtitle": "Twelve provisional nights in the Alps",
+  "trip_type": "family",
+  "language": "en",
+  "dir": "ltr",
+  "currency": "GBP",
+  "locale": "en-GB",
+  "home_tz": "Europe/London",
+  "departure_city": "London",
+  "departure_airport": "LHR",
+  "travelers": [
+    { "name": "Sam Okonkwo", "booking_name": "SAMUEL OKONKWO", "age": 42, "passport": "GB", "dietary": [] },
+    { "name": "Riley Okonkwo", "booking_name": "RILEY OKONKWO", "age": 40, "passport": "GB", "dietary": ["gluten-free"] },
+    { "name": "Ama Okonkwo", "booking_name": "AMA OKONKWO", "age": 8, "child": true, "passport": "GB", "dietary": ["gluten-free"], "gear": "Booster seat for the rental car." }
+  ],
+  "dietary_note": "Riley and Ama eat gluten-free. diet_fit is judged against the union (gluten-free).",
+  "dates": {
+    "start": "2027-06-12",
+    "end": "2027-06-24",
+    "flexible": true,
+    "approx_nights": 12,
+    "note": "Provisional window around mid-June. Exact days can move by a few nights."
+  },
+  "destinations": [
+    { "id": "chamonix", "country": "france", "name": "Chamonix", "certainty": "sure", "nights": 5, "coords": { "lat": 45.9237, "lng": 6.8694, "exact": false } },
+    { "id": "aosta", "country": "italy", "name": "Aosta", "certainty": "sure", "nights": 4, "coords": { "lat": 45.737, "lng": 7.317, "exact": false } },
+    { "id": "annecy", "country": "france", "name": "Annecy", "certainty": "open", "optional": true, "nights": 3, "coords": { "lat": 45.8992, "lng": 6.1294, "exact": false } }
+  ],
+  "countries": [
+    { "id": "france", "name": "France", "currency": "EUR", "timezone": "Europe/Paris", "utc_offset": "UTC+2" },
+    { "id": "italy", "name": "Italy", "currency": "EUR", "timezone": "Europe/Rome", "utc_offset": "UTC+2" }
+  ],
+  "already_booked": [
+    {
+      "id": "ba-outbound",
+      "kind": "flight",
+      "title": "London – Geneva (British Airways)",
+      "status": "booked",
+      "carrier": "British Airways",
+      "number": "BA722",
+      "from": "LHR",
+      "to": "GVA",
+      "from_id": "home",
+      "to_id": "chamonix",
+      "boundary": true,
+      "amount": 480,
+      "currency": "GBP",
+      "notes": "Sample outbound. Confirmation in inbox/."
+    }
+  ],
+  "already_booked_notes": "Only the outbound flight is booked. The return, the rental car, and every stay are still open.",
+  "budget": { "total": 8000, "level": "mid", "currency": "GBP" },
+  "preferences": {
+    "priorities": ["nature", "food", "rest"],
+    "pace": { "style": "few_in_depth", "hotel_changes": "two or three bases, not a new hotel every night" },
+    "lodging": { "types": ["apartment", "hotel"], "bed": "family room", "notes": "A well-equipped apartment is preferred when travelling with a child." },
+    "transport": { "rental_car": true, "international_license": true, "trains": false, "taxis_only": false, "notes": "Rental car collected at Geneva. International driving permit to be confirmed." }
+  }
+}

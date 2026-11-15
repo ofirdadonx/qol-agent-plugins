@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "today.schema.json",
+  "description": "Offline 'today' mode segments. Optional; build can derive from destinations and transfers if omitted.",
+  "type": "object",
+  "required": [
+    "segments"
+  ],
+  "properties": {
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "title"
+        ],
+        "properties": {
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "title": {
+            "type": "string"
+          },
+          "sleep": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "day": {
+            "type": "string"
+          },
+          "stop": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nav": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "optional": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

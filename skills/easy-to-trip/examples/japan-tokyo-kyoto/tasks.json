@@ -1,0 +1,34 @@
+{
+  "headline": "Open tasks",
+  "lede": "From the skeleton and a first pass over places.",
+  "done": [
+    {
+      "text": "Book outbound and return flights"
+    },
+    {
+      "text": "Book the Tokyo and Kyoto stays"
+    },
+    {
+      "text": "Book the Tokyo–Kyoto Shinkansen"
+    },
+    {
+      "text": "Book Aoba Counter on TableCheck (15 May)"
+    },
+    {
+      "text": "Book Kamo Shojin on Omakase (20 May)"
+    }
+  ],
+  "open": [
+    {
+      "text": "Consider a Tabelog booking at Nishi Market Diner for a Tokyo lunch.",
+      "optional": true
+    },
+    {
+      "text": "Decide whether to buy timed tickets for the Lantern Garden Pavilion (opens 7 days ahead).",
+      "optional": true
+    },
+    {
+      "text": "Pick up or issue an IC card on arrival (Suica or Pasmo in Tokyo; ICOCA also works in Kyoto)."
+    }
+  ]
+}

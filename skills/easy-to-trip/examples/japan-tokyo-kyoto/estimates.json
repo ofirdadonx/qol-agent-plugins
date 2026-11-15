@@ -1,0 +1,46 @@
+{
+  "estimates": [
+    {
+      "id": "food",
+      "title": "Meals in Tokyo and Kyoto",
+      "label": "estimate",
+      "price": {
+        "amount_min": 60000,
+        "amount_max": 90000,
+        "currency": "JPY",
+        "note": "Two people, eight days, mid-range, including the two booked dinners."
+      },
+      "notes": "Sample range only.",
+      "chart_series": [
+        {
+          "label": "Meals",
+          "amount_min": 60000,
+          "amount_max": 90000,
+          "currency": "JPY",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": "local-transit",
+      "title": "IC cards and local transit",
+      "label": "estimate",
+      "price": {
+        "amount_min": 8000,
+        "amount_max": 14000,
+        "currency": "JPY",
+        "note": "Suica/Pasmo in Tokyo and ICOCA in Kyoto, plus the airport express. The Shinkansen is already booked and is not in this range."
+      },
+      "notes": "Sample range only.",
+      "chart_series": [
+        {
+          "label": "Local transit",
+          "amount_min": 8000,
+          "amount_max": 14000,
+          "currency": "JPY",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

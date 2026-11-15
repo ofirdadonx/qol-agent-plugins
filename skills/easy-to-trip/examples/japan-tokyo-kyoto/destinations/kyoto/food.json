@@ -1,0 +1,44 @@
+{
+  "group_heading": "Where to eat",
+  "places": [
+    {
+      "id": "kamo-shojin",
+      "name": {
+        "en": "Kamo Shojin",
+        "ja": "鴨精進"
+      },
+      "type": "restaurant",
+      "type_label": "Restaurant",
+      "area": "Higashiyama",
+      "note": "Invented shojin-style vegetarian dinner. Booked through the Omakase app.",
+      "url": "https://example.invalid/kamo-shojin",
+      "maps_url": "https://maps.google.com/?q=Kamo+Shojin+Kyoto",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=Kamo+Shojin+Kyoto"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Thu–Mon 17:30–21:00",
+      "price_range": "¥¥¥",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Shojin vegetarian menu (sample). Combined party restriction is vegetarian."
+      },
+      "reservation": {
+        "need": "required",
+        "how": {
+          "method": "app",
+          "url": "https://example.invalid/omakase/kamo-shojin",
+          "app_name": "Omakase"
+        },
+        "lead_time": "1 month",
+        "book_by": "2027-04-20",
+        "booked": true,
+        "notes": "Booked for 20 May, 18:00, two people. Sample only. Omakase is a common channel for this kind of reservation in Japan."
+      },
+      "planned_day": "2027-05-20"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "group_heading": "To see",
+  "places": [
+    {
+      "id": "lantern-garden",
+      "name": {
+        "en": "Lantern Garden Pavilion (sample)"
+      },
+      "type": "attraction",
+      "type_label": "Garden",
+      "area": "Higashiyama",
+      "note": "Invented garden pavilion used to show timed tickets. Tickets are released seven days ahead on the official site.",
+      "url": "https://example.invalid/lantern-garden",
+      "maps_url": "https://maps.google.com/?q=Lantern+Garden+Pavilion+Kyoto",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=Lantern+Garden+Pavilion+Kyoto"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "09:00–16:30; last entry 16:00",
+      "price_range": "¥¥",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Not a restaurant."
+      },
+      "reservation": {
+        "need": "recommended",
+        "how": {
+          "method": "ticket_online",
+          "url": "https://example.invalid/lantern-garden/tickets",
+          "app_name": null
+        },
+        "lead_time": "opens 7 days ahead at 10:00 local",
+        "book_by": "2027-05-13",
+        "booked": false,
+        "notes": "Timed entry is recommended in May. Sample only. Not yet booked — buy only if you want this pavilion on 20 May."
+      },
+      "planned_day": "2027-05-20"
+    },
+    {
+      "id": "riverside-walk",
+      "name": {
+        "en": "Sample riverside walk"
+      },
+      "type": "walk",
+      "type_label": "Walk",
+      "area": "Kamo River",
+      "note": "Invented stretch of the river path, used to show a walk-in sight.",
+      "url": "https://example.invalid/riverside-walk",
+      "maps_url": "https://maps.google.com/?q=35.02,135.77",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=35.02,135.77"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Open all day",
+      "price_range": "Free",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Not a restaurant."
+      },
+      "reservation": {
+        "need": "walk_in",
+        "how": {
+          "method": "at_door",
+          "url": null,
+          "app_name": null
+        },
+        "lead_time": null,
+        "book_by": null,
+        "booked": false,
+        "notes": "No ticket needed."
+      }
+    }
+  ]
+}

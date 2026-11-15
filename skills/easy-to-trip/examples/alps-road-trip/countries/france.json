@@ -1,0 +1,99 @@
+{
+  "id": "france",
+  "name": {
+    "en": "France"
+  },
+  "badge": "france",
+  "timezone": "Europe/Paris",
+  "utc_offset": "UTC+2",
+  "hours_ahead_of_home": null,
+  "currency": "EUR",
+  "practical_headline": "",
+  "practical_lede": "",
+  "practical": [],
+  "emergency": [
+    {
+      "label": "Emergency",
+      "number": "112",
+      "tel": "112"
+    },
+    {
+      "label": "Tourist assistance (sample)",
+      "number": "01-40-00-00-00",
+      "tel": "0140000000"
+    }
+  ],
+  "embassy": {
+    "name": "",
+    "url": "",
+    "address": "",
+    "phone": "",
+    "phone_emergency": "",
+    "email": "",
+    "source": ""
+  },
+  "phrases": {
+    "headline": "",
+    "intro": [],
+    "groups": []
+  },
+  "entry_docs": {
+    "headline": "Entry and practical checks",
+    "lede": "See trip.entry_checks. Re-check official sources.",
+    "items": [
+      "Confirm current entry rules for British passports on official UK and destination-government pages. This sample note is illustrative.",
+      "Power: Type C and Type F (Italy also Type L in some buildings), 230 V / 50 Hz."
+    ]
+  },
+  "packing": {
+    "headline": "Packing",
+    "lede": "",
+    "callout": "Type C/F/L adapters. Booster seat for the rental car (Ama).",
+    "items": [
+      "Adapters",
+      "Layers for altitude",
+      "Booster seat"
+    ]
+  },
+  "climate": "June in the Alps is mild in the valleys, colder at altitude.",
+  "transport_notes": "Sample plan: rental car from Geneva, international driving permit to be confirmed.",
+  "act_label": "France",
+  "timeline_headline": "",
+  "timeline_lede": "",
+  "journal_act": "",
+  "journal_headline": "",
+  "journal_lede": "",
+  "color": "#002395",
+  "color_2": "#1a3a6b",
+  "tint": "rgba(0,35,149,.10)",
+  "mesh": "rgba(0,35,149,.14)",
+  "flag": {
+    "label": "Flag of France",
+    "shapes": [
+      {
+        "type": "rect",
+        "fill": "#002395",
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#efece6",
+        "x": 300,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      },
+      {
+        "type": "rect",
+        "fill": "#ED2939",
+        "x": 600,
+        "y": 0,
+        "width": 300,
+        "height": 600
+      }
+    ]
+  }
+}

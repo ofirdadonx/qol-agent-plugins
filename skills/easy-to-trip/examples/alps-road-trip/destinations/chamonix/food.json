@@ -1,0 +1,44 @@
+{
+  "group_heading": "Where to eat",
+  "places": [
+    {
+      "id": "refuge-ble",
+      "name": {
+        "en": "Refuge du Blé",
+        "fr": "Refuge du Blé"
+      },
+      "type": "restaurant",
+      "type_label": "Restaurant",
+      "area": "Chamonix centre",
+      "note": "Invented kitchen that can do a gluten-free alpine menu with notice.",
+      "url": "https://example.invalid/refuge-ble",
+      "maps_url": "https://maps.google.com/?q=45.924,6.870",
+      "maps": [
+        {
+          "label": "Map",
+          "href": "https://maps.google.com/?q=45.924,6.870"
+        }
+      ],
+      "last_verified": "2026-10-20",
+      "hours": "Thu–Mon 18:30–22:00",
+      "price_range": "€€",
+      "diet_fit": {
+        "status": "ok",
+        "note": "Gluten-free menu with 48 hours' notice. Judged against the party's combined restriction (gluten-free)."
+      },
+      "reservation": {
+        "need": "required",
+        "how": {
+          "method": "phone",
+          "url": null,
+          "app_name": null
+        },
+        "lead_time": "48 hours, and a week ahead in high season",
+        "book_by": "2027-06-05",
+        "booked": false,
+        "notes": "Call and mention two gluten-free diners and a child. Not yet booked — this is intentional, so BOOK FIRST can list it closer to the trip."
+      },
+      "planned_day": "2027-06-13"
+    }
+  ]
+}

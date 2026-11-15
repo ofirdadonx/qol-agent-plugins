@@ -1,0 +1,44 @@
+{
+  "id": "tokyo",
+  "stay_booking_id": "maple-house",
+  "stay_label": "Maple House Shibuya (sample hotel)",
+  "stay_status": "booked",
+  "summary_transfer": "Shinkansen to Kyoto on the morning of 19 May (already booked).",
+  "local_address": "1-2-3 Sample Street, Shibuya, Tokyo",
+  "local_address_latin": "1-2-3 Sample Street, Shibuya, Tokyo",
+  "phone": "+81 3 0000 0000",
+  "nav_url": "https://maps.google.com/?q=35.658+139.7016",
+  "checkin": "15:00",
+  "checkout": "11:00",
+  "arrival": {
+    "title": "Arrival",
+    "status": "booked",
+    "items": [
+      "Sample Pacific SP104 lands at Haneda mid-afternoon on 15 May.",
+      "Train or taxi to Shibuya; rooms may not be ready until 15:00 — the lobby will hold bags.",
+      "Issue an IC card at the airport or the first station for metro rides."
+    ]
+  },
+  "weather": {
+    "title": "Weather",
+    "source": "sample",
+    "items": [
+      "Mild May days, possible showers.",
+      "Typical mid-May days around 20 °C; a day 21°C, night 12.5°C (sample). Allow 30 min from the airport."
+    ]
+  },
+  "food_notes": {
+    "title": "Food",
+    "source": "",
+    "items": [
+      "The party's combined restriction is vegetarian. Places below were judged against that union.",
+      "Many ramen shops use pork or fish broth — Midori Bowl is listed because this sample uses a vegetable broth. Always re-ask on the day."
+    ]
+  },
+  "season_note": null,
+  "notes": [
+    "This entire destination is fictional and for documentation only."
+  ],
+  "blocks": [],
+  "recs_intro": "Invented sample places, to show TableCheck and Tabelog reservations, a walk-in ramen shop, diet_fit, and an inbox source."
+}

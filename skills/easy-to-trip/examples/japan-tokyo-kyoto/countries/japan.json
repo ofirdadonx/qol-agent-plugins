@@ -1,0 +1,140 @@
+{
+  "id": "japan",
+  "name": {
+    "en": "Japan",
+    "ja": "日本"
+  },
+  "badge": "japan",
+  "timezone": "Asia/Tokyo",
+  "utc_offset": "UTC+9",
+  "hours_ahead_of_home": 16,
+  "currency": "JPY",
+  "practical_headline": "Practical notes",
+  "practical_lede": "Sample reminders for a short stay in Tokyo and Kyoto.",
+  "practical": [
+    {
+      "label": "IC cards",
+      "body": "A prepaid IC card (Suica or Pasmo in Tokyo, ICOCA in the Kansai region; they work across most of the country) pays for metro, local trains and many buses, and can be tapped in convenience stores. It does not cover the Shinkansen — that is a separate reserved-seat ticket. Cards can be bought at airport and station machines; a passport may be asked for a tourist issue. Remaining balance can usually be spent or refunded at a machine before leaving."
+    },
+    {
+      "label": "Getting in",
+      "body": "From Haneda, the sample hotel in Shibuya is a direct monorail-plus-train ride or a taxi. From Kyoto, Kansai Airport is reached by the airport express from Kyoto Station."
+    },
+    {
+      "label": "Money",
+      "body": "Japanese yen. Cards are widely accepted in cities; keep some cash for small shops and temples."
+    }
+  ],
+  "emergency": [
+    {
+      "label": "Emergency",
+      "number": "110 / 119",
+      "tel": "110"
+    },
+    {
+      "label": "Tourist assistance (sample)",
+      "number": "03-1234-5678",
+      "tel": "0312345678"
+    }
+  ],
+  "embassy": {
+    "name": "",
+    "url": "",
+    "address": "",
+    "phone": "",
+    "phone_emergency": "",
+    "email": "",
+    "source": ""
+  },
+  "phrases": {
+    "headline": "A few useful phrases",
+    "intro": [
+      "Japanese is the local language. English is uneven outside hotels and large stations."
+    ],
+    "groups": [
+      {
+        "id": "greetings",
+        "label": "Basics and food",
+        "language_label": "Japanese",
+        "items": [
+          {
+            "text": "こんにちは",
+            "romanization": "konnichiwa",
+            "meaning": "Hello",
+            "lang": "ja"
+          },
+          {
+            "text": "お願いします",
+            "romanization": "onegaishimasu",
+            "meaning": "Please",
+            "lang": "ja"
+          },
+          {
+            "text": "野菜中心で、肉と魚は入っていませんか。",
+            "romanization": "Yasai chūshin de, niku to sakana wa haitte imasen ka.",
+            "meaning": "Vegetable-based, with no meat or fish in it — is that right?",
+            "lang": "ja"
+          },
+          {
+            "text": "ベジタリアンです。",
+            "romanization": "Bejitarian desu.",
+            "meaning": "I am vegetarian.",
+            "lang": "ja"
+          }
+        ]
+      }
+    ]
+  },
+  "entry_docs": {
+    "headline": "Entry and practical checks",
+    "lede": "Copied from the party's entry_checks for this sample. Re-check official sources.",
+    "items": [
+      "Visa (sample, US passports): visa exemption is typical for a short tourism stay, but confirm on official government pages and complete any current pre-arrival process.",
+      "Passport: often expected to be valid for the duration of the stay. Re-check the current rule.",
+      "Power: Type A and Type B sockets, 100 V. A Type A adapter is enough for typical US dual-voltage chargers.",
+      "IC card: Suica, Pasmo or ICOCA for local transit; a separate ticket for the Shinkansen."
+    ]
+  },
+  "packing": {
+    "headline": "Packing",
+    "lede": "",
+    "callout": "Type A power adapter. Comfortable walking shoes. A light layer for mid-May.",
+    "items": [
+      "Type A adapter",
+      "Comfortable walking shoes",
+      "Light rain jacket"
+    ]
+  },
+  "climate": "Mid-May in Tokyo and Kyoto is usually mild (around 20 °C), with a chance of late-spring rain. Pack a light layer.",
+  "transport_notes": "Trains, metro, and an IC card for local rides. The Tokyo–Kyoto Shinkansen is a reserved-seat ticket, already booked in this sample. No rental car.",
+  "act_label": "Japan · 8 nights",
+  "timeline_headline": "Tokyo and Kyoto days",
+  "timeline_lede": "",
+  "journal_act": "",
+  "journal_headline": "Journal",
+  "journal_lede": "",
+  "color": "#8a2e4e",
+  "color_2": "#343a7a",
+  "tint": "rgba(138,46,78,.10)",
+  "mesh": "rgba(138,46,78,.16)",
+  "flag": {
+    "label": "Flag of Japan",
+    "shapes": [
+      {
+        "type": "rect",
+        "fill": "#efece6",
+        "x": 0,
+        "y": 0,
+        "width": 900,
+        "height": 600
+      },
+      {
+        "type": "circle",
+        "fill": "#BC002D",
+        "cx": 450,
+        "cy": 300,
+        "r": 180
+      }
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "transfers": [
+    {
+      "id": "flight-outbound",
+      "from": "SFO",
+      "to": "HND",
+      "from_id": "home",
+      "to_id": "tokyo",
+      "depart_at": "2027-05-14T11:20:00-07:00",
+      "arrive_at": "2027-05-15T14:55:00+09:00",
+      "mode": "flight",
+      "icon": "ph-airplane-tilt",
+      "carrier": "Sample Pacific",
+      "number": "SP104",
+      "route_label": "San Francisco – Tokyo (sample airline)",
+      "booking_id": "ua-outbound",
+      "optional": false,
+      "boundary": true,
+      "tips": [
+        "Overnight flight. Immigration and a train or taxi into Shibuya; rooms may not be ready until 15:00."
+      ],
+      "details_blocks": [],
+      "notes": "Invented flight, for the sample only."
+    },
+    {
+      "id": "shinkansen-west",
+      "from": "Tokyo",
+      "to": "Kyoto",
+      "from_id": "tokyo",
+      "to_id": "kyoto",
+      "depart_at": "2027-05-19T09:33:00+09:00",
+      "arrive_at": "2027-05-19T11:46:00+09:00",
+      "mode": "train",
+      "icon": "ph-train",
+      "carrier": "Sample Tokaido Shinkansen",
+      "number": "Hikari 469",
+      "route_label": "Tokyo – Kyoto Shinkansen (sample)",
+      "booking_id": "hikari-west",
+      "optional": false,
+      "boundary": false,
+      "tips": [
+        "Reserved seats are already booked on this sample ticket.",
+        "An IC card (Suica, Pasmo or ICOCA) covers local metro and buses, but not this Shinkansen ride — keep the reserved-seat ticket separate.",
+        "From Kyoto Station the sample inn is a short taxi or bus ride."
+      ],
+      "details_blocks": [],
+      "notes": "Invented train number, for the sample only."
+    },
+    {
+      "id": "flight-return",
+      "from": "KIX",
+      "to": "SFO",
+      "from_id": "kyoto",
+      "to_id": "home",
+      "depart_at": "2027-05-23T16:40:00+09:00",
+      "arrive_at": "2027-05-23T10:15:00-07:00",
+      "mode": "flight",
+      "icon": "ph-airplane-tilt",
+      "carrier": "Sample Pacific",
+      "number": "SP105",
+      "route_label": "Osaka – San Francisco (sample airline)",
+      "booking_id": "ua-return",
+      "optional": false,
+      "boundary": true,
+      "tips": [
+        "Kansai Airport is about 75 minutes from Kyoto Station by the airport express (sample timing). Leave time to return the IC card or spend the remaining balance."
+      ],
+      "details_blocks": [],
+      "notes": "Invented flight, for the sample only."
+    }
+  ]
+}
