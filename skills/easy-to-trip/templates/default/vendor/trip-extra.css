@@ -138,18 +138,11 @@ a.inline-ext .ph{font-size:.95em}
 .roma{margin:0;font-size:13px;color:var(--text-2)}
 .waiter .note{margin:0;font-size:13px;color:var(--text-2)}
 
-/* Pocket (quick access) */
-.pocket-toggle{position:fixed;bottom:18px;inset-inline-end:18px;z-index:60;display:inline-flex;align-items:center;gap:8px;font:700 14px var(--font);color:var(--text);background:var(--g-thick);border:1px solid var(--g-border);padding:10px 16px;border-radius:var(--r-chip);box-shadow:var(--shadow);cursor:pointer;min-height:48px}
-.pocket{position:fixed;z-index:90;top:auto;bottom:12px;inset-inline:12px;width:auto;max-width:520px;margin-inline-end:0;margin-inline-start:auto;max-height:min(86vh,720px);overflow-y:auto;border-radius:var(--r-panel);padding:var(--s5);transform:translateY(calc(100% + 24px));transition:transform var(--dur-3) var(--spring);visibility:hidden}
-.pocket.on{transform:none;visibility:visible}
-.pocket h3{margin:0 0 12px;font-size:18px;font-weight:700}
-.pocket .block{margin-bottom:14px}
-.pocket .block h4{margin:0 0 8px;font-size:13px;color:var(--muted)}
 .pk-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--g-border)}
 .pk-row .code{font-family:Inter,var(--font);font-weight:700;font-variant-numeric:tabular-nums;font-size:18px;direction:ltr;unicode-bidi:isolate}
 @media(max-width:560px){
-  .pocket-toggle{inset-inline-end:12px;bottom:12px;padding:0;width:48px;height:48px;justify-content:center;border-radius:50%;font-size:0;gap:0}
-  .pocket-toggle .ph{font-size:22px;color:var(--text)}
+  
+  
   .panel-toggle{inset-inline-start:12px}
 }
 /* avoid overlap with two FABs */
@@ -159,7 +152,6 @@ body{padding-bottom:72px}
 .copied{font-size:12px;color:var(--pos);font-weight:700}
 
 /* Leaflet attribution already themed in leaflet.css */
-
 
 /* Recommendations search */
 .rsearch{padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px}
@@ -191,8 +183,7 @@ body{padding-bottom:72px}
 .rs-item{display:flex;flex-direction:column;gap:4px;padding:2px 2px 4px;border:0;background:transparent;text-align:start;cursor:pointer;width:100%;font:inherit;color:inherit;border-radius:10px}
 .rs-hit .rec-links{margin-top:2px}
 
-
-/* Search: compact on a phone, clear of the top bar and of the pocket/TOC buttons */
+/* Search: compact on a phone, clear of the top bar and of the TOC button */
 #recs-search{scroll-margin-top:0;padding-bottom:96px}
 @media(max-width:700px){
   #recs-search .sec-head{margin-bottom:8px}
@@ -223,7 +214,6 @@ body{padding-bottom:72px}
 .map-svg text.opt-lbl{font-size:8px;fill:var(--muted);font-weight:700}
 li.is-optional>span::before{content:"";/* marker is the badge */}
 
-
 /* Status: closed / open / optional */
 .badge.closed{color:var(--pos);background:var(--pos-tint);border:1px solid color-mix(in srgb,var(--pos) 40%,transparent);font-weight:700}
 .status-legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:10px 0 4px;font-size:13px;color:var(--text-2)}
@@ -242,11 +232,6 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
 .stop-detail .rows{display:flex;flex-direction:column;gap:10px}
 .stop-detail .row{display:block} /* leftover rows still wrap */
 
-/* Pocket country tabs */
-.pocket .pseg{display:inline-flex;gap:0;border:1px solid var(--g-border);border-radius:999px;overflow:hidden;margin:8px 0 12px}
-.pocket .pseg button{min-height:40px;padding:6px 14px;border:0;background:transparent;color:var(--text);font:700 13px var(--font);cursor:pointer}
-.pocket .pseg button[aria-pressed=true]{background:var(--accent-tint);color:var(--accent-ink)}
-.pocket [data-pane][hidden]{display:none!important}
 .country-chunk{margin-top:var(--s8)}
 
 .blk .src-note{margin:0 0 8px}
@@ -254,7 +239,6 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
 
 .blk-list li{unicode-bidi:isolate}
 .phrase,.local-script{direction:ltr;unicode-bidi:isolate;text-align:start}
-
 
 /* v6: transit rows, inline fold, ease-out */
 :root{--fold-ease:cubic-bezier(.22,1,.36,1);--fold-dur:280ms}
@@ -264,7 +248,7 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
 .stop-detail[hidden]{display:flex!important} /* no longer used; fold hides it */
 .stop-detail{margin-top:12px;padding-top:4px}
 .fold .sheet-close{display:none}
-.pocket .sheet-close,#pocketClose{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+
 @media(max-width:700px){
   .stop-detail.is-sheet{position:static;inset:auto;max-height:none;overflow:visible;z-index:auto;padding:0;border-radius:0;background:transparent;border:0;box-shadow:none;margin-top:12px}
 }
@@ -287,22 +271,13 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
 .xfer .xfer-detail{padding:8px 0 4px;display:flex;flex-direction:column;gap:10px}
 .xfer-boundary{margin-block:4px}
 
-/* Pocket ease-out + tab fold */
-.pocket{transition:transform var(--fold-dur) var(--fold-ease),opacity var(--fold-dur) var(--fold-ease),visibility var(--fold-dur);opacity:0}
-.pocket.on{opacity:1}
-.pocket [data-pane]{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--fold-dur) var(--fold-ease),opacity var(--fold-dur) var(--fold-ease)}
-.pocket [data-pane].on{grid-template-rows:1fr;opacity:1}
-.pocket [data-pane]>.p-inner,.pocket [data-pane]{min-height:0}
-.pocket [data-pane]>.block,.pocket [data-pane]{overflow:hidden}
-.pocket [data-pane].on{overflow:visible}
-.pocket [data-pane][hidden]{display:grid!important} /* override; visibility via 0fr */
+ /* override; visibility via 0fr */
 
 @media (prefers-reduced-motion:reduce){
-  .fold,.pocket,.pocket [data-pane],.xfer-sum .ph-caret-down,.stop-toggle .ph-caret-down{
+  .fold,.xfer-sum .ph-caret-down,.stop-toggle .ph-caret-down{
     transition-duration:1ms!important
   }
 }
-
 
 /* Pin contrast: hollow fill so the mode icon is visible against the timeline pin */
 .tline .xfer .pin{

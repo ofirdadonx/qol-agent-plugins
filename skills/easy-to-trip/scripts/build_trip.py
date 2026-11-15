@@ -39,8 +39,9 @@ CSS_FILES = (
     "phosphor.css",
     "leaflet.css",
     "v2.css",
+    "v13.css",
 )
-JS_FILES = ("leaflet.js", "chart.js")
+JS_FILES = ("leaflet.js",)
 FONT_SUFFIXES = {".woff", ".woff2", ".ttf", ".otf", ".eot"}
 IMAGE_SUFFIXES = {".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp", ".ico"}
 
@@ -64,6 +65,7 @@ def html_shell(body: str, meta: dict, head_extra: str, foot_extra: str) -> str:
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
         f'<title>{esc(meta["title"])}</title>\n'
         f'<meta name="description" content="{esc(meta["description"])}">\n'
+        + ("" if 'rel="icon"' in head_extra else '<link rel="icon" href="data:,">\n')
         + head_extra
         + "</head>\n"
         "<body>\n"
