@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.7
+
+- Embassy email pills shrink to stay on one line when the row is narrow, so a long address such as `consular@bangkok.mfa.gov.il` is never truncated at 360px.
+
 ## v1.6
 
 - Folded the v11–v13 build review into the default template (see `references/template-pitfalls.md` items 29–44):
