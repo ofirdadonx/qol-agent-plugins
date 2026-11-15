@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.6
+
+- Folded the v11–v13 build review into the default template (see `references/template-pitfalls.md` items 29–44):
+  - Chart.js and the pocket sheet are gone. Decision charts are CSS bars; the budget uses an SVG donut.
+  - The nav and contents panel are built from `data-nav` sections in page order, with scrollspy and `aria-current`.
+  - The overview has live clocks and at-a-glance tiles; the map is a band between the overview and the itinerary, with pin fan-out for nearby stops and a tile-only dark filter.
+  - Stay and transfer details are definition grids with one compact booking action row. Destination cards toggle from the whole summary and have no hover state.
+  - Practical sections are tiles with call pills and an embassy grid; the waiter card has dietary chips.
+  - The budget is a centred card with booked rows, a donut and an expenses hook, plus one-line closed and open lists.
+  - Search opens a native dialog; a today pop-up appears before the trip starts.
+  - Status words are stripped where a badge already says it; Latin runs are isolated in right-to-left pages.
+  - Icons come from an inline Phosphor regular sprite.
+  - `qa_layout.py` gained a generic structure check.
+
 ## v1.5
 
 - Folded the v11 page-review findings into the default template (see `references/template-pitfalls.md` items 21–28):

@@ -74,20 +74,20 @@ A **by location** button uses the phone's GPS **only on a user tap**, and only w
 
 `python3 scripts/build_trip.py <data-dir> -o trip.html`
 
-- **`--mode single`** (default): one self-contained HTML file (CSS, fonts, Leaflet, Chart.js, and a compact `window.TRIP` payload inlined). It opens offline, including from `file://`.
+- **`--mode single`** (default): one self-contained HTML file (CSS, fonts, an icon sprite, Leaflet, and a compact `window.TRIP` payload inlined). It opens offline, including from `file://`.
 - **`--mode site`**: a folder with `index.html`, separate cacheable assets (vendored libraries, fonts, images, trip data), and a service worker so the page works offline after the first visit. The service worker is registered only on `http:` and `https:` (not on `file://`). Suitable for GitHub Pages or any static host. Details in [references/build.md](references/build.md).
 - **No size cap by default.** The page is meant to be hosted. Pass `--target drive` to enforce Google Drive HTML limits (1,000,000 characters and 3 MB), or set `--max-chars` / `--max-bytes` yourself. `--allow-oversize` writes the file anyway when a cap is set and exceeded.
 - `--site <dir>` is a deprecated alias for `--mode site -o DIR`.
 - Region colours are `--region-0` … `--region-5`, assigned in destination order — not hard-coded to any country.
 - Transfer rows sit on the timeline (outbound at the start of the first country; a `boundary` leg that leaves country A is rendered at the **end of A**).
-- **`--template default`** (the default): the v2 glass design — a single scrolling page, a sticky glass nav with scrollspy, calm mesh washes, country flags as inline SVG, and glass on the nav, instrument panel, section cards and tickets. Stays are hairline rows that expand in place (320ms ease-out). The live map is Leaflet. Dark mode, the countdown, the journal, recommendations, the pocket sheet, today-mode and the https-only GPS button are all included.
+- **`--template default`** (the default): the v2 glass design — a single scrolling page, a sticky glass nav with scrollspy, calm mesh washes, country flags as inline SVG, and glass on the nav, instrument panel, section cards and tickets. Stays are hairline rows that expand in place (320ms ease-out). The live map is Leaflet. Dark mode, the countdown, live clocks, the at-a-glance tiles, the journal, recommendations with a search dialog, today-mode and the https-only GPS button are all included. The nav is built from the sections marked `data-nav`, in page order. Charts are plain CSS bars and an SVG donut; there is no chart library and no pocket sheet.
 - **`--template classic`** keeps the previous self-contained design.
 - Flags, mesh washes and region colours come from each country in the trip data (`flag`, `color`, `color_2`, `tint`, `mesh` on the country schema). The template does not hard-code any country. Flag fields that stand in for white should use a light grey (for example `#efece6`), never `#fff`.
 - UI strings live in `templates/<name>/ui/<lang>.json` (English is the fallback).
 
 ## Template pitfalls
 
-Patterns that have bitten this page — including the 3-column timeline, settling entrance animations, a single scroll-padding offset, transfer-mode chips, `--paper` rail rings, overflow and accordion QA, and nowrap LTR tokens — are in [`references/template-pitfalls.md`](references/template-pitfalls.md). Follow them when you change the default template or the renderer. `scripts/qa_layout.py` (optional Playwright) checks the layout findings at 390 and 1440.
+Patterns that have bitten this page — including the 3-column timeline, settling entrance animations, a single scroll-padding offset, transfer-mode chips, `--paper` rail rings, overflow and accordion QA, nowrap LTR tokens, the nav from `data-nav`, definition grids, the budget card, practical tiles, and Latin text in a right-to-left page — are in [`references/template-pitfalls.md`](references/template-pitfalls.md). Follow them when you change the default template or the renderer. `scripts/qa_layout.py` (optional Playwright) checks the layout findings at 390 and 1440, plus a generic structure check (no pocket or chart canvas, nav order, icon sprite, dialogs, budget hook).
 
 - Sibling `topic-to-html` `qa_check.py` runs when present.
 

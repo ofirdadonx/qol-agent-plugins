@@ -15,7 +15,7 @@ python3 scripts/build_trip.py ./my-trip -o ./my-trip/build/trip.html --target dr
 
 ## `--mode single` (default)
 
-Writes **one HTML file**. CSS, fonts, Leaflet, Chart.js, the trip payload (`window.TRIP`), and the app script are all inlined. The file opens offline, including from `file://`.
+Writes **one HTML file**. CSS, fonts, the icon sprite, Leaflet, the trip payload (`window.TRIP`), and the app script are all inlined. The file opens offline, including from `file://`.
 
 `-o` is the file path. If omitted, it defaults to `<data-dir>/build/trip.html`.
 
@@ -32,7 +32,7 @@ site/
   README.md
   assets/
     css/              # vendored styles and fonts
-    js/               # Leaflet, Chart.js, app.js
+    js/               # Leaflet, app.js
     images/           # any vendored images
   data/
     trip.js           # window.TRIP = …;
@@ -73,3 +73,13 @@ Country colours and flags are not in the template. Put them on each country file
 ## Other flags
 
 `--exclude-not-ok` omits places whose `diet_fit` is `not_ok`. `--no-qa` skips the sibling `topic-to-html` `qa_check.py` and this skill's `qa_contrast.py` (muted and dark region contrast, 4.5:1). After a build, `scripts/qa_layout.py URL` (optional Playwright) checks the timeline rail, mode chips, jump/scrollspy offset, overflow, folds and nowrap tokens at 390 and 1440, light and dark. It opens the page with `?static=1`. `--as-of`, `--stale-months`, and `--book-by-days` are passed through to validation.
+
+## What the default page contains
+
+- The page opens with an inline SVG sprite (`templates/default/vendor/icons-sprite.svg`, Phosphor regular subset). `render.ic(name)` emits `<svg class="ic"><use href="#i-NAME"></use></svg>` and falls back to the info icon when a name is missing from the sprite. To add an icon, copy its `<symbol>` from the Phosphor regular set into the sprite.
+- Section order: overview (clocks, at-a-glance tiles, country cards), the map band, the itinerary, then for each country its journal, practical tiles beside the phrases card, packing beside entry documents, and its open decisions. After the countries: search, budget, converter, shared packing beside shared documents, and tasks.
+- Every primary section carries `data-nav="short label"`. The nav bar and the contents panel are built from those, in page order. Per-country labels come from the `nav_days` and `nav_practical` UI templates; the others come from `trip.nav` when it names the same `#id`, else from the `nav_*` UI keys.
+- `#todayPop` and `<dialog id="rsDialog">` sit at the end of `<body>`.
+- Optional data fields the page uses when present: `trip.home` (`name`, `flag`) for the home clock, `trip.dietary_ok` (list of short "this is fine" chips next to the dietary restrictions), practical items `value`, `line`, `icon`, `more` and `kind`, embassy `map_url`, stay `room`, `address` and `email`, booking `budget_title`, `trip.budget_note`, and decision `series_labels`. Without them the page falls back to generic text.
+- `--mode single` and `--mode site` produce the same page; site mode only splits the assets.
+

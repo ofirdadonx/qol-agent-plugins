@@ -155,3 +155,67 @@ Fold helpers live inside an IIFE, so a test cannot call `setFold`. An “open al
 ## 28. Nowrap LTR tokens
 
 Phone numbers, booking codes, prices and times are `<bdi class="tnum" dir="ltr">` with `white-space: nowrap`, `overflow-wrap: normal` and no `overflow-wrap: anywhere`. A long emergency number takes its own full-width row (`.emer-wide`, or the odd last cell in the two-column `.emer` grid) and uses `font-size: clamp(16px, 2.4vw + 10px, 22px)` so it shrinks rather than wraps. `qa_layout.py` has a nowrap-tokens check: each token must render on a single line, especially at 390px.
+
+## 29. No chart library and no pocket sheet
+
+The default template no longer ships Chart.js or the pocket sheet. Decision charts are CSS bars (`.optbars`, a `--h` fraction per bar), and the budget uses a small SVG donut. The pocket's content already lives on the page (booking codes in the budget and the stays, emergency numbers in the practical section, phrases in the waiter card). Items 4, 8 and 19 now apply only to the classic template. The QA looks for the word "pocket" even in CSS comments, so keep it out of the default CSS.
+
+## 30. Nav from `data-nav`, in page order
+
+Mark every primary section with `data-nav="short label"` and build the nav bar and the contents panel from those elements in DOM order (the renderer does it, and `app.js` rebuilds it on the client). A hand-kept nav list drifts out of order as soon as a section moves. Scrollspy uses the same list, the threshold from item 23, and sets `aria-current="location"` on the one active chip. While a click-scroll is running, lock the spy so it does not flicker through the sections in between.
+
+## 31. Overview, then the map band, then the itinerary
+
+The overview holds the clocks (first), the at-a-glance tiles (second) and the country cards. The map is its own band between the overview and the itinerary, at the same width, 420px tall from 900px and 280px below. Status legends and "closed" lines do not belong in the overview.
+
+## 32. Clocks follow time zones from data
+
+Each country carries `timezone`; the payload passes it as `countries[].tz`. Clocks and offset text use `Intl.DateTimeFormat` with that zone and the page locale, re-render on the half minute, and never hard-code an offset (daylight saving changes it). The home clock uses `trip.home_tz`, and `trip.home.flag` / `trip.home.name` when present.
+
+## 33. At-a-glance values are computed
+
+Nights, stops, transfers, booked count and the booked budget come from the data and the rendered timeline, not from typed text. The booked bar has one segment per booking unit, with closed segments marked by the `is-closed` class. The budget tile is a link to `#budget` whose `aria-label` repeats the total.
+
+## 34. Definition grids for card details
+
+Stay and transfer details are rows of icon, label and value (`.dl > .dl-row > .dl-ic + .dl-k + .dl-v`). Drop empty values and repeated values inside one grid. When a value starts with its own label (for example a cancellation sentence that starts with the same words as the label), strip the repeat. Times, dates, codes and prices inside a value are LTR chips.
+
+## 35. One compact action row per booking
+
+A booking block shows the code once (`.bk-code`) and its actions in one row (`.bk-actions .act-btn`, 36px tall, 8px apart): copy, mail, manage, check-in. Do not repeat the code as a separate copy button elsewhere in the same card.
+
+## 36. Destination cards have no hover state
+
+Hover must not change the card, its column or its controls (no translate, no tint, no shadow). The keyboard focus ring stays. The whole card summary toggles the fold, except links, buttons, form fields, summaries, the map and a non-collapsed text selection. The caret is a real button labelled by the card title.
+
+## 37. Pairs at 1024px and up
+
+Practical beside phrases, country packing beside entry documents, and shared packing beside shared documents sit in `.pair` two-column rows from 1024px, with a 24px gap between rest items. Emit a single section without the wrapper when one side is missing.
+
+## 38. Practical tiles
+
+Each practical item is a tile with an icon, a short label, one value on one line and one supporting line, plus an optional "more" fold with a definition grid. The time tile computes the offset live (`data-offset-tz`) and the currency tile is built from the FX rates. Emergency numbers are call pills (`a[href^="tel:"]`, number in an LTR isolate, label underneath). The embassy is a small grid of pills (site, address, phone, emergency, email); long addresses break only between their comma-separated parts.
+
+## 39. Budget card and lists
+
+The budget card is at most 561px wide and centred: the total (`data-budget-total`), the FX line, a donut of closed against open estimates, one row per booked item, and a hidden `#budgetExtra[data-budget-hook="expenses"]` for a future expenses form. `window.recalcBudget()` and `window.TRIP_BUDGET` stay available. The closed and open lists are two columns from 900px; each row is one line (name, badge, amount, caret) that opens to the detail.
+
+## 40. Status words appear once
+
+Data text often repeats "booked" or "open" next to the real badge. Strip those words from journal rows, task rows and transfer details with patterns built from the UI strings (`booked`, `open`, `optional_undecided`, `status_nouns`). Done tasks show a checked box, not a badge.
+
+## 41. Search dialog
+
+The search sits in a centred single column up to 880px. Each hit has a category icon and a `--cat` tint. Opening a hit shows a native `<dialog>` that lives at the end of `<body>`, outside the section, and closes with Escape or the close button. Place names are wrapped in `<bdi dir="auto">`.
+
+## 42. Latin text and numbers in a right-to-left page
+
+After rendering, wrap Latin runs in right-to-left text in `<bdi dir="ltr">` (skipping code, script, style, links and existing isolates), give quoted Japanese or Thai text a `lang` and an LTR isolate, and clean right-to-left fragments that ended up inside LTR isolates. Do this once on the finished body, not in each renderer.
+
+## 43. Icons from an inline sprite
+
+Icons are `<svg class="ic"><use href="#i-NAME"></use></svg>` pointing into the sprite at the top of `<body>`. Missing names fall back to the info icon. The layout QA reports any `use` that does not resolve.
+
+## 44. Visible dates are D.M.YYYY
+
+Never show an ISO date such as `2027-01-05` on the page. Convert FX dates and other raw dates before they reach the text.
