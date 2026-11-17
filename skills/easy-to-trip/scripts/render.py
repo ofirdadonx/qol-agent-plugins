@@ -1688,7 +1688,10 @@ def checkin_deadline_label(b, linked, ui) -> str:
 
 
 def render_dest_booked_plan(data, dest_id, ui, lang, links=None) -> str:
-    """'What's booked' list inside a destination card. Hidden when empty."""
+    """'What's booked' list inside a destination card. Hidden when empty.
+
+    A name with data-jump opens the search dialog on that place (`jumpToRec`).
+    """
     rows = booked_activities_for_dest(data, dest_id, links=links)
     if not rows:
         return ""
@@ -1884,6 +1887,11 @@ def blk(heading, items, status="", source="", ui=None, extra_class="") -> str:
 
 
 def render_places(dest_id, dest_files, ui, lang, data, exclude_not_ok=False) -> str:
+    """Build the grouped place list. The default template no longer embeds this
+    in destination cards; recommendations are reached through the search dialog
+    (`T.recs` in the runtime payload). Kept for the classic template's twin and
+    for any caller that still wants the markup.
+    """
     groups = []
     for kind in ("food", "sights", "shopping", "daytrips"):
         blob = (dest_files or {}).get(kind) or {}
@@ -2113,7 +2121,6 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
     food = info.get("food_notes") or {}
     if food.get("items"):
         blocks.append(block(food.get("title") or ui["food"], "", item_rows(food["items"], "fork-knife", ui.get("dl_dishes") or "", ui), "food", food.get("source") or ""))
-    recs = render_places(did, files, ui, lang, data, exclude_not_ok=exclude_not_ok)
     booked_plan = render_dest_booked_plan(data, did, ui, lang)
     nav_btn = ""
     if info.get("nav_url"):
@@ -2141,7 +2148,7 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
         f'<div class="fold"><div class="fold-inner" inert aria-hidden="true">'
         f'<div class="stop-detail" id="{esc(did)}-detail">'
         f'<button type="button" class="sheet-close press" aria-label="{esc(ui["close"])}">{icon("ph-x")}{esc(ui["close"])}</button>'
-        f'{season}{taxi}<div class="rows">{"".join(x for x in blocks if x)}</div>{booked_plan}{recs}'
+        f'{season}{taxi}<div class="rows">{"".join(x for x in blocks if x)}</div>{booked_plan}'
         f'</div></div></div></div></article>'
     )
 

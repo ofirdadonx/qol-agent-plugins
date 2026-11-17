@@ -222,10 +222,12 @@ Never show an ISO date such as `2027-01-05` on the page. Convert FX dates and ot
 
 ## 45. Booked activities inside the destination card
 
-A destination's expanded content may include a `.dest-booked` block (`#{dest_id}-booked`, heading from `dest_booked`) after the stay / arrival grids and before the place recommendations. It lists every booking with `status=booked` and `type=activity` for that `destination_id`, plus any booked item a place in that destination points to with `reservation.booked` (restaurant-like, even if the type is not `activity`). The block is not emitted when the list is empty.
+A destination's expanded content may include a `.dest-booked` block (`#{dest_id}-booked`, heading from `dest_booked`) after the stay / arrival grids. It lists every booking with `status=booked` and `type=activity` for that `destination_id`, plus any booked item a place in that destination points to with `reservation.booked` (restaurant-like, even if the type is not `activity`). The block is not emitted when the list is empty.
 
-Each `.dbk-row` is `data-booking` + `data-sort` (ISO datetime) and shows, in order: a 28px icon (`fork-knife` when a food rec links to the booking, otherwise `ticket`), the weekday + date + time, `short_title`, and the confirmation code. If `manage_url` is set, the code is that link. If a place rec points at the booking, the title is a `button.dbk-name[data-jump]` that uses the existing `jumpToRec` handler. Rows wrap at 360px (`min-width: 0`, no nowrap on the title); they must not overflow the card from 360 to 1440 in light or dark.
+Each `.dbk-row` is `data-booking` + `data-sort` (ISO datetime) and shows, in order: a 28px icon (`fork-knife` when a food rec links to the booking, otherwise `ticket`), the weekday + date + time, `short_title`, and the confirmation code. If `manage_url` is set, the code is that link. If a place rec points at the booking, the title is a `button.dbk-name[data-jump]`; `jumpToRec` opens the search dialog (`#rsDialog`) on that place and selects its `.rs-hit`. Rows wrap at 360px (`min-width: 0`, no nowrap on the title); they must not overflow the card from 360 to 1440 in light or dark.
 
 Do not also put these reservations into the day-journal body — the card list is the place that scales as more dinners and activities are booked.
+
+Destination cards must not include the place-recommendation list (`.recs`, `.recs-g`, `.rec-list`, or an intro such as `recs_intro` / "לא הוזמנו מקומות"). Places stay in the trip data and are reached only through the offline search (`#recs-search`, `#rsList`, `#rsDialog`), which is built from `T.recs`.
 
 Deadline cards that use `checkin_at` take their heading from the booking type: `meal_at` (food-linked), `booking_at` (other activity), or `checkin_by` (stays and flights).

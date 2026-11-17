@@ -626,16 +626,29 @@ function runRecSearch(){
   }).join('');
 }
 function jumpToRec(id){
-  const el=document.getElementById(id);if(!el)return;
-  const stop=el.closest('.stop');
-  const btn=stop&&stop.querySelector('.stop-sum .stop-toggle');
-  if(btn&&btn.getAttribute('aria-expanded')!=='true')openStop(btn);
-  let n=el.parentElement;while(n){if(n.tagName==='DETAILS')n.open=true;n=n.parentElement;}
-  const go=()=>{el.classList.add('rec-hl');
-    const y=el.getBoundingClientRect().top+window.scrollY-Math.max(90,window.innerHeight*0.2);
-    window.scrollTo({top:Math.max(0,y),behavior:reduce?'auto':'smooth'});
-    setTimeout(()=>el.classList.remove('rec-hl'),3200);};
-  requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(go,FOLD_MS+40)));
+  /* Open the search dialog on this place. In-card rec lists are gone. */
+  const it=REC.find(r=>r.id===id);
+  if(!it)return;
+  let dirty=false;
+  if(it.country&&it.country!==rsCountry){
+    rsCountry=it.country;rsCity='';dirty=true;
+    $$('#rsCountry button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===rsCountry?'true':'false'));
+  }
+  if(rsCity&&it.city!==rsCity){rsCity='';dirty=true;}
+  if(rsTypes.size&&!rsTypes.has(it.type)){
+    rsTypes=new Set();
+    $$('#rsTypes button').forEach(x=>x.setAttribute('aria-pressed','false'));
+    dirty=true;
+  }
+  if(dirty)renderCityChips();
+  const inp=$('#rsq');
+  if(inp&&inp.value)inp.value='';
+  runRecSearch();
+  if(typeof window.__v13openRec==='function')window.__v13openRec(id);
+  else{
+    const el=document.querySelector('#rsList .rs-item[data-rec="'+id+'"]');
+    if(el)el.click();
+  }
 }
 function initRecSearch(){
   if(!$('#recs-search'))return;

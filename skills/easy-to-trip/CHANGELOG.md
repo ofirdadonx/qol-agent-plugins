@@ -2,7 +2,8 @@
 
 ## v1.8
 
-- Destination cards now include a **מה סגרנו / What's booked** block (`.dest-booked`) in the expanded content: booked `activity` reservations for that stop, plus any booking a place recommendation points at with `reservation.booked`. Rows are sorted by date and time, show a restaurant or activity icon, the weekday, date and time, the short title, and the confirmation code (linked to `manage_url` when present). Tapping the name jumps to the matching place rec (`data-jump`). The block is omitted when there is nothing to list.
+- Destination cards now include a **מה סגרנו / What's booked** block (`.dest-booked`) in the expanded content: booked `activity` reservations for that stop, plus any booking a place recommendation points at with `reservation.booked`. Rows are sorted by date and time, show a restaurant or activity icon, the weekday, date and time, the short title, and the confirmation code (linked to `manage_url` when present). Tapping the name opens the search dialog on that place (`jumpToRec` → `#rsDialog`). The block is omitted when there is nothing to list.
+- Destination cards no longer embed the place-recommendation list (restaurants, sights, and the intro such as "לא הוזמנו מקומות"). Those places stay in the data and in the offline search dialog (`#recs-search`, `#rsDialog`).
 - Deadline cards no longer label every `checkin_at` as check-in. A food-linked booking is **ארוחה / Meal**; other activity bookings are **הזמנה / Reservation**. Hotels and flights stay **צ׳ק-אין / Check-in**.
 - The budget card and the closed budget list skip booked items that have no price, so a table reservation does not appear as an empty row. `T.budget.booked` matches the visible rows. See `references/template-pitfalls.md` items 39 and 45.
 
