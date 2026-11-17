@@ -2780,6 +2780,35 @@ def nights_payload(data, lang):
     }
 
 
+
+def rec_reservation_fields(pl, data, lang) -> tuple:
+    """(need, booked_info_or_None). booked_info is set only when reservation.booked
+    points at a booking with status=booked."""
+    res = pl.get("reservation") or {}
+    need = res.get("need") if isinstance(res, dict) else None
+    if not reservation_is_booked(res, data):
+        return need, None
+    bid = res.get("booked") if isinstance(res, dict) else None
+    b = booking_by_id(data, bid) if isinstance(bid, str) and bid.strip() else None
+    if not b:
+        return need, {"id": bid or ""}
+    dt = parse_iso_dt(b.get("checkin_at"))
+    if dt:
+        wd = _HE_WEEKDAYS[dt.weekday()] if (lang or "").startswith("he") else dt.strftime("%a")
+        date_s = _short_dmy(dt)
+        time_s = _short_hm(dt, b.get("checkin_at"))
+    else:
+        wd, date_s, time_s = "", "", ""
+    return need, {
+        "id": b.get("id") or "",
+        "weekday": wd,
+        "date": date_s,
+        "time": time_s,
+        "confirmation_code": (b.get("confirmation_code") or "").strip(),
+        "manage_url": (b.get("manage_url") or "").strip(),
+    }
+
+
 def runtime_payload(data, ui, lang, exclude_not_ok=False) -> dict:
     trip = data["trip"]
     fx = trip.get("fx") or {}
@@ -2817,6 +2846,7 @@ def runtime_payload(data, ui, lang, exclude_not_ok=False) -> dict:
         if exclude_not_ok and (pl.get("diet_fit") or {}).get("status") == "not_ok":
             continue
         dest = dest_by_id(data, dest_id)
+        need, booked = rec_reservation_fields(pl, data, lang)
         recs.append({
             "id": pl.get("id"),
             "dest": dest_id,
@@ -2835,7 +2865,8 @@ def runtime_payload(data, ui, lang, exclude_not_ok=False) -> dict:
             "maps": pl.get("maps") or ([{"label": ui["maps"], "href": pl["maps_url"]}] if pl.get("maps_url") else []),
             "sources": pl.get("sources") or [],
             "optional": bool(pl.get("optional")),
-            "reservation": (pl.get("reservation") or {}).get("need"),
+            "reservation": need,
+            "reservation_booking": booked,
         })
     today = []
     for s in (data.get("today") or {}).get("segments") or []:

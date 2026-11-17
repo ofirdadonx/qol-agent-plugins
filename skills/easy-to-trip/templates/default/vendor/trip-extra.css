@@ -337,3 +337,11 @@ html.is-anchoring,html.is-anchoring body{overflow-anchor:none}
 .dbk-code{font:650 13px Inter,var(--font);color:var(--text-2);text-decoration:none;white-space:nowrap;flex:none}
 .dbk-code[href]{color:var(--accent-ink);text-decoration:underline;text-underline-offset:2px}
 .dbk-code:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* Booked reservation in the search dialog */
+.rsd-booked{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px;min-width:0}
+.rsd-booked .sep{color:var(--muted)}
+.rsd-booked .badge.closed{font:700 12px var(--font);padding:2px 8px}
+.rsd-code{font:650 13px Inter,var(--font);color:var(--accent-ink);text-decoration:none;white-space:nowrap}
+.rsd-code[href]{text-decoration:underline;text-underline-offset:2px}
+.rsd-code:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}

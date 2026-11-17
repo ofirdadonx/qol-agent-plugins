@@ -230,4 +230,6 @@ Do not also put these reservations into the day-journal body — the card list i
 
 Destination cards must not include the place-recommendation list (`.recs`, `.recs-g`, `.rec-list`, or an intro such as `recs_intro` / "לא הוזמנו מקומות"). Places stay in the trip data and are reached only through the offline search (`#recs-search`, `#rsList`, `#rsDialog`), which is built from `T.recs`.
 
+If `reservation.booked` points to a booking with `status=booked`, `T.recs[].reservation_booking` carries the weekday, date, time, confirmation code and `manage_url`. The search dialog's "Booking" / "הזמנה" row then shows a success badge (`res_booked_mark`, e.g. "הוזמן ✓"), the date and time, and the code as a manage link — not the generic need label such as "מומלץ להזמין". Places without a booked reservation keep the need text (`res_recommended`, `res_required`, …).
+
 Deadline cards that use `checkin_at` take their heading from the booking type: `meal_at` (food-linked), `booking_at` (other activity), or `checkin_by` (stays and flights).

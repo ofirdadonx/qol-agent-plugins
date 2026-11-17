@@ -612,7 +612,8 @@ function runRecSearch(){
   list.innerHTML=hits.map(it=>{
     const opt=it.optional?` <span class="badge opt">${esc(UI.optional||'')}</span>`:'';
     const caut=it.caution?` <span class="caution"><i class="ph-duotone ph-warning ph"></i> ${esc(it.caution)}</span>`:'';
-    const res=it.reservation?` <span class="badge res-${esc(it.reservation)}">${esc(UI['res_'+it.reservation]||it.reservation)}</span>`:'';
+    const res=it.reservation_booking?` <span class="badge res-booked">${esc(UI.res_booked||'Booked')}</span>`
+      :(it.reservation?` <span class="badge res-${esc(it.reservation)}">${esc(UI['res_'+it.reservation]||it.reservation)}</span>`:'');
     const note=it.blurb||it.order||'';
     const maps=(it.maps||[]).map(p=>{
       const t=p.label||p.t||(Array.isArray(p)?p[0]:''),u=p.href||p.u||(Array.isArray(p)?p[1]:'');
@@ -884,7 +885,28 @@ updateTodayCard();
     if(it.order)rows.push(R('fork-knife',UI.rec_order||'What to order',esc(it.order)));
     if(it.price)rows.push(R('wallet',UI.rec_price||'Price',esc(it.price)));
     if(it.caution)rows.push(R('warning-circle',UI.rec_caution||'Note',esc(it.caution)));
-    if(it.reservation)rows.push(R('ticket',UI.rec_booking||'Booking',esc(UI['res_'+it.reservation]||it.reservation)));
+    const bookedResHtml=bk=>{
+      const mark=esc(UI.res_booked_mark||UI.res_booked||UI.booked||'Booked ✓');
+      const bits=[`<span class="badge closed">${mark}</span>`];
+      const when=[];
+      if(bk.weekday)when.push(esc(bk.weekday));
+      if(bk.date)when.push(`<bdi dir="ltr" class="tnum tchip">${esc(bk.date)}</bdi>`);
+      if(bk.time)when.push(`<bdi dir="ltr" class="tnum tchip">${esc(bk.time)}</bdi>`);
+      if(when.length)bits.push(when.join('<span class="sep" aria-hidden="true"> · </span>'));
+      const code=(bk.confirmation_code||'').trim();
+      if(code){
+        const label=code.charAt(0)==='#'?code:'#'+code;
+        const aria=`${UI.manage||UI.code||'Code'} ${code}`;
+        if(bk.manage_url){
+          bits.push(`<a class="rsd-code" href="${esc(bk.manage_url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(aria)}"><bdi dir="ltr" class="tnum">${esc(label)}</bdi></a>`);
+        }else{
+          bits.push(`<span class="rsd-code"><bdi dir="ltr" class="tnum">${esc(label)}</bdi></span>`);
+        }
+      }
+      return `<span class="rsd-booked">${bits.join('<span class="sep" aria-hidden="true"> · </span>')}</span>`;
+    };
+    if(it.reservation_booking)rows.push(R('ticket',UI.rec_booking||'Booking',bookedResHtml(it.reservation_booking)));
+    else if(it.reservation)rows.push(R('ticket',UI.rec_booking||'Booking',esc(UI['res_'+it.reservation]||it.reservation)));
     if(st)rows.push(R('map-pin-area',UI.rec_dest||'Destination',`${esc(st.name)} · <bdi dir="ltr" class="tnum tchip">${esc(st.dates)}</bdi>`));
     const maps=(it.maps||[]).filter(m=>m&&(m.href||m.u)).map(m=>`<a class="pill" href="${esc(m.href||m.u)}" target="_blank" rel="noopener noreferrer"><svg class="ic" aria-hidden="true"><use href="#i-map-pin"></use></svg>${esc((m.label&&m.label!==UI.maps)?m.label:(UI.open_in_maps||UI.maps||''))}</a>`).join('');
     det.className='rs-detail t-'+it.type;
