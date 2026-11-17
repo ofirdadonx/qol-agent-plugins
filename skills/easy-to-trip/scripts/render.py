@@ -1605,6 +1605,139 @@ def format_deadline_date(dt, lang: str) -> str:
     return f'{esc(wd)} {bdi(esc(stamp))}'
 
 
+_FOOD_KINDS = {"food"}
+_FOOD_PLACE_TYPES = {
+    "food", "restaurant", "restaurants", "cafe", "cafes", "bar", "bars",
+    "izakaya", "bakery", "dessert",
+}
+
+
+def _place_reservation_booking_id(pl) -> str:
+    res = pl.get("reservation") or {}
+    if isinstance(res, dict):
+        bid = res.get("booked")
+        return bid if isinstance(bid, str) and bid else ""
+    return ""
+
+
+def places_linking_booking(data) -> dict:
+    """booking_id -> list of (dest_id, kind, place) for places whose reservation.booked points here."""
+    out = {}
+    for dest_id, kind, _i, pl in iter_places(data):
+        bid = _place_reservation_booking_id(pl)
+        if bid:
+            out.setdefault(bid, []).append((dest_id, kind, pl))
+    return out
+
+
+def _is_restaurant_like(linked) -> bool:
+    for _dest_id, kind, pl in linked or []:
+        ptype = (pl.get("type") or "").lower()
+        if kind in _FOOD_KINDS or ptype in _FOOD_PLACE_TYPES:
+            return True
+    return False
+
+
+def _booking_sort_dt(b):
+    return parse_iso_dt(b.get("checkin_at")) or parse_iso_dt(b.get("cancel_deadline")) or datetime.max
+
+
+def booked_activities_for_dest(data, dest_id, links=None) -> list:
+    """Booked activity bookings for this destination, plus restaurant-like bookings linked from its places.
+
+    Returns a list of (booking, linked_here) sorted by date/time.
+    """
+    links = places_linking_booking(data) if links is None else links
+    rows = []
+    for b in data["bookings"].get("bookings") or []:
+        if b.get("status") != "booked":
+            continue
+        linked_here = [t for t in links.get(b.get("id") or "", []) if t[0] == dest_id]
+        if b.get("type") == "activity" and b.get("destination_id") == dest_id:
+            rows.append((b, linked_here))
+        elif linked_here:
+            rows.append((b, linked_here))
+    rows.sort(key=lambda x: (_booking_sort_dt(x[0]), x[0].get("id") or ""))
+    return rows
+
+
+def format_booked_when(dt, raw, lang: str) -> str:
+    """Weekday + D.M + optional time, compact, for the destination 'what's booked' list."""
+    if not dt:
+        return ""
+    stamp = _short_dmy(dt)
+    hm = _short_hm(dt, raw)
+    if (lang or "").startswith("he"):
+        wd = _HE_WEEKDAYS[dt.weekday()]
+        date_h = f"{esc(wd)} {tchip(esc(stamp))}"
+    else:
+        wd = dt.strftime("%a")
+        date_h = f"{esc(wd)} {tchip(esc(stamp))}"
+    if hm:
+        date_h += f'<span class="sep" aria-hidden="true">·</span>{tchip(esc(hm))}'
+    return date_h
+
+
+def checkin_deadline_label(b, linked, ui) -> str:
+    """Short label for a booking's checkin_at: meal / reservation / check-in, by type."""
+    if _is_restaurant_like(linked):
+        return ui.get("meal_at") or ui.get("booking_at") or ui.get("checkin_by") or "Meal"
+    if b.get("type") == "activity":
+        return ui.get("booking_at") or ui.get("checkin_by") or "Reservation"
+    return ui.get("checkin_by") or "Check-in"
+
+
+def render_dest_booked_plan(data, dest_id, ui, lang, links=None) -> str:
+    """'What's booked' list inside a destination card. Hidden when empty."""
+    rows = booked_activities_for_dest(data, dest_id, links=links)
+    if not rows:
+        return ""
+    items = []
+    for b, linked in rows:
+        dt = parse_iso_dt(b.get("checkin_at"))
+        when = format_booked_when(dt, b.get("checkin_at"), lang)
+        when_h = f'<div class="dbk-when">{when}</div>' if when else ""
+        restaurant = _is_restaurant_like(linked)
+        icon_name = "fork-knife" if restaurant else "ticket"
+        title = (b.get("short_title") or b.get("title") or "").strip()
+        rec_id = ""
+        if linked:
+            rec_id = (linked[0][2].get("id") or "") if linked[0][2] else ""
+        if rec_id:
+            name_h = (
+                f'<button type="button" class="dbk-name" data-jump="{esc(rec_id)}">'
+                f'<bdi dir="auto">{esc(title)}</bdi></button>'
+            )
+        else:
+            name_h = f'<span class="dbk-name is-static"><bdi dir="auto">{esc(title)}</bdi></span>'
+        code = (b.get("confirmation_code") or "").strip()
+        code_h = ""
+        if code:
+            label = f'#{code}' if not code.startswith("#") else code
+            aria = f'{(ui.get("manage") or ui.get("code") or "Code")} {code}'
+            if b.get("manage_url"):
+                code_h = (
+                    f'<a class="dbk-code" href="{esc(b["manage_url"])}" target="_blank" '
+                    f'rel="noopener noreferrer" aria-label="{esc(aria)}">'
+                    f'<bdi dir="ltr" class="tnum">{esc(label)}</bdi></a>'
+                )
+            else:
+                code_h = f'<span class="dbk-code"><bdi dir="ltr" class="tnum">{esc(label)}</bdi></span>'
+        sort = (dt.isoformat() if dt else "")
+        items.append(
+            f'<li class="dbk-row" data-booking="{esc(b.get("id") or "")}" data-sort="{esc(sort)}">'
+            f'<span class="dbk-ic" aria-hidden="true">{ic(icon_name)}</span>'
+            f'<div class="dbk-body">{when_h}'
+            f'<div class="dbk-main">{name_h}{code_h}</div></div></li>'
+        )
+    heading = ui.get("dest_booked") or "What's booked"
+    return (
+        f'<div class="blk dest-booked" id="{esc(dest_id)}-booked">'
+        f'<h4 class="blk-h">{ic("check-circle")}{esc(heading)}</h4>'
+        f'<ul class="dbk-list">{"".join(items)}</ul></div>'
+    )
+
+
 def deadline_cards(data, ui, lang: str = "en") -> str:
     """Short action title + short what/where detail + a readable date line."""
     detail_key = {
@@ -1613,6 +1746,7 @@ def deadline_cards(data, ui, lang: str = "en") -> str:
         "checkin_at": "checkin_detail",
     }
     cards = []
+    links = places_linking_booking(data)
     for b in data["bookings"].get("bookings") or []:
         for field, label_key in (
             ("charge_at", "charge"),
@@ -1629,7 +1763,10 @@ def deadline_cards(data, ui, lang: str = "en") -> str:
             except ValueError:
                 sort_key = datetime.max
                 date_h = bdi(esc(raw))
-            title = ui.get(label_key) or field
+            if field == "checkin_at":
+                title = checkin_deadline_label(b, links.get(b.get("id") or "", []), ui)
+            else:
+                title = ui.get(label_key) or field
             short = b.get("short_title") or ""
             custom = b.get(detail_key[field])
             if custom:
@@ -1977,6 +2114,7 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
     if food.get("items"):
         blocks.append(block(food.get("title") or ui["food"], "", item_rows(food["items"], "fork-knife", ui.get("dl_dishes") or "", ui), "food", food.get("source") or ""))
     recs = render_places(did, files, ui, lang, data, exclude_not_ok=exclude_not_ok)
+    booked_plan = render_dest_booked_plan(data, did, ui, lang)
     nav_btn = ""
     if info.get("nav_url"):
         nav_btn = (
@@ -2003,7 +2141,7 @@ def render_stop(data, dest, index, ui, lang, exclude_not_ok=False) -> str:
         f'<div class="fold"><div class="fold-inner" inert aria-hidden="true">'
         f'<div class="stop-detail" id="{esc(did)}-detail">'
         f'<button type="button" class="sheet-close press" aria-label="{esc(ui["close"])}">{icon("ph-x")}{esc(ui["close"])}</button>'
-        f'{season}{taxi}<div class="rows">{"".join(x for x in blocks if x)}</div>{recs}'
+        f'{season}{taxi}<div class="rows">{"".join(x for x in blocks if x)}</div>{booked_plan}{recs}'
         f'</div></div></div></div></article>'
     )
 
@@ -2384,7 +2522,12 @@ def render_budget(data, ui, lang) -> str:
     sub = f'<div class="sub">{raw_ltr(fx.get("label") or ui["fx"])}{(" · " + tn(esc(fx_date))) if fx_date else ""}</div>'
     budget_titles = {b.get("id"): b.get("budget_title") for b in data["bookings"].get("bookings") or [] if b.get("budget_title")}
     rows = []
+    def _priced(r):
+        return r.get("home_amount") is not None or r.get("amount") is not None
+
     for r in bud["booked_rows"]:
+        if not _priced(r):
+            continue
         code = r.get("confirmation_code") or ""
         name = (r.get("title") or "").replace(code, "").strip(" ·—-()") if code else (r.get("title") or "")
         name = budget_titles.get(r["id"]) or name
@@ -2421,6 +2564,8 @@ def render_budget(data, ui, lang) -> str:
 
     closed = []
     for r in bud["booked_rows"]:
+        if not _priced(r):
+            continue
         code = r.get("confirmation_code") or ""
         amt = _fmt_home_plain(r["home_amount"], home) if r.get("home_amount") is not None else ""
         orig = money(r["amount"], r["currency"]) if r.get("amount") is not None else ""
@@ -2727,6 +2872,7 @@ def runtime_payload(data, ui, lang, exclude_not_ok=False) -> dict:
             "booked": [
                 {"title": r["title"], "home": r["home_amount"], "amount": r["amount"], "currency": r["currency"]}
                 for r in bud["booked_rows"]
+                if r.get("home_amount") is not None or r.get("amount") is not None
             ],
             "total": bud["booked_total_home"],
             "estimates_chart": estimates_chart,

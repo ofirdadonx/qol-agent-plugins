@@ -315,3 +315,25 @@ li.is-optional>span::before{content:"";/* marker is the badge */}
 
 html.is-anchoring,html.is-anchoring body{overflow-anchor:none}
 .fold,.fold-inner,.stop,.xfer{overflow-anchor:none}
+
+/* Booked activities / restaurant reservations inside a destination card */
+.dest-booked{min-width:0}
+.dest-booked .blk-h{gap:8px}
+.dest-booked .blk-h .ic{width:16px;height:16px;flex:none}
+.dbk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.dbk-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-top:1px solid var(--g-border);min-width:0}
+.dbk-row:first-child{border-top:0;padding-top:0}
+.dbk-row:last-child{padding-bottom:0}
+.dbk-ic{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--g-thick);color:var(--accent-ink);margin-block-start:1px}
+.dbk-ic .ic{width:16px;height:16px}
+.dbk-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dbk-when{font:650 12.5px var(--font);color:var(--text-2);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px;min-width:0}
+.dbk-when .sep{color:var(--muted)}
+.dbk-main{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;min-width:0}
+.dbk-name{font:700 15px var(--font);color:var(--accent-ink);background:none;border:0;padding:0;margin:0;text-align:start;cursor:pointer;min-width:0;max-width:100%;line-height:1.35;min-height:32px}
+.dbk-name.is-static{color:var(--text);cursor:default;min-height:0;padding-block:4px}
+.dbk-name:not(.is-static):hover{text-decoration:underline;text-underline-offset:2px}
+.dbk-name:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.dbk-code{font:650 13px Inter,var(--font);color:var(--text-2);text-decoration:none;white-space:nowrap;flex:none}
+.dbk-code[href]{color:var(--accent-ink);text-decoration:underline;text-underline-offset:2px}
+.dbk-code:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
