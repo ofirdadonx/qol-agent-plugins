@@ -198,7 +198,7 @@ Each practical item is a tile with an icon, a short label, one value on one line
 
 ## 39. Budget card and lists
 
-The budget card is at most 561px wide and centred: the total (`data-budget-total`), the FX line, a donut of closed against open estimates, one row per booked item, and a hidden `#budgetExtra[data-budget-hook="expenses"]` for a future expenses form. `window.recalcBudget()` and `window.TRIP_BUDGET` stay available. The closed and open lists are two columns from 900px; each row is one line (name, badge, amount, caret) that opens to the detail.
+The budget card is at most 561px wide and centred: the total (`data-budget-total`), the FX line, a donut of closed against open estimates, one row per booked item **that has a price**, and a hidden `#budgetExtra[data-budget-hook="expenses"]` for a future expenses form. Bookings with no amount (a restaurant table, a free activity) are omitted from the card, from the closed list, and from `T.budget.booked`, so the row count stays in sync and no empty amount cell is rendered. `window.recalcBudget()` and `window.TRIP_BUDGET` stay available. The closed and open lists are two columns from 900px; each row is one line (name, badge, amount, caret) that opens to the detail.
 
 ## 40. Status words appear once
 
@@ -219,3 +219,17 @@ Icons are `<svg class="ic"><use href="#i-NAME"></use></svg>` pointing into the s
 ## 44. Visible dates are D.M.YYYY
 
 Never show an ISO date such as `2027-01-05` on the page. Convert FX dates and other raw dates before they reach the text.
+
+## 45. Booked activities inside the destination card
+
+A destination's expanded content may include a `.dest-booked` block (`#{dest_id}-booked`, heading from `dest_booked`) after the stay / arrival grids. It lists every booking with `status=booked` and `type=activity` for that `destination_id`, plus any booked item a place in that destination points to with `reservation.booked` (restaurant-like, even if the type is not `activity`). The block is not emitted when the list is empty.
+
+Each `.dbk-row` is `data-booking` + `data-sort` (ISO datetime) and shows, in order: a 28px icon (`fork-knife` when a food rec links to the booking, otherwise `ticket`), the weekday + date + time, `short_title`, and the confirmation code. If `manage_url` is set, the code is that link. If a place rec points at the booking, the title is a `button.dbk-name[data-jump]`; `jumpToRec` opens the search dialog (`#rsDialog`) on that place and selects its `.rs-hit`. Rows wrap at 360px (`min-width: 0`, no nowrap on the title); they must not overflow the card from 360 to 1440 in light or dark.
+
+Do not also put these reservations into the day-journal body — the card list is the place that scales as more dinners and activities are booked.
+
+Destination cards must not include the place-recommendation list (`.recs`, `.recs-g`, `.rec-list`, or an intro such as `recs_intro` / "לא הוזמנו מקומות"). Places stay in the trip data and are reached only through the offline search (`#recs-search`, `#rsList`, `#rsDialog`), which is built from `T.recs`.
+
+If `reservation.booked` points to a booking with `status=booked`, `T.recs[].reservation_booking` carries the weekday, date, time, confirmation code and `manage_url`. The search dialog's "Booking" / "הזמנה" row then shows a success badge (`res_booked_mark`, e.g. "הוזמן ✓"), the date and time, and the code as a manage link — not the generic need label such as "מומלץ להזמין". Places without a booked reservation keep the need text (`res_recommended`, `res_required`, …).
+
+Deadline cards that use `checkin_at` take their heading from the booking type: `meal_at` (food-linked), `booking_at` (other activity), or `checkin_by` (stays and flights).
